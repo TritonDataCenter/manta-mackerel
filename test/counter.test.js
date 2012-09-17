@@ -1,35 +1,64 @@
 // Copyright 2012 Joyent, Inc.  All rights reserved.
-var counter = require('../lib/counter');
-var helper = require('./helper.js');
-var deepEqual = require('deep-equal');
-var fs = require('fs');
-var MemoryStream = require('memorystream');
 
-var after = helper.after;
-var before = helper.before;
+var fs = require('fs');
+
+var carrier = require('carrier');
+var deepEqual = require('deep-equal');
+
+var mackerel = require('../lib');
+
+if (require.cache[__dirname + '/helper.js'])
+        delete require.cache[__dirname + '/helper.js'];
+var helper = require('./helper.js');
+
+
+
+///--- Globals
+
 var test = helper.test;
 
-test('single line', function(t) {
-        var expected = {
-                customer: "fred",
-                numKB: 20,
-                numKeys: 5
+var FILE_OPTS = {
+        encoding: 'utf8'
+};
+var LOG = helper.createLogger();
+var TEST_FILE = __dirname + '/sampledump';
+
+
+
+///--- Tests
+
+test('single line', function (t) {
+        var actual = {};
+        var expect = {
+                'fred': {
+                        numKb: 20,
+                        numKeys: 5
+                }
         };
 
-        var output = new MemoryStream();
-        var outputString = '';
-        var input = fs.ReadStream('./test/sampledump');
-        input.setEncoding('utf8');
+        var carry = carrier.carry(fs.createReadStream(TEST_FILE, FILE_OPTS));
 
-        output.on('data', function append(data) {
-                outputString += data;
+        carry.on('line', function onLine(line) {
+                var record;
+
+                try {
+                        record = JSON.parse(line);
+                } catch (e) {
+                        LOG.fatal(e, 'invalid line');
+                        t.notOk(e);
+                        t.end();
+                }
+
+                t.ok(mackerel.processRecord({
+                        aggregation: actual,
+                        line: line,
+                        log: LOG,
+                        record: record
+                }));
         });
 
-        output.on('end', function compare() {
-                var actual = JSON.parse(outputString);
-                t.ok(deepEqual(expected, actual));
+        carry.on('end', function printResults() {
+                t.ok(deepEqual(expect, actual));
                 t.end();
         });
-        counter.main(input, output);
-
 });

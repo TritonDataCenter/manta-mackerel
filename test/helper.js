@@ -1,7 +1,6 @@
 // Copyright 2012 Joyent.  All rights reserved.
 
 var bunyan = require('bunyan');
-var restify = require('restify');
 
 
 
@@ -13,7 +12,7 @@ function createLogger(name, stream) {
                 name: name || process.argv[1],
                 stream: stream || process.stdout,
                 src: true,
-                serializers: restify.bunyan.serializers
+                serializers: bunyan.stdSerializers
         });
         return (log);
 }

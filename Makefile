@@ -17,23 +17,21 @@
 #
 # Tools
 #
-TAP             := ./node_modules/.bin/tap
 NODEUNIT        := ./node_modules/.bin/nodeunit
 NPM             := npm
 
 #
 # Files
 #
-DOC_FILES        = index.restdown boilerplateapi.restdown
+DOC_FILES        = index.restdown
 JS_FILES        := $(shell ls *.js) $(shell find lib test -name '*.js')
 JSL_CONF_NODE    = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES    = $(JS_FILES)
-JSSTYLE_FLAGS    = -o indent=4,doxygen,unparenthesized-return=0
-REPO_MODULES     = src/node-dummy
+JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 
-NODE_PREBUILT_VERSION=v0.6.19
+NODE_PREBUILT_VERSION=v0.8.8
 NODE_PREBUILT_TAG=zone
 
 
@@ -60,8 +58,6 @@ CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 .PHONY: test
 test: $(NODEUNIT)
 	$(NODEUNIT) test/*.test.js
-#test: $(TAP)
-#        TAP=1 $(TAP) test/*.test.js
 
 include ./tools/mk/Makefile.deps
 ifeq ($(shell uname -s),SunOS)

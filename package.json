@@ -1,21 +1,23 @@
 {
-  "name": "boilerplateapi",
-  "description": "SmartDataCenter Boilerplate API",
-  "version": "1.0.0",
-  "author": "Joyent (joyent.com)",
-  "private": true,
-  "dependencies": {
-    "carrier": "0.1.7"
-  },
-  "devDependencies": {
-    "bunyan": "0.14.0",
-    "deep-equal" : "0.0.0",
-    "memorystream": "0.2.0",
-    "nodeunit" : "0.7.4",
-    "restify": "1.4.4",
-    "tap" : "0.3.1"
-  },
-  "scripts": {
-    "start": "node ./server.js"
-  }
+        "name": "mackerel",
+        "description": "Manta Metering System",
+        "version": "1.0.0",
+        "author": "Joyent (joyent.com)",
+        "private": true,
+        "dependencies": {
+                "assert-plus": "0.1.1",
+                "bunyan": "0.14.0",
+                "carrier": "0.1.7",
+                "deep-equal" : "0.0.0",
+                "memorystream": "0.2.0"
+        },
+        "devDependencies": {
+                "nodeunit" : "0.7.4"
+        },
+        "engines": {
+                "node": "~0.8"
+        },
+        "scripts": {
+                "start": "node ./server.js"
+        }
 }
