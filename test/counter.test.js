@@ -31,30 +31,16 @@ var TEST_FILE_MULTIPLE  = __dirname + '/sampledump-multiple';
 ///--- Internal helper functions
 
 function compare(expect, file, t) {
-        var carry = carrier.carry(fs.createReadStream(file, FILE_OPTS));
         var actual = {};
-        carry.on('line', function onLine(line) {
-                var record;
 
-                try {
-                        record = JSON.parse(line);
-                } catch (e) {
-                        LOG.fatal(e, 'invalid line');
-                        t.notOk(e);
+        mackerel.aggregate({
+                stream: fs.createReadStream(file, FILE_OPTS),
+                aggregation: actual,
+                log: LOG,
+                callback: function printResults() {
+                        t.ok(deepEqual(expect, actual));
                         t.end();
                 }
-
-                t.ok(mackerel.processRecord({
-                        aggregation: actual,
-                        line: line,
-                        log: LOG,
-                        record: record
-                }));
-        });
-
-        carry.once('end', function printResults() {
-                t.ok(deepEqual(expect, actual));
-                t.end();
         });
 }
 
