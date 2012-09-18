@@ -21,157 +21,94 @@ var FILE_OPTS = {
         encoding: 'utf8'
 };
 var LOG = helper.createLogger();
-var TEST_FILE1 = __dirname + '/sampledump1';
-var TEST_FILE2 = __dirname + '/sampledump2';
-var TEST_FILE3 = __dirname + '/sampledump3';
-var TEST_FILE4 = __dirname + '/sampledump4';
+var TEST_FILE_SINGLE    = __dirname + '/sampledump-single';
+var TEST_FILE_LINKS     = __dirname + '/sampledump-links';
+var TEST_FILE_BIG_FILES = __dirname + '/sampledump-big';
+var TEST_FILE_MULTIPLE  = __dirname + '/sampledump-multiple';
 
+
+
+///--- Internal helper functions
+
+function compare(expect, file, t) {
+        var carry = carrier.carry(fs.createReadStream(file, FILE_OPTS));
+        var actual = {};
+        carry.on('line', function onLine(line) {
+                var record;
+
+                try {
+                        record = JSON.parse(line);
+                } catch (e) {
+                        LOG.fatal(e, 'invalid line');
+                        t.notOk(e);
+                        t.end();
+                }
+
+                t.ok(mackerel.processRecord({
+                        aggregation: actual,
+                        line: line,
+                        log: LOG,
+                        record: record
+                }));
+        });
+
+        carry.once('end', function printResults() {
+                t.ok(deepEqual(expect, actual));
+                t.end();
+        });
+}
 
 
 
 ///--- Tests
 
 test('single customer', function (t) {
-        var actual = {};
         var expect = {
-                'fred': {
+                fred: {
                         numKb: 40,
                         numKeys: 5
                 }
         };
 
-        var carry = carrier.carry(fs.createReadStream(TEST_FILE1, FILE_OPTS));
-
-        carry.on('line', function onLine(line) {
-                var record;
-
-                try {
-                        record = JSON.parse(line);
-                } catch (e) {
-                        LOG.fatal(e, 'invalid line');
-                        t.notOk(e);
-                        t.end();
-                }
-
-                t.ok(mackerel.processRecord({
-                        aggregation: actual,
-                        line: line,
-                        log: LOG,
-                        record: record
-                }));
-        });
-
-        carry.once('end', function printResults() {
-                t.ok(deepEqual(expect, actual));
-                t.end();
-        });
+        compare(expect, TEST_FILE_SINGLE, t);
 });
+
+
 test('single customer with links', function (t) {
-        var actual = {};
         var expect = {
-                'fred': {
+                fred: {
                         numKb: 24,
                         numKeys: 4
                 }
         };
 
-        var carry = carrier.carry(fs.createReadStream(TEST_FILE2, FILE_OPTS));
-
-        carry.on('line', function onLine(line) {
-                var record;
-
-                try {
-                        record = JSON.parse(line);
-                } catch (e) {
-                        LOG.fatal(e, 'invalid line');
-                        t.notOk(e);
-                        t.end();
-                }
-
-                t.ok(mackerel.processRecord({
-                        aggregation: actual,
-                        line: line,
-                        log: LOG,
-                        record: record
-                }));
-        });
-
-        carry.once('end', function printResults() {
-                t.ok(deepEqual(expect, actual));
-                t.end();
-        });
+        compare(expect, TEST_FILE_LINKS, t);
 });
+
+
 test('single customer with links and larger files', function (t) {
-        var actual = {};
         var expect = {
-                'fred': {
+                fred: {
                         numKb: 40,
                         numKeys: 4
                 }
         };
 
-        var carry = carrier.carry(fs.createReadStream(TEST_FILE3, FILE_OPTS));
-
-        carry.on('line', function onLine(line) {
-                var record;
-
-                try {
-                        record = JSON.parse(line);
-                } catch (e) {
-                        LOG.fatal(e, 'invalid line');
-                        t.notOk(e);
-                        t.end();
-                }
-
-                t.ok(mackerel.processRecord({
-                        aggregation: actual,
-                        line: line,
-                        log: LOG,
-                        record: record
-                }));
-        });
-
-        carry.once('end', function printResults() {
-                t.ok(deepEqual(expect, actual));
-                t.end();
-        });
+        compare(expect, TEST_FILE_BIG_FILES, t);
 });
+
+
 test('multiple customers', function (t) {
-        var actual = {};
         var expect = {
-                'fred1': {
+                fred1: {
                         numKb: 32,
                         numKeys: 3
                 },
-                'fred2': {
+                fred2: {
                         numKb: 16,
                         numKeys: 2
                 }
         };
 
-        var carry = carrier.carry(fs.createReadStream(TEST_FILE4, FILE_OPTS));
-
-        carry.on('line', function onLine(line) {
-                var record;
-
-                try {
-                        record = JSON.parse(line);
-                } catch (e) {
-                        LOG.fatal(e, 'invalid line');
-                        t.notOk(e);
-                        t.end();
-                }
-
-                t.ok(mackerel.processRecord({
-                        aggregation: actual,
-                        line: line,
-                        log: LOG,
-                        record: record
-                }));
-        });
-
-        carry.once('end', function printResults() {
-                t.ok(deepEqual(expect, actual));
-                t.end();
-        });
+        compare(expect, TEST_FILE_MULTIPLE, t);
 });
