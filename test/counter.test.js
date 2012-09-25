@@ -25,17 +25,19 @@ var TEST_FILE_SINGLE    = __dirname + '/sampledump-single';
 var TEST_FILE_LINKS     = __dirname + '/sampledump-links';
 var TEST_FILE_BIG_FILES = __dirname + '/sampledump-big';
 var TEST_FILE_MULTIPLE  = __dirname + '/sampledump-multiple';
+var TEST_FILE_MAP_OUT   = __dirname + '/mapout-all';
 
 
 
 ///--- Internal helper functions
 
-function compare(expect, file, t) {
+function compare(expect, file, fun, t) {
         var actual = {};
 
         mackerel.aggregate({
                 stream: fs.createReadStream(file, FILE_OPTS),
                 aggregation: actual,
+                aggregationFunction: fun,
                 log: LOG,
                 callback: function printResults() {
                         t.ok(deepEqual(expect, actual));
@@ -44,11 +46,9 @@ function compare(expect, file, t) {
         });
 }
 
-
-
 ///--- Tests
 
-test('single customer', function (t) {
+test('map: single customer', function (t) {
         var expect = {
                 fred: {
                         numKb: 40,
@@ -56,11 +56,11 @@ test('single customer', function (t) {
                 }
         };
 
-        compare(expect, TEST_FILE_SINGLE, t);
+        compare(expect, TEST_FILE_SINGLE, mackerel.mapFunction, t);
 });
 
 
-test('single customer with links', function (t) {
+test('map: single customer with links', function (t) {
         var expect = {
                 fred: {
                         numKb: 24,
@@ -68,11 +68,11 @@ test('single customer with links', function (t) {
                 }
         };
 
-        compare(expect, TEST_FILE_LINKS, t);
+        compare(expect, TEST_FILE_LINKS, mackerel.mapFunction, t);
 });
 
 
-test('single customer with links and larger files', function (t) {
+test('map: single customer with links and larger files', function (t) {
         var expect = {
                 fred: {
                         numKb: 40,
@@ -80,11 +80,11 @@ test('single customer with links and larger files', function (t) {
                 }
         };
 
-        compare(expect, TEST_FILE_BIG_FILES, t);
+        compare(expect, TEST_FILE_BIG_FILES, mackerel.mapFunction, t);
 });
 
 
-test('multiple customers', function (t) {
+test('map: multiple customers', function (t) {
         var expect = {
                 fred1: {
                         numKb: 32,
@@ -96,5 +96,24 @@ test('multiple customers', function (t) {
                 }
         };
 
-        compare(expect, TEST_FILE_MULTIPLE, t);
+        compare(expect, TEST_FILE_MULTIPLE, mackerel.mapFunction, t);
+});
+
+test('reduce', function (t) {
+        var expect = {
+                fred: {
+                        numKb: 104,
+                        numKeys: 13
+                },
+                fred1: {
+                        numKb: 32,
+                        numKeys: 3
+                },
+                fred2: {
+                        numKb: 16,
+                        numKeys: 2
+                }
+        };
+
+        compare(expect, TEST_FILE_MAP_OUT, mackerel.reduceFunction, t);
 });
