@@ -32,88 +32,93 @@ var TEST_FILE_MAP_OUT   = __dirname + '/mapout-all';
 ///--- Internal helper functions
 
 function compare(expect, file, fun, t) {
-        var actual = {};
 
-        mackerel.aggregate({
-                stream: fs.createReadStream(file, FILE_OPTS),
-                aggregation: actual,
-                aggregationFunction: fun,
-                log: LOG,
-                callback: function printResults() {
-                        t.ok(deepEqual(expect, actual));
-                        t.end();
-                }
+        var imack = fun({
+                input: fs.createReadStream(file, FILE_OPTS),
+                log: LOG
         });
+
+        t.expect(1);
+
+        imack.on('error', function () { t.ok(false); });
+
+        imack.on('end', function verify(actual) {
+                t.deepEqual(expect, actual);
+                t.done();
+        });
+
 }
 
 ///--- Tests
 
 test('map: single customer', function (t) {
-        var expect = {
-                fred: {
-                        numKb: 40,
-                        numKeys: 5
-                }
-        };
+        var expect = [ {
+                owner: 'fred',
+                numKb: 40,
+                numKeys: 5
+        } ];
 
-        compare(expect, TEST_FILE_SINGLE, mackerel.mapFunction, t);
+        compare(expect, TEST_FILE_SINGLE, mackerel.createMapReader, t);
 });
 
 
 test('map: single customer with links', function (t) {
-        var expect = {
-                fred: {
-                        numKb: 24,
-                        numKeys: 4
-                }
-        };
+        var expect = [ {
+                owner: 'fred',
+                numKb: 24,
+                numKeys: 4
+        } ];
 
-        compare(expect, TEST_FILE_LINKS, mackerel.mapFunction, t);
+        compare(expect, TEST_FILE_LINKS, mackerel.createMapReader, t);
 });
 
 
 test('map: single customer with links and larger files', function (t) {
-        var expect = {
-                fred: {
-                        numKb: 40,
-                        numKeys: 4
-                }
-        };
+        var expect = [ {
+                owner: 'fred',
+                numKb: 40,
+                numKeys: 4
+        } ];
 
-        compare(expect, TEST_FILE_BIG_FILES, mackerel.mapFunction, t);
+        compare(expect, TEST_FILE_BIG_FILES, mackerel.createMapReader, t);
 });
 
 
 test('map: multiple customers', function (t) {
-        var expect = {
-                fred1: {
+        var expect = [
+                {
+                        owner: 'fred1',
                         numKb: 32,
                         numKeys: 3
                 },
-                fred2: {
+                {
+                        owner: 'fred2',
                         numKb: 16,
                         numKeys: 2
                 }
-        };
+        ];
 
-        compare(expect, TEST_FILE_MULTIPLE, mackerel.mapFunction, t);
+        compare(expect, TEST_FILE_MULTIPLE, mackerel.createMapReader, t);
 });
 
 test('reduce', function (t) {
-        var expect = {
-                fred: {
+        var expect = [
+                {
+                        owner: 'fred',
                         numKb: 104,
                         numKeys: 13
                 },
-                fred1: {
+                {
+                        owner: 'fred1',
                         numKb: 32,
                         numKeys: 3
                 },
-                fred2: {
+                {
+                        owner: 'fred2',
                         numKb: 16,
                         numKeys: 2
                 }
-        };
+        ];
 
-        compare(expect, TEST_FILE_MAP_OUT, mackerel.reduceFunction, t);
+        compare(expect, TEST_FILE_MAP_OUT, mackerel.createReduceReader, t);
 });
