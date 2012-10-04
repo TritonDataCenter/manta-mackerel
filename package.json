@@ -11,6 +11,7 @@
                 "deep-equal" : "0.0.0",
                 "memorystream": "0.2.0",
                 "posix-getopt": "1.0.0",
+                "mola": "git+ssh://git@git.joyent.com:mola.git",
                 "restify": "git://github.com/mcavage/node-restify.git#1c98e6b"
         },
         "devDependencies": {

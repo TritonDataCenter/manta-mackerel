@@ -21,7 +21,6 @@ var FILE_OPTS = {
         encoding: 'utf8'
 };
 var LOG = helper.createLogger();
-//var var TEST_FILE_SINGLE    = __dirname + '/sampledump-single';
 var TEST_FILE_SINGLE    = __dirname + '/sampledump-single';
 var TEST_FILE_LINKS     = __dirname + '/sampledump-links';
 var TEST_FILE_BIG_FILES = __dirname + '/sampledump-big';
