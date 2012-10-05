@@ -14,6 +14,8 @@
 # included Makefiles (in eng.git) so that other teams can use them too.
 #
 
+REPO_NAME       := mackerel
+
 #
 # Tools
 #
@@ -31,7 +33,7 @@ JSSTYLE_FILES    = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 
-NODE_PREBUILT_VERSION=v0.8.8
+NODE_PREBUILT_VERSION=v0.8.11
 NODE_PREBUILT_TAG=zone
 
 
@@ -43,6 +45,14 @@ else
 endif
 include ./tools/mk/Makefile.node_deps.defs
 include ./tools/mk/Makefile.smf.defs
+
+#
+# MG Variables
+#
+
+RELEASE_TARBALL         := $(REPO_NAME)-pkg-$(STAMP).tar.bz2
+ROOT                    := $(shell pwd)
+TMPDIR                  := /tmp/$(STAMP)
 
 #
 # Repo-specific targets
@@ -58,6 +68,32 @@ CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 .PHONY: test
 test: $(NODEUNIT)
 	$(NODEUNIT) test/*.test.js
+
+.PHONY: release
+release: all docs $(SMF_MANIFESTS)
+	@echo "Building $(RELEASE_TARBALL)"
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/$(REPO_NAME)
+	@mkdir -p $(TMPDIR)/root
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/$(REPO_NAME)/etc
+	cp -r   $(ROOT)/build \
+		$(ROOT)/lib \
+		$(ROOT)/bin \
+		$(ROOT)/node_modules \
+		$(ROOT)/package.json \
+		$(TMPDIR)/root/opt/smartdc/$(REPO_NAME)/
+	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root)
+	@rm -rf $(TMPDIR)
+
+
+.PHONY: publish
+publish: release
+	@if [[ -z "$(BITS_DIR)" ]]; then \
+		@echo "error: 'BITS_DIR' must be set for 'publish' target"; \
+		exit 1; \
+	fi
+	mkdir -p $(BITS_DIR)/$(REPO_NAME)
+	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/$(REPO_NAME)/$(RELEASE_TARBALL)
+
 
 include ./tools/mk/Makefile.deps
 ifeq ($(shell uname -s),SunOS)
