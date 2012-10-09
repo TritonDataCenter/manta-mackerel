@@ -50,7 +50,7 @@ function parseOptions() {
                 }
         }
 
-        if((opts.map && opts.reduce) || (!opts.map && !opts.reduce)) {
+        if(opts.map === opts.reduce){
                 usage('specify either map or reduce');
         }
 
@@ -74,11 +74,11 @@ var _input = _options.file ?
         process.openStdin();
 
 var _reader = _options.map ?
-        mackerel.createMapReader({input: _input, log: LOG}) :
-        mackerel.createReduceReader({input: _input, log: LOG});
+        mackerel.storage.createMapReader({input: _input, log: LOG}) :
+        mackerel.storage.createReduceReader({input: _input, log: LOG});
 
 _reader.on('error', function (err) {
-        log.fatal(err, 'er');
+        LOG.fatal(err);
 });
 
 _reader.on('end', function (aggr) {

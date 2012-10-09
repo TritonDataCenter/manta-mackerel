@@ -5,7 +5,7 @@ var fs = require('fs');
 var carrier = require('carrier');
 var deepEqual = require('deep-equal');
 
-var mackerel = require('../lib');
+var mackerel = require('../lib').storage;
 
 if (require.cache[__dirname + '/helper.js'])
         delete require.cache[__dirname + '/helper.js'];
