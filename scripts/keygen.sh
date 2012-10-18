@@ -6,5 +6,5 @@ then
 fi
 for shard in $(mls manatee_backups | json -ga name)
 do
-        mls /poseidon/stor/manatee_backups/$shard | grep $1 | json name | awk "{print \"/poseidon/stor/manatee_backups/$shard/\" \$1}"
+        mls /poseidon/stor/manatee_backups/$shard | grep $1 | json name | awk "{print \"/poseidon/stor/manatee_backups/$shard/\" \$1 \"/manta.bzip\"}"
 done
