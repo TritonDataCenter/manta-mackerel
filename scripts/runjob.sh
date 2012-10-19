@@ -4,7 +4,9 @@ then
         echo "date required: format YYYY-MM-DD-HH"
         exit 1
 fi
-JOBID=$(mmkjob \
+keygen="/opt/smartdc/mackerel/scripts/keygen.sh"
+manta_bin="/opt/smartdc/mackerel/node_modules/manta/bin"
+JOBID=$($manta_bin/mmkjob \
 -m \
         'bzcat $mr_input_key | json -g -a entry | json -g -a | grep { | json -c '\''type!=="directory"'\'' -g -a owner objectId contentLength sharks.length' \
 -r \
@@ -13,6 +15,6 @@ JOBID=$(mmkjob \
         'metering-storage-'$1 \
 )
 
-/opt/smartdc/mackerel/scripts/keygen.sh $1 | maddkeys $JOBID
+$keygen $1 | $manta_bin/maddkeys $JOBID
 
-mjob -e $JOBID
+$manta_bin/mjob -e $JOBID
