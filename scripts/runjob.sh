@@ -9,6 +9,9 @@ export MANTA_USER=poseidon
 export MANTA_KEY_ID=`ssh-keygen -l -f /root/.ssh/id_rsa.pub | awk '{print $2}'`
 export MANTA_URL=`mdata-get manta_url`
 
+mmkdir /poseidon/stor/metering
+mmkdir /poseidon/stor/metering/storage
+
 keygen="/opt/smartdc/mackerel/scripts/keygen.sh"
 JOBID=$(mmkjob \
 -m \
