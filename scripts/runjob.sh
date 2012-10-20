@@ -7,7 +7,7 @@ fi
 export PATH=/opt/smartdc/mola/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:/usr/sbin:/usr/bin:/opt/smartdc/mola/build/node/bin:/opt/smartdc/mola/node_modules/.bin:/opt/smartdc/mola/node_modules/manta/bin
 export MANTA_USER=poseidon
 export MANTA_KEY_ID=a7:44:21:25:90:8f:2c:04:85:e6:27:69:aa:f6:f4:f2
-export MANTA_URL=https://manta.bh1-kvm1.joyent.us
+export MANTA_URL=`mdata-get manta_url`
 
 keygen="/opt/smartdc/mackerel/scripts/keygen.sh"
 JOBID=$(mmkjob \
