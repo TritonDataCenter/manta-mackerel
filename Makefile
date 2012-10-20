@@ -76,7 +76,6 @@ release: all docs $(SMF_MANIFESTS)
 	@mkdir -p $(TMPDIR)/root
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/$(REPO_NAME)/etc
 	cp -r   $(ROOT)/build \
-		$(ROOT)/lib \
 		$(ROOT)/bin \
 		$(ROOT)/scripts \
 		$(ROOT)/node_modules \
