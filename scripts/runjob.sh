@@ -4,9 +4,13 @@ then
         echo "date required: format YYYY-MM-DD-HH"
         exit 1
 fi
+export PATH=/opt/smartdc/mola/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:/usr/sbin:/usr/bin:/opt/smartdc/mola/build/node/bin:/opt/smartdc/mola/node_modules/.bin:/opt/smartdc/mola/node_modules/manta/bin
+export MANTA_USER=poseidon
+export MANTA_KEY_ID=a7:44:21:25:90:8f:2c:04:85:e6:27:69:aa:f6:f4:f2
+export MANTA_URL=https://manta.bh1-kvm1.joyent.us
+
 keygen="/opt/smartdc/mackerel/scripts/keygen.sh"
-manta_bin="/opt/smartdc/mackerel/node_modules/manta/bin"
-JOBID=$($manta_bin/mmkjob \
+JOBID=$(mmkjob \
 -m \
         'bzcat | json -g -a entry | json -g -a | grep { | json -c '\''type!=="directory"'\'' -g -a owner objectId contentLength sharks.length' \
 -r \
@@ -15,6 +19,6 @@ JOBID=$($manta_bin/mmkjob \
         'metering-storage-'$1 \
 )
 
-$keygen $1 | $manta_bin/maddkeys $JOBID
+$keygen $1 | maddkeys $JOBID
 
-$manta_bin/mjob -e $JOBID
+mjob -e $JOBID

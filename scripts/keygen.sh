@@ -5,8 +5,7 @@ then
         exit 1
 fi
 
-manta_bin="/opt/smartdc/mackerel/node_modules/manta/bin"
-for shard in $($manta_bin/mls manatee_backups | json -ga name)
+for shard in $(mls manatee_backups | json -ga name)
 do
-        $manta_bin/mls /poseidon/stor/manatee_backups/$shard | grep $1 | json name | awk "{print \"/poseidon/stor/manatee_backups/$shard/\" \$1 \"/manta.bzip\"}"
+        mls /poseidon/stor/manatee_backups/$shard | grep $1 | json name | awk "{print \"/poseidon/stor/manatee_backups/$shard/\" \$1 \"/manta.bzip\"}"
 done
