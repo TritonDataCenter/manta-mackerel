@@ -27,10 +27,9 @@ export METERING_STORAGE_DIR=$METERING_BASE_DIR/storage
 export METERING_REQUEST_DIR=$METERING_BASE_DIR/request
 export METERING_COMPUTE_DIR=$METERING_BASE_DIR/compute
 
-mmkdir $METERING_BASE_DIR
-mmkdir $METERING_STORAGE_DIR
-mmkdir $METERING_REQUEST_DIR
-mmkdir $METERING_COMPUTE_DIR
+mmkdir -p $METERING_STORAGE_DIR
+mmkdir -p $METERING_REQUEST_DIR
+mmkdir -p $METERING_COMPUTE_DIR
 
 cd $scripts
 find . -maxdepth 1 -mindepth 1 -type d -execdir '{}'/runjob.sh $date \;

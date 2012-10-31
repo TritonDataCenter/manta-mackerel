@@ -31,10 +31,7 @@ day=`date -d "$date" +%d`
 hour=`date -d "$date" +%H`
 request_path=$METERING_REQUEST_DIR/$year/$month/$day/$hour
 
-mmkdir $METERING_REQUEST_DIR/$year
-mmkdir $METERING_REQUEST_DIR/$year/$month
-mmkdir $METERING_REQUEST_DIR/$year/$month/$day
-mmkdir $METERING_REQUEST_DIR/$year/$month/$day/$hour
+mmkdir -p $METERING_REQUEST_DIR/$year/$month/$day/$hour
 
 map=(
         'bzcat | '

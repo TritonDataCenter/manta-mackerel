@@ -31,10 +31,7 @@ day=$(date -d "$date" +%d)
 hour=$(date -d "$date" +%H)
 storage_path=$METERING_STORAGE_DIR/$year/$month/$day/$hour
 
-mmkdir $METERING_STORAGE_DIR/$year
-mmkdir $METERING_STORAGE_DIR/$year/$month
-mmkdir $METERING_STORAGE_DIR/$year/$month/$day
-mmkdir $METERING_STORAGE_DIR/$year/$month/$day/$hour
+mmkdir -p $METERING_STORAGE_DIR/$year/$month/$day/$hour
 
 map=(
         'bzcat | '
