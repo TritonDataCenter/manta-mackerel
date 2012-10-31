@@ -15,10 +15,10 @@ then
         exit 1
 fi
 
-if [ -n "${METERING_STORAGE_DIR:-x}" ]
+if [ -z $METERING_STORAGE_DIR ]
 then
-        echo "METERING_STORAGE_DIR not set" >&2
-        echo "defaulting to /poseidon/stor/metering/storage" >&2
+        echo "METERING_STORAGE_DIR not set." >&2
+        echo "Defaulting to /poseidon/stor/metering/storage." >&2
         METERING_STORAGE_DIR=/poseidon/stor/metering/storage
 fi
 
