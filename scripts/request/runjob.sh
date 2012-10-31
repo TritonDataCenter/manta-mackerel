@@ -15,7 +15,7 @@ then
         exit 1
 fi
 
-if [ -z METERING_REQUEST_DIR ]
+if [ -z $METERING_REQUEST_DIR ]
 then
         echo "METERING_REQUEST_DIR not set." >&2
         echo "Defaulting to /poseidon/stor/metering/request." >&2
