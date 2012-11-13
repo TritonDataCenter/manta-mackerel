@@ -1,2 +1,3 @@
 #!/bin/bash
-/opt/smartdc/mackerel/scripts/request/runjob.sh `date`
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+$dir/runjob-hourly.sh `date`

@@ -22,8 +22,8 @@ then
         METERING_REQUEST_DIR=/poseidon/stor/metering/request
 fi
 
-scripts="/opt/smartdc/mackerel/scripts"
-keygen=$scripts/request/keygen.sh
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $dir/../config.cfg
 
 year=`date -d "$date" +%Y`
 month=`date -d "$date" +%m`
@@ -100,6 +100,6 @@ name="metering-request-$year-$month-$day-$hour"
 
 jobid=$(mmkjob -m "$mapstr" -r "$reducestr" -n "$name")
 
-$keygen $date | maddkeys $jobid
+$REQUEST_KEYGEN_H $date | maddkeys $jobid
 
 mjob -e $jobid

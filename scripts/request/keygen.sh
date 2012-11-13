@@ -14,10 +14,13 @@ then
         exit 1
 fi
 
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $dir/../config.cfg
+
 year=$(date -d "$date" +%Y)
 month=$(date -d "$date" +%m)
 day=$(date -d "$date" +%d)
 hour=$(date -d "$date" +%H)
 
-mls /poseidon/stor/logs/muskie/$year/$month/$day/$hour | json -ga name | \
-awk "{print \"/poseidon/stor/logs/muskie/$year/$month/$day/$hour/\"\$1}"
+mls $REQUEST_SOURCE/$year/$month/$day/$hour | json -ga name | \
+awk "{print \"$REQUEST_SOURCE/$year/$month/$day/$hour/\"\$1}"

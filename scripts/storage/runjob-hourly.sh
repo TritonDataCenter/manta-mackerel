@@ -15,15 +15,8 @@ then
         exit 1
 fi
 
-if [ -z $METERING_STORAGE_DIR ]
-then
-        echo "METERING_STORAGE_DIR not set." >&2
-        echo "Defaulting to /poseidon/stor/metering/storage." >&2
-        METERING_STORAGE_DIR=/poseidon/stor/metering/storage
-fi
-
-scripts="/opt/smartdc/mackerel/scripts"
-keygen=$scripts/storage/keygen.sh
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $dir/../config.cfg
 
 year=$(date -d "$date" +%Y)
 month=$(date -d "$date" +%m)
@@ -61,11 +54,10 @@ reduce=(
 
 mapstr=$(printf "%s" "${map[@]}") # array join
 reducestr=$(printf "%s" "${reduce[@]}") # array join
-
 name="metering-storage-$year-$month-$day-$hour"
 
 jobid=$(mmkjob -m "$mapstr" -r "$reducestr" -n "$name")
 
-$keygen $date | maddkeys $jobid
+$STORAGE_KEYGEN_H $date | maddkeys $jobid
 
 mjob -e $jobid

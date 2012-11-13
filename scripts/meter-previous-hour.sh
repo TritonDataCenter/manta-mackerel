@@ -1,2 +1,3 @@
 #!/bin/bash
-/opt/smartdc/mackerel/scripts/meter.sh `date -d "1 hour ago"`
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+$dir/meter-hourly.sh `date -d "1 hour ago"`
