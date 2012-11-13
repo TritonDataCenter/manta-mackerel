@@ -1,0 +1,32 @@
+#!/bin/bash
+bunyan -j --strict -c "this.audit == true && this.req.url != '/ping'" |
+json -ga req.owner req.method req.headers.content-length res.headers.content-length |
+awk '{
+        if($2 == "GET") {
+                gets[$1] += 1;
+                if ($3) {
+                        bwout[$1] += $3;
+                }
+        }
+        if($2 == "PUT") {
+                puts[$1] += 1;
+                if($3) {
+                        bwin[$1] += $3;
+                }
+        }
+        if($2 == "DELETE") {
+                deletes[$1] += 1;
+        }
+        if($2 == "HEAD") {
+                heads[$1] += 1;
+        }
+        if($2 == "POST") {
+                posts[$1] += 1;
+        }
+        owners[$1] = $1;
+} END {
+        for (o in owners) {
+                total = gets[o] + puts[o] + deletes[o] + heads[o] + posts[o];
+                print o, total, gets[o], puts[o], deletes[o], heads[o], posts[o], bwin[o], bwout[o];
+        }
+}'

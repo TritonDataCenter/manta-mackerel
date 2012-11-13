@@ -67,7 +67,7 @@ CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 
 .PHONY: test
 test: $(NODEUNIT)
-	$(NODEUNIT) test/*.test.js
+	$(NODEUNIT) test/*test.js
 
 .PHONY: release
 release: all docs $(SMF_MANIFESTS)
