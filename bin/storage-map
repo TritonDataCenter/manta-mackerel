@@ -1,2 +1,6 @@
 #!/bin/bash
-json -ga entry | json -ga | grep { | json -c 'type!=="directory"' -ga owner objectId contentLength sharks.length
+read -r line;
+index=$(echo $line | json -e 'this.i=keys.indexOf("_value")' i);
+
+json -ga "entry[$index]" \
+| json -c 'type!=="directory"' -ga owner objectId contentLength sharks.length;

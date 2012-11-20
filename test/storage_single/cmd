@@ -1,0 +1,5 @@
+#!/bin/bash
+MAP=../../bin/storage-map
+REDUCE=../../bin/storage-reduce
+
+cat input  | $MAP | $REDUCE

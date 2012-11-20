@@ -5,18 +5,10 @@
         "author": "Joyent (joyent.com)",
         "private": true,
         "dependencies": {
-                "assert-plus": "0.1.1",
-                "bunyan": "0.14.0",
-                "carrier": "0.1.7",
-                "deep-equal" : "0.0.0",
-                "memorystream": "0.2.0",
-                "posix-getopt": "1.0.0",
-                "mola": "git+ssh://git@git.joyent.com:mola.git",
-                "node-manta": "git+ssh://git@git.joyent.com:node-manta.git",
-                "restify": "git://github.com/mcavage/node-restify.git#1c98e6b"
         },
         "devDependencies": {
-                "nodeunit" : "0.7.4"
+                "nodeunit" : "0.7.4",
+                "ansidiff": "1.0.0"
         },
         "engines": {
                 "node": "~0.8"

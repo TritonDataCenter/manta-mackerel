@@ -26,11 +26,12 @@ NPM             := npm
 # Files
 #
 DOC_FILES        = index.restdown
-JS_FILES        := $(shell ls *.js) $(shell find lib test -name '*.js')
-JSL_CONF_NODE    = tools/jsl.node.conf
-JSL_FILES_NODE   = $(JS_FILES)
-JSSTYLE_FILES    = $(JS_FILES)
-JSSTYLE_FLAGS    = -f tools/jsstyle.conf
+BASH_FILES      := $(shell ls *.sh) $(shell find scripts -name '*.sh')
+#JS_FILES        := $(shell ls *.js) $(shell find lib -name '*.js')
+#JSL_CONF_NODE    = tools/jsl.node.conf
+#3JSL_FILES_NODE   = $(JS_FILES)
+#JSSTYLE_FILES    = $(JS_FILES)
+#JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 
 NODE_PREBUILT_VERSION=v0.8.11
@@ -38,11 +39,7 @@ NODE_PREBUILT_TAG=zone
 
 
 include ./tools/mk/Makefile.defs
-ifeq ($(shell uname -s),SunOS)
-	include ./tools/mk/Makefile.node_prebuilt.defs
-else
-	include ./tools/mk/Makefile.node.defs
-endif
+include ./tools/mk/Makefile.node_prebuilt.defs
 include ./tools/mk/Makefile.node_deps.defs
 include ./tools/mk/Makefile.smf.defs
 
@@ -67,7 +64,7 @@ CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 
 .PHONY: test
 test: $(NODEUNIT)
-	$(NODEUNIT) test/*test.js
+	(cd test && make test)
 
 .PHONY: release
 release: all docs $(SMF_MANIFESTS)
@@ -96,11 +93,7 @@ publish: release
 
 
 include ./tools/mk/Makefile.deps
-ifeq ($(shell uname -s),SunOS)
-	include ./tools/mk/Makefile.node_prebuilt.targ
-else
-	include ./tools/mk/Makefile.node.targ
-endif
+include ./tools/mk/Makefile.node_prebuilt.targ
 include ./tools/mk/Makefile.node_deps.targ
 include ./tools/mk/Makefile.smf.targ
 include ./tools/mk/Makefile.targ
