@@ -30,10 +30,13 @@ storage_dest=$METERING_STORAGE_DIR_D/$year/$month/$day
 request_dest=$METERING_REQUEST_DIR_D/$year/$month/$day
 compute_dest=$METERING_COMPUTE_DIR_D/$year/$month/$day
 
-name="metering-storage-daily-$year-$month-$day"
+mmkdir -p $storage_dest
+mmkdir -p $request_dest
+mmkdir -p $compute_dest
 
 reduce=(
-        'awk '\''{ '
+        'bzcat '
+        '| awk '\''{ '
                 'owners[$1] = $1;'
                 'for (i = 2; i <= NF; i++) { '
                         'sums[$1,i] += $i; '
@@ -53,10 +56,12 @@ reduce=(
 
 reducestr=$(printf "%s" "${reduce[@]}") # array join
 
+name="metering-storage-daily-$year-$month-$day"
 jobid=$(mmkjob -r "$reducestr | mpipe $storage_dest/$name.bz2" -n "$name")
 mfind $storage_src | maddkeys $jobid
 mjob -e $jobid
 
+name="metering-request-daily-$year-$month-$day"
 jobid=$(mmkjob -r "$reducestr | mpipe $request_dest/$name.bz2" -n "$name")
 mfind $request_src | maddkeys $jobid
 mjob -e $jobid
