@@ -62,7 +62,7 @@ jobid=$(mmkjob -r "$reducestr | mpipe $storage_dest/$name.bz2" -n "$name")
 mfind $storage_src | maddkeys $jobid
 mjob -e $jobid
 
-name="metering-requeset-monthly-$year-$month"
+name="metering-request-monthly-$year-$month"
 jobid=$(mmkjob -r "$reducestr | mpipe $request_dest/$name.bz2" -n "$name")
 mfind $request_src | maddkeys $jobid
 mjob -e $jobid
