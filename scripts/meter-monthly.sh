@@ -22,15 +22,15 @@ year=$(date -d "$date" +%Y)
 month=$(date -d "$date" +%m)
 day=$(date -d "$date" +%d)
 
-storage_src=$METERING_STORAGE_DIR_H/$year/$month/$day
-request_src=$METERING_REQUEST_DIR_H/$year/$month/$day
-compute_src=$METERING_COMPUTE_DIR_H/$year/$month/$day
+storage_src=$METERING_STORAGE_DIR_D/$year/$month
+request_src=$METERING_REQUEST_DIR_D/$year/$month
+compute_src=$METERING_COMPUTE_DIR_D/$year/$month
 
-storage_dest=$METERING_STORAGE_DIR_D/$year/$month/$day
-request_dest=$METERING_REQUEST_DIR_D/$year/$month/$day
-compute_dest=$METERING_COMPUTE_DIR_D/$year/$month/$day
+storage_dest=$METERING_STORAGE_DIR_M/$year/$month
+request_dest=$METERING_REQUEST_DIR_M/$year/$month
+compute_dest=$METERING_COMPUTE_DIR_M/$year/$month
 
-name="metering-storage-daily-$year-$month-$day"
+name="metering-storage-monthly-$year-$month"
 
 reduce=(
         'awk '\''{ '
