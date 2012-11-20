@@ -15,13 +15,6 @@ then
         exit 1
 fi
 
-if [ -z $METERING_REQUEST_DIR ]
-then
-        echo "METERING_REQUEST_DIR not set." >&2
-        echo "Defaulting to /poseidon/stor/metering/request." >&2
-        METERING_REQUEST_DIR=/poseidon/stor/metering/request
-fi
-
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../config.cfg
 
@@ -29,17 +22,19 @@ year=`date -d "$date" +%Y`
 month=`date -d "$date" +%m`
 day=`date -d "$date" +%d`
 hour=`date -d "$date" +%H`
-request_path=$METERING_REQUEST_DIR/$year/$month/$day/$hour
 
-mmkdir -p $METERING_REQUEST_DIR/$year/$month/$day/$hour
+request_dest=$METERING_REQUEST_DIR_H/$year/$month/$day/$hour
+mmkdir -p $request_dest
+name="metering-request-hourly-$year-$month-$day-$hour"
 
 map=(
-        'bzcat | '
-        'bunyan -j --strict '
-                '-c "this.audit == true && this.req.url != '\''/ping'\''" | '
-        'json -ga req.owner req.method '
-                'req.headers.content-length res.headers.content-length | '
-        'awk '\''{ '
+        'bzcat '
+        '| bunyan -j --strict '
+                '-c "this.audit == true && this.req.url != '\''/ping'\''" '
+        '| json -ga req.owner req.method '
+                'req.headers.content-length res.headers.content-length '
+        '| awk '\''{ '
+                'owners[$1] = $1; '
                 'if($2 == "GET") { '
                         'gets[$1] += 1; '
                         'if ($3) { '
@@ -61,44 +56,49 @@ map=(
                 'if($2 == "POST") { '
                         'posts[$1] += 1; '
                 '} '
-                'owners[$1] = $1; '
         '} END { '
                 'for (o in owners) { '
+                        'gets[o] = gets[o] == "" ? 0 : gets[o];'
+                        'puts[o] = puts[o] == "" ? 0 : puts[o];'
+                        'deletes[o] = deletes[o] == "" ? 0 : deletes[o];'
+                        'heads[o] = heads[o] == "" ? 0 : heads[o];'
+                        'posts[o] = posts[o] == "" ? 0 : posts[o];'
+                        'bwin[o] = bwin[o] == "" ? 0 : bwin[o];'
+                        'bwout[o] = bwout[o] == "" ? 0 : bwout[o];'
                         'total = gets[o] + puts[o] + deletes[o] + '
                                 'heads[o] + posts[o]; '
                         'print o, total, gets[o], puts[o], deletes[o], '
                                 'heads[o], posts[o], bwin[o], bwout[o]; '
                 '} '
-        '}'\'
+        '}'\'' '
+        '| msplit -n '$REQUEST_REDUCERS_H' -d " " -f 1'
 )
 
 reduce=(
         'awk '\''{ '
-                'owners[$1] = $1; '
-                'total[$1] += $2; '
-                'gets[$1] += $3; '
-                'puts[$1] += $4; '
-                'deletes[$1] += $5; '
-                'heads[$1] += $6; '
-                'posts[$1] += $7; '
-                'bwin[$1] += $8; '
-                'bwout[$1] += $9; '
+                'owners[$1] = $1;'
+                'for (i = 2; i <= NF; i++) { '
+                        'sums[$1,i] += $i; '
+                '} '
         '} END { '
                 'for (o in owners) { '
-                        'print o, total[o], gets[o], puts[o], deletes[o], '
-                                'heads[o], posts[o], bwin[o], bwout[o]; '
+                        'printf("%s ",owners[o]); '
+                        'for (i = 2; i < NF; i++) { '
+                                'printf("%s ", sums[owners[o],i]); '
+                        '} '
+                        'printf("%s", sums[owners[o],NF]);'
+                        'printf("\n"); '
                 '} '
-        '} '\'' | '
-        'bzip2 | '
-        'mpipe '$request_path/metering-request-$year-$month-$day-$hour.bz2
+        '}'\'' '
+        '| bzip2 '
+        '| mpipe '$request_dest/$name-
+                '$(base64 /dev/urandom | tr -d "+/\r\n" | head -c 8).bz2'
 )
 
 mapstr=$(printf "%s" "${map[@]}") # array join
 reducestr=$(printf "%s" "${reduce[@]}") # array join
 
-name="metering-request-$year-$month-$day-$hour"
-
-jobid=$(mmkjob -m "$mapstr" -r "$reducestr" -n "$name")
+jobid=$(mmkjob -m "$mapstr" -r "$reducestr" -n "$name" -c "$REQUEST_REDUCERS_H")
 
 $REQUEST_KEYGEN_H $date | maddkeys $jobid
 

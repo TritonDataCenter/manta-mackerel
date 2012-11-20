@@ -1,0 +1,16 @@
+#!/bin/bash
+awk '{
+        owners[$1] = $1;
+        for (i = 2; i <= NF; i++) {
+                sums[$1, i] += $i;
+        }
+} END {
+        for (o in owners) {
+                printf("%s ", owners[o]);
+                for (i = 2; i < NF; i++) {
+                        printf("%s ", sums[owners[o], i]);
+                }
+                printf("%s", sums[owners[o],NF]);
+                printf("\n");
+        }
+}'

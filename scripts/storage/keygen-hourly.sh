@@ -20,5 +20,5 @@ source $dir/../config.cfg
 for shard in $(mls $STORAGE_SOURCE | json -ga name)
 do
         mls $STORAGE_SOURCE/$shard | grep $date | json -ga name | \
-        awk "{print \"$STORAGE_SOURCE/$shard/$1/manta.bzip\"}"
+        awk '{print "'$STORAGE_SOURCE/$shard/'"$1"/manta.bzip"}'
 done
