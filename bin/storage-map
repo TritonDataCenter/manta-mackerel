@@ -1,6 +1,19 @@
-#!/bin/bash
-read -r line;
-index=$(echo $line | json -e 'this.i=keys.indexOf("_value")' i);
+#!/bin/bash -x
+# Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
-json -ga "entry[$index]" \
-| json -c 'type!=="directory"' -ga owner objectId contentLength sharks.length;
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $dir/../cfg/config.sh
+
+$ZCAT \
+| ( \
+        # gets the index of the _value field from the first schema line
+        read -r line;
+        index=$(echo $line | \
+                json -e 'this.__meteringIndexOfValue=keys.indexOf("_value")' \
+                        __meteringIndexOfValue);
+
+        json -ga "entry[$index]" \
+        | json -c 'type!=="directory"' \
+                -ga owner objectId contentLength sharks.length;
+) \
+| msplit -n $STORAGE_NUM_REDUCERS1_HOURLY -d " " -f 1,2

@@ -1,16 +1,25 @@
-#!/bin/bash
-awk '{
+#!/bin/bash -x
+# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $dir/../cfg/config.sh
+
+$ZCAT \
+awk \
+'{
         owners[$1] = $1;
         for (i = 2; i <= NF; i++) {
-                sums[$1, i] += $i;
+                sums[$1,i] += $i;
         }
 } END {
         for (o in owners) {
-                printf("%s ", owners[o]);
+                printf("%s ",owners[o]);
                 for (i = 2; i < NF; i++) {
-                        printf("%s ", sums[owners[o], i]);
+                        printf("%s ", sums[owners[o],i]);
                 }
                 printf("%s", sums[owners[o],NF]);
                 printf("\n");
         }
-}'
+}' \
+| $ZIP \
+| mpipe $dest/$name-$(uuid).$ZEXT

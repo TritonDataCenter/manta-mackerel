@@ -1,0 +1,6 @@
+#!/bin/bash -x
+MAP=../../bin/request-map
+REDUCE=../../bin/request-reduce
+function msplit () { cat; }; export -f msplit;
+function mpipe () { cat; }; export -f mpipe;
+cat input | gzip | $MAP | $REDUCE | gzcat

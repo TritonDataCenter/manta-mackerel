@@ -1,24 +1,17 @@
-#!/bin/bash
-if [ -z "$1" ]
-then
-        echo "Date required." >&2
-        exit 1
-fi
-
-input="$@"
-date=$(date -d "$input" "+%Y-%m-%d-%H")
-
-if [ $? -ne 0 ]
-then
-        echo "Invalid date: $@" >&2
-        exit 1
-fi
+#!/bin/bash -x
+# Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $dir/../config.cfg
+source $dir/../../config.cfg
+source $dir/../common/utils.sh
 
-for shard in $(mls $STORAGE_SOURCE | json -ga name)
+getDate "$@"
+date_fmt=$(date -d "$date" "+%Y-%m-%d-%H")
+
+for shard in $(mls $MANTA_STORAGE_SOURCE_HOURLY | json -ga name)
 do
-        mls $STORAGE_SOURCE/$shard | grep $date | json -ga name | \
-        awk '{print "'$STORAGE_SOURCE/$shard/'"$1"/manta.bzip"}'
+        mls $MANTA_STORAGE_SOURCE_HOURLY/$shard \
+        | grep $date_fmt \
+        | json -ga name \
+        | awk '{print "'$MANTA_STORAGE_SOURCE_HOURLY/$shard/'"$1"/manta.gz"}'
 done
