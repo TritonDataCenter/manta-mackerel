@@ -1,25 +1,10 @@
-#!/bin/bash
-if [ -z "$1" ]
-then
-        echo "Date required." >&2
-        exit 1
-fi
-
-input="$@"
-date=$(date -d "$input" "+%Y-%m-%d %H")
-
-if [ $? -ne 0 ]
-then
-        echo "Invalid date: $@" >&2
-        exit 1
-fi
+#!/bin/bash -x
+# Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $dir/../config.cfg
+source $dir/../../config.cfg
+source $dir/../common/utils.sh
 
-year=$(date -d "$date" +%Y)
-month=$(date -d "$date" +%m)
-day=$(date -d "$date" +%d)
-hour=$(date -d "$date" +%H)
+getDate "$@"
 
-mfind $REQUEST_SOURCE/$year/$month/$day/$hour
+mfind $MANTA_REQUEST_SOURCE_HOURLY/$year/$month/$day/$hour

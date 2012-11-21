@@ -26,7 +26,7 @@ NPM             := npm
 # Files
 #
 DOC_FILES        = index.restdown
-BASH_FILES      := $(shell ls *.sh) $(shell find scripts -name '*.sh')
+BASH_FILES      := $(shell find scripts -name '*.sh') $(shell find bin -type f)
 #JS_FILES        := $(shell ls *.js) $(shell find lib -name '*.js')
 #JSL_CONF_NODE    = tools/jsl.node.conf
 #3JSL_FILES_NODE   = $(JS_FILES)

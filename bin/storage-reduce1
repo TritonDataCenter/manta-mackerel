@@ -1,0 +1,25 @@
+#!/bin/bash -x
+# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $dir/../cfg/config.sh
+
+sort \
+| uniq -c \
+| awk \
+'BEGIN {
+        blockSize='$BLOCK_SIZE';
+} {
+        objects[$2] += 1;
+        keys[$2] += $1;
+        # numBlocks = Math.ceil(contentLength/blockSize);
+        numBlocks = ($4/blockSize) == int($4/blockSize) ?
+                ($4/blockSize) : (int($4/blockSize) + 1);
+        numCopies = $5;
+        size[$2] += numBlocks * numCopies * blockSize;
+} END {
+        for(i in keys) {
+                print i, objects[i], keys[i], size[i];
+        }
+}' \
+| msplit -n $STORAGE_NUM_REDUCERS2_HOURLY -d " " -f 1
