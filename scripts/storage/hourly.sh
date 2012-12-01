@@ -3,30 +3,36 @@
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../../cfg/config.sh
-source $dir/../common/utils.sh
+source $COMMON
 
 getDate "$@"
 
-dest_dir=$MANTA_STORAGE_DIR_HOURLY/$year/$month/$day/$hour
+eval $MANTA_REQUEST_DEST_HOURLY # sets up $dest_dir with date
 mmkdir -p $dest_dir
 fatal "$?" "Error creating directory $dest_dir"
 
-name="metering-storage-hourly-$year-$month-$day-$hour"
-jobid=$(mmkjob -n "$name" \
+eval $MANTA_JOB_NAME_STORAGE_HOURLY # sets up $job_name
+eval $MANTA_NAME_HOURLY # sets up $name with name format
+
+jobid=$(mmkjob -n "$job_name" \
                -s "$STORAGE_MAP_CMD_HOURLY" \
                -s "$STORAGE_REDUCE1_CMD_HOURLY" \
                -s "$STORAGE_REDUCE2_CMD_HOURLY" \
+               -s "$COLLATE_CMD" \
+               -s "$CONFIG" \
                -m "/assets/$STORAGE_MAP_CMD_HOURLY" \
                -r "/assets/$STORAGE_REDUCE1_CMD_HOURLY" \
-               -c "$STORAGE_NUM_REDUCERS1_HOURLY" \
-               -r "dest=$dest_dir name=$name \
-                        /assets/$STORAGE_REDUCE2_CMD_HOURLY" \
-               -c "$STORAGE_NUM_REDUCERS2_HOURLY"
+                        -c "$STORAGE_NUM_REDUCERS1_HOURLY" \
+               -r "/assets/$STORAGE_REDUCE2_CMD_HOURLY" \
+                        -c "$STORAGE_NUM_REDUCERS2_HOURLY" \
+               -r "dest=$dest_dir name=$name /assets/$COLLATE_CMD"
 )
 
-fatal "$?" "Error creating job $name"
+fatal "$?" "Error creating job $job_name"
 
 $STORAGE_KEYGEN_HOURLY $date | maddkeys $jobid
 
 mjob -e $jobid
 fatal "$?" "Error ending job $jobid"
+
+monitor $jobid $MONITOR_SLEEP

@@ -5,6 +5,7 @@ MANTA_USER=poseidon
 MANTA_KEY_ID=$(ssh-keygen -l -f /root/.ssh/id_rsa.pub | awk '{print $2}')
 MANTA_URL=$(mdata-get manta_url)
 
+MANTA_BASE=/$MANTA_USER/stor/usage # base directory for metering
 
 ## Compression tools
 ZIP=gzip        # command to compress from stdin
@@ -12,6 +13,9 @@ ZCAT=gzcat      # command to decompress to stdout
 ZEXT=gz         # file extension for compressed files
 
 ## Local files
+
+# Common utils
+COMMON=$DIR/../scripts/util/common.sh
 
 # Hourly key generators
 STORAGE_KEYGEN_HOURLY=$DIR/../scripts/storage/keygen-hourly.sh
@@ -25,10 +29,12 @@ REQUEST_KEYGEN_DAILY=$DIR/../scripts/request/keygen-daily.sh
 STORAGE_KEYGEN_MONTHLY=$DIR/../scripts/storage/keygen-monthly.sh
 REQUEST_KEYGEN_MONTHLY=$DIR/../scripts/request/keygen-monthly.sh
 
+MONITOR_SLEEP=5; # Number of seconds to sleep after each poll to check if a job
+                 # is finished.
 
 ## Assets locations
 
-ASSETS_DIR=/$MANTA_USER/stor/metering/assets
+ASSETS_DIR=$MANTA_BASE/assets
 
 BLOCK_SIZE=4096 # Manta block size in bytes
 STORAGE_MAP_CMD_HOURLY=$ASSETS_DIR/bin/storage-map
@@ -42,27 +48,44 @@ REQUEST_REDUCE_CMD_HOURLY=$ASSETS_DIR/bin/request-reduce
 REQUEST_REDUCE_CMD_DAILY=$ASSETS_DIR/bin/sum-columns
 REQUEST_REDUCE_CMD_MONTHLY=$ASSETS_DIR/bin/sum-columns
 
+COLLATE_CMD=$ASSETS_DIR/bin/collate
+
+CONFIG=$ASSETS_DIR/cfg/config.sh
 
 ## Manta directories for metering source files and result directories
 
-# Destination directories for results
-MANTA_BASE_DEST=/$MANTA_USER/stor/metering
+# Destinations for results
+MANTA_STORAGE_DEST=$MANTA_BASE/storage
+MANTA_REQUEST_DEST=$MANTA_BASE/request
+MANTA_COMPUTE_DEST=$MANTA_BASE/compute
 
-MANTA_STORAGE_DEST=$MANTA_BASE_DEST/storage
-MANTA_REQUEST_DEST=$MANTA_BASE_DEST/request
-MANTA_COMPUTE_DEST=$MANTA_BASE_DEST/compute
+# These settings are set using eval in the job creation scripts.
+# eval is needed here because $year, $month etc are set at job creation. These
+# settings represent the format of the destination paths and names.
+MANTA_STORAGE_DEST_HOURLY='dest_dir=$MANTA_STORAGE_DEST/$year/$month/$day/$hour'
+MANTA_REQUEST_DEST_HOURLY='dest_dir=$MANTA_REQUEST_DEST/$year/$month/$day/$hour'
+MANTA_COMPUTE_DEST_HOURLY='dest_dir=$MANTA_COMPUTE_DEST/$year/$month/$day/$hour'
 
-MANTA_STORAGE_DEST_HOURLY=$MANTA_STORAGE_DEST/hourly
-MANTA_REQUEST_DEST_HOURLY=$MANTA_REQUEST_DEST/hourly
-MANTA_COMPUTE_DEST_HOURLY=$MANTA_COMPUTE_DEST/hourly
+MANTA_STORAGE_DEST_DAILY='dest_dir=$MANTA_STORAGE_DEST/$year/$month/$day'
+MANTA_REQUEST_DEST_DAILY='dest_dir=$MANTA_REQUEST_DEST/$year/$month/$day'
+MANTA_COMPUTE_DEST_DAILY='dest_dir=$MANTA_COMPUTE_DEST/$year/$month/$day'
 
-MANTA_STORAGE_DEST_DAILY=$MANTA_STORAGE_DEST/daily
-MANTA_REQUEST_DEST_DAILY=$MANTA_REQUEST_DEST/daily
-MANTA_COMPUTE_DEST_DAILY=$MANTA_COMPUTE_DEST/daily
+MANTA_STORAGE_DEST_MONTHLY='dest_dir=$MANTA_STORAGE_DEST/$year/$month'
+MANTA_REQUEST_DEST_MONTHLY='dest_dir=$MANTA_REQUEST_DEST/$year/$month'
+MANTA_COMPUTE_DEST_MONTHLY='dest_dir=$MANTA_COMPUTE_DEST/$year/$month'
 
-MANTA_STORAGE_DEST_MONTHLY=$MANTA_STORAGE_DEST/monthly
-MANTA_REQUEST_DEST_MONTHLY=$MANTA_REQUEST_DEST/monthly
-MANTA_COMPUTE_DEST_MONTHLY=$MANTA_COMPUTE_DEST/monthly
+MANTA_JOB_NAME_STORAGE_HOURLY='job_name=metering-storage-hourly-$year-$month-$day-$hour'
+MANTA_JOB_NAME_REQUEST_HOURLY='job_name=metering-request-hourly-$year-$month-$day-$hour'
+
+MANTA_JOB_NAME_STORAGE_DAILY='job_name=metering-storage-daily-$year-$month-$day'
+MANTA_JOB_NAME_REQUEST_DAILY='job_name=metering-request-daily-$year-$month-$day'
+
+MANTA_JOB_NAME_STORAGE_MONTHLY='job_name=metering-storage-monthly-$year-$month'
+MANTA_JOB_NAME_REQUEST_MONTHLY='job_name=metering-request-monthly-$year-$month'
+
+MANTA_NAME_HOURLY='name=h$hour.txt.$ZEXT'
+MANTA_NAME_DAILY='name=d$day.txt.$ZEXT'
+MANTA_NAME_MONTHLY='name=m$month.txt.$ZEXT'
 
 # Source directories to pull logs from
 MANTA_STORAGE_SOURCE_HOURLY=/$MANTA_USER/stor/manatee_backups

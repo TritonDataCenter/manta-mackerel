@@ -1,7 +1,8 @@
-#!/bin/bash -x
+#!/bin/bash
 MAP=../../bin/storage-map
 REDUCE1=../../bin/storage-reduce1
 REDUCE2=../../bin/storage-reduce2
+COLLATE=../../bin/collate
 function msplit () { cat; }; export -f msplit;
 function mpipe () { cat; }; export -f mpipe;
-cat input | gzip | $MAP | $REDUCE1 | $REDUCE2 | gzcat
+cat input | gzip | $MAP | $REDUCE1 | $REDUCE2 | $COLLATE | gzcat

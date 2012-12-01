@@ -27,11 +27,11 @@ NPM             := npm
 #
 DOC_FILES        = index.restdown
 BASH_FILES      := $(shell find scripts -name '*.sh') $(shell find bin -type f)
-#JS_FILES        := $(shell ls *.js) $(shell find lib -name '*.js')
-#JSL_CONF_NODE    = tools/jsl.node.conf
-#3JSL_FILES_NODE   = $(JS_FILES)
-#JSSTYLE_FILES    = $(JS_FILES)
-#JSSTYLE_FLAGS    = -f tools/jsstyle.conf
+JS_FILES        := $(shell find lib -name '*.js')
+JSL_CONF_NODE    = tools/jsl.node.conf
+3JSL_FILES_NODE   = $(JS_FILES)
+JSSTYLE_FILES    = $(JS_FILES)
+JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 
 NODE_PREBUILT_VERSION=v0.8.11
@@ -74,6 +74,8 @@ release: all docs $(SMF_MANIFESTS)
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/$(REPO_NAME)/etc
 	cp -r   $(ROOT)/build \
 		$(ROOT)/bin \
+		$(ROOT)/cfg \
+                $(ROOT)/lib \
 		$(ROOT)/scripts \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \

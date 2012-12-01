@@ -5,12 +5,17 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
 awk \
-'{
+'/^[[:space:]]*#/ {
+        print;
+        next;
+}
+{
         owners[$1] = $1;
         for (i = 2; i <= NF; i++) {
                 sums[$1,i] += $i;
         }
-} END {
+}
+END {
         for (o in owners) {
                 printf("%s ",owners[o]);
                 for (i = 2; i < NF; i++) {
@@ -20,5 +25,26 @@ awk \
                 printf("\n");
         }
 }' \
-| $ZIP \
-| mpipe $dest/$name-$(uuid).$ZEXT
+| awk \
+'function isnum(x) {
+        return (x==x+0);
+}
+NR == 1 && /^[[:space:]]*#/ {
+        for(i = 2; i <= NF; i++) {
+                keys[i-1] = $i;
+        }
+        numKeys = NF-1;
+        next;
+}
+{
+        printf("{");
+        printf("\"%s\":\"%s\"", keys[1], $1);
+        for(i = 2; i <= numKeys; i++) {
+                if (isnum($i)) {
+                        printf(",\"%s\":%s", keys[i], $i);
+                } else {
+                        printf(",\"%s\":\"%s\"", keys[1], $1);
+                }
+        }
+        printf("}\n");
+}'

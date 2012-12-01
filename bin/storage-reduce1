@@ -9,17 +9,34 @@ sort \
 | awk \
 'BEGIN {
         blockSize='$BLOCK_SIZE';
-} {
-        objects[$2] += 1;
-        keys[$2] += $1;
+}
+{
+        numKeys = $1;
+        owner = $2;
+        type = $3;
+        contentLength = $5;
+        numCopies = $6;
+
+        if(type == "directory") {
+                directories[owner] += 1;
+                next;
+        }
+
+        objects[owner] += 1;
+        keys[owner] += numKeys;
+
         # numBlocks = Math.ceil(contentLength/blockSize);
-        numBlocks = ($4/blockSize) == int($4/blockSize) ?
-                ($4/blockSize) : (int($4/blockSize) + 1);
-        numCopies = $5;
-        size[$2] += numBlocks * numCopies * blockSize;
-} END {
+        numBlocks = (contentLength/blockSize) == int(contentLength/blockSize) ?
+                (contentLength/blockSize) : (int(contentLength/blockSize) + 1);
+        size[owner] += numBlocks * numCopies * blockSize;
+}
+END {
+        print "# owner objects keys bytes-total directories"
         for(i in keys) {
-                print i, objects[i], keys[i], size[i];
+                if (directories[i] == "") {
+                        directories[i] = 0;
+                }
+                print i, objects[i], keys[i], size[i], directories[i];
         }
 }' \
 | msplit -n $STORAGE_NUM_REDUCERS2_HOURLY -d " " -f 1

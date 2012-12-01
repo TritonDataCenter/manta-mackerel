@@ -3,7 +3,7 @@
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../../cfg/config.sh
-source $dir/../common/utils.sh
+source $COMMON
 
 getDate "$@"
 

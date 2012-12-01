@@ -9,11 +9,10 @@ $ZCAT \
         # gets the index of the _value field from the first schema line
         read -r line;
         index=$(echo $line | \
-                json -e 'this.__meteringIndexOfValue=keys.indexOf("_value")' \
+                json -e '__meteringIndexOfValue=keys.indexOf("_value")' \
                         __meteringIndexOfValue);
 
         json -ga "entry[$index]" \
-        | json -c 'type!=="directory"' \
-                -ga owner objectId contentLength sharks.length;
+        | json -ga owner type objectId contentLength sharks.length;
 ) \
 | msplit -n $STORAGE_NUM_REDUCERS1_HOURLY -d " " -f 1,2
