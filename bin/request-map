@@ -5,7 +5,8 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
 $ZCAT \
-| bunyan -j --strict -c "this.audit == true && this.req.url !== '/ping'" \
+| bunyan -j --strict -c "this.audit == true && this.req.url !== '/ping' &&
+                                this.req.owner" \
 | json -ga req.owner req.method resHeaderLength reqHeaderLength \
         req.headers.content-length res.headers.content-length \
 | awk '{
@@ -51,6 +52,8 @@ $ZCAT \
                 connects[owner] += 1;
         }
 } END {
+        print "# owner total options gets heads posts puts deletes traces " \
+                "connects bwin bwout headerBWIn headerBWOut"
         for (o in owners) {
                 options[o] = options[o] == "" ? 0 : options[o];
                 gets[o] = gets[o] == "" ? 0 : gets[o];
@@ -62,12 +65,14 @@ $ZCAT \
                 connects[o] = connects[o] == "" ? 0 : connects[o];
                 bwin[o] = bwin[o] == "" ? 0 : bwin[o];
                 bwout[o] = bwout[o] == "" ? 0 : bwout[o];
+                headerBWIn[o] = headerBWIn[o] == "" ? 0 : headerBWIn[o];
+                headerBWOut[o] = headerBWOut[o] == "" ? 0 : headerBWOut[o];
 
                 total = gets[o] + heads[o] + posts[o] + puts[o] + deletes[o] + \
                         traces[o] + connects[o];
 
                 print o, total, options[o], gets[o], heads[o], posts[o],
-                        puts[o], deletes[o], traces[o], connects[p],
+                        puts[o], deletes[o], traces[o], connects[o],
                         bwin[o], bwout[o], headerBWIn[o], headerBWOut[o];
         }
 }' \
