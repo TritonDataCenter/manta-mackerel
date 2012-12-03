@@ -9,7 +9,7 @@ getDate "$@"
 
 eval $MANTA_STORAGE_DEST_MONTHLY # sets up $dest_dir with date
 mmkdir -p $dest_dir
-fatal "$?" "Error creating directory $dest_dir"
+fatal "$?" "creating directory $dest_dir"
 
 eval $MANTA_JOB_NAME_REQUEST_MONTHLY # sets up $job_name
 eval $MANTA_NAME_MONTHLY  # sets up $name with name format
@@ -23,11 +23,12 @@ jobid=$(mmkjob -n "$job_name" \
                -r "dest=$dest_dir name=$name /assets/$COLLATE_CMD"
 )
 
-fatal "$?" "Error creating job $job_name"
+fatal "$?" "creating job $job_name"
 
 $REQUEST_KEYGEN_MONTHLY $date | maddkeys $jobid
+fatal "$?" "adding keys to $jobid"
 
 mjob -e $jobid
-fatal "$?" "Error ending job $jobid"
+fatal "$?" "ending job $jobid"
 
-monitor $jobid $MONITOR_SLEEP
+monitor $jobid $SLEEP_RETRY
