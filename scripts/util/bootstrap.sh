@@ -1,5 +1,5 @@
 #!/bin/bash -x
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../../cfg/config.sh
 
 mmkdir -p $ASSETS_DIR/bin

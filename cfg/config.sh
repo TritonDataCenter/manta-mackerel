@@ -29,8 +29,8 @@ REQUEST_KEYGEN_DAILY=$DIR/../scripts/request/keygen-daily.sh
 STORAGE_KEYGEN_MONTHLY=$DIR/../scripts/storage/keygen-monthly.sh
 REQUEST_KEYGEN_MONTHLY=$DIR/../scripts/request/keygen-monthly.sh
 
-MONITOR_SLEEP=5; # Number of seconds to sleep after each poll to check if a job
-                 # is finished.
+SLEEP_RETRY=10; # Number of times to poll job status for output before alarming
+
 
 ## Assets locations
 
