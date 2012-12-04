@@ -15,4 +15,4 @@ $ZCAT \
         json -ga "entry[$index]" \
         | json -ga owner type objectId contentLength sharks.length;
 ) \
-| msplit -n $STORAGE_NUM_REDUCERS1_HOURLY -d " " -f 1,2
+| msplit -n $STORAGE_NUM_REDUCERS1_HOURLY -d " " -f 1,3
