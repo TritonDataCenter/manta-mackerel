@@ -16,6 +16,7 @@ awk \
         }
 }
 END {
+        print "# owner objects keys bytes-total directories"
         for (o in owners) {
                 printf("%s ",owners[o]);
                 for (i = 2; i < NF; i++) {

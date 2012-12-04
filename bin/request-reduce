@@ -16,6 +16,8 @@ awk \
         }
 }
 END {
+        print "# owner total options gets heads posts puts deletes traces " \
+                "connects bwin bwout headerBWIn headerBWOut"
         for (o in owners) {
                 printf("%s ",owners[o]);
                 for (i = 2; i < NF; i++) {

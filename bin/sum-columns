@@ -5,5 +5,4 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
 $ZCAT \
-| ../lib/sum-columns.js \
-| mpipe $dest/$name
+| $dir/../lib/sum-columns.js

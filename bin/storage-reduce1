@@ -18,7 +18,7 @@ sort \
         numCopies = $6;
 
         if(type == "directory") {
-                directories[owner] += 1;
+                directories[owner] += $1;
                 next;
         }
 
@@ -31,7 +31,6 @@ sort \
         size[owner] += numBlocks * numCopies * blockSize;
 }
 END {
-        print "# owner objects keys bytes-total directories"
         for(i in keys) {
                 if (directories[i] == "") {
                         directories[i] = 0;

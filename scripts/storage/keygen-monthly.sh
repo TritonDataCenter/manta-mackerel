@@ -7,4 +7,4 @@ source $COMMON
 
 getDate "$@"
 
-mfind $MANTA_STORAGE_SOURCE_MONTHLY/$year/$month
+mfind -n "d" $MANTA_STORAGE_SOURCE_MONTHLY/$year/$month
