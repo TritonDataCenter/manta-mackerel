@@ -7,6 +7,5 @@ source $COMMON
 
 getDate "$@"
 
-$dir/../storage/daily.sh $date
-$dir/../request/daily.sh $date
-#$dir/../compute/daily.sh $date
+$dir/../meter.sh -p daily -s storage -d "$date"
+$dir/../meter.sh -p daily -s request -d "$date"

@@ -7,6 +7,5 @@ source $COMMON
 
 getDate "$@"
 
-$dir/../storage/hourly.sh $date
-$dir/../request/hourly.sh $date
-#$dir/../compute/hourly.sh $date
+$dir/../meter.sh -p hourly -s storage -d "$date"
+$dir/../meter.sh -p hourly -s request -d "$date"

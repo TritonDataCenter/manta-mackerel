@@ -7,4 +7,4 @@ source $COMMON
 
 getDate "$@"
 
-mfind $MANTA_REQUEST_SOURCE_DAILY/$year/$month/$day
+mfind -n "h" $MANTA_REQUEST_SOURCE_DAILY/$year/$month/$day

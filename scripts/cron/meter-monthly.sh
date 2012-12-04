@@ -7,6 +7,5 @@ source $COMMON
 
 getDate "$@"
 
-$dir/../storage/monthly.sh $date
-$dir/../request/monthly.sh $date
-#$dir/../compute/monthly.sh $date
+$dir/../meter.sh -p monthly -s storage -d "$date"
+$dir/../meter.sh -p monthly -s request -d "$date"

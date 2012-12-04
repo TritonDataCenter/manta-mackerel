@@ -1,6 +1,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-PATH=$PATH:/opt/smartdc/mola/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:/usr/sbin:/usr/bin:/opt/smartdc/mola/build/node/bin:/opt/smartdc/mola/node_modules/.bin:/opt/smartdc/mola/node_modules/manta/bin
+PATH=$PATH:/usr/node/bin:/opt/smartdc/mola/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:/usr/sbin:/usr/bin:/opt/smartdc/mola/build/node/bin:/opt/smartdc/mola/node_modules/.bin:/opt/smartdc/mola/node_modules/manta/bin
 MANTA_USER=poseidon
 MANTA_KEY_ID=$(ssh-keygen -l -f /root/.ssh/id_rsa.pub | awk '{print $2}')
 MANTA_URL=$(mdata-get manta_url)
@@ -49,6 +49,7 @@ REQUEST_REDUCE_CMD_DAILY=$ASSETS_DIR/bin/sum-columns
 REQUEST_REDUCE_CMD_MONTHLY=$ASSETS_DIR/bin/sum-columns
 
 COLLATE_CMD=$ASSETS_DIR/bin/collate
+LIB_SUM_COLUMNS=$ASSETS_DIR/lib/sum-columns.js
 
 CONFIG=$ASSETS_DIR/cfg/config.sh
 
@@ -62,40 +63,40 @@ MANTA_COMPUTE_DEST=$MANTA_BASE/compute
 # These settings are set using eval in the job creation scripts.
 # eval is needed here because $year, $month etc are set at job creation. These
 # settings represent the format of the destination paths and names.
-MANTA_STORAGE_DEST_HOURLY='dest_dir=$MANTA_STORAGE_DEST/$year/$month/$day/$hour'
-MANTA_REQUEST_DEST_HOURLY='dest_dir=$MANTA_REQUEST_DEST/$year/$month/$day/$hour'
-MANTA_COMPUTE_DEST_HOURLY='dest_dir=$MANTA_COMPUTE_DEST/$year/$month/$day/$hour'
+MANTA_STORAGE_DEST_HOURLY='$MANTA_STORAGE_DEST/$year/$month/$day/$hour'
+MANTA_REQUEST_DEST_HOURLY='$MANTA_REQUEST_DEST/$year/$month/$day/$hour'
+MANTA_COMPUTE_DEST_HOURLY='$MANTA_COMPUTE_DEST/$year/$month/$day/$hour'
 
-MANTA_STORAGE_DEST_DAILY='dest_dir=$MANTA_STORAGE_DEST/$year/$month/$day'
-MANTA_REQUEST_DEST_DAILY='dest_dir=$MANTA_REQUEST_DEST/$year/$month/$day'
-MANTA_COMPUTE_DEST_DAILY='dest_dir=$MANTA_COMPUTE_DEST/$year/$month/$day'
+MANTA_STORAGE_DEST_DAILY='$MANTA_STORAGE_DEST/$year/$month/$day'
+MANTA_REQUEST_DEST_DAILY='$MANTA_REQUEST_DEST/$year/$month/$day'
+MANTA_COMPUTE_DEST_DAILY='$MANTA_COMPUTE_DEST/$year/$month/$day'
 
-MANTA_STORAGE_DEST_MONTHLY='dest_dir=$MANTA_STORAGE_DEST/$year/$month'
-MANTA_REQUEST_DEST_MONTHLY='dest_dir=$MANTA_REQUEST_DEST/$year/$month'
-MANTA_COMPUTE_DEST_MONTHLY='dest_dir=$MANTA_COMPUTE_DEST/$year/$month'
+MANTA_STORAGE_DEST_MONTHLY='$MANTA_STORAGE_DEST/$year/$month'
+MANTA_REQUEST_DEST_MONTHLY='$MANTA_REQUEST_DEST/$year/$month'
+MANTA_COMPUTE_DEST_MONTHLY='$MANTA_COMPUTE_DEST/$year/$month'
 
-MANTA_JOB_NAME_STORAGE_HOURLY='job_name=metering-storage-hourly-$year-$month-$day-$hour'
-MANTA_JOB_NAME_REQUEST_HOURLY='job_name=metering-request-hourly-$year-$month-$day-$hour'
+MANTA_JOB_NAME_STORAGE_HOURLY='metering-storage-hourly-$year-$month-$day-$hour'
+MANTA_JOB_NAME_REQUEST_HOURLY='metering-request-hourly-$year-$month-$day-$hour'
 
-MANTA_JOB_NAME_STORAGE_DAILY='job_name=metering-storage-daily-$year-$month-$day'
-MANTA_JOB_NAME_REQUEST_DAILY='job_name=metering-request-daily-$year-$month-$day'
+MANTA_JOB_NAME_STORAGE_DAILY='metering-storage-daily-$year-$month-$day'
+MANTA_JOB_NAME_REQUEST_DAILY='metering-request-daily-$year-$month-$day'
 
-MANTA_JOB_NAME_STORAGE_MONTHLY='job_name=metering-storage-monthly-$year-$month'
-MANTA_JOB_NAME_REQUEST_MONTHLY='job_name=metering-request-monthly-$year-$month'
+MANTA_JOB_NAME_STORAGE_MONTHLY='metering-storage-monthly-$year-$month'
+MANTA_JOB_NAME_REQUEST_MONTHLY='metering-request-monthly-$year-$month'
 
-MANTA_NAME_HOURLY='name=h$hour.txt.$ZEXT'
-MANTA_NAME_DAILY='name=d$day.txt.$ZEXT'
-MANTA_NAME_MONTHLY='name=m$month.txt.$ZEXT'
+MANTA_NAME_HOURLY='h$hour.txt.$ZEXT'
+MANTA_NAME_DAILY='d$day.txt.$ZEXT'
+MANTA_NAME_MONTHLY='m$month.txt.$ZEXT'
 
 # Source directories to pull logs from
 MANTA_STORAGE_SOURCE_HOURLY=/$MANTA_USER/stor/manatee_backups
 MANTA_REQUEST_SOURCE_HOURLY=/$MANTA_USER/stor/logs/muskie
 
-MANTA_STORAGE_SOURCE_DAILY=$MANTA_STORAGE_DEST_HOURLY
-MANTA_REQUEST_SOURCE_DAILY=$MANTA_REQUEST_DEST_HOURLY
+MANTA_STORAGE_SOURCE_DAILY=$MANTA_STORAGE_DEST
+MANTA_REQUEST_SOURCE_DAILY=$MANTA_REQUEST_DEST
 
-MANTA_STORAGE_SOURCE_MONTHLY=$MANTA_STORAGE_DEST_DAILY
-MANTA_REQUEST_SOURCE_MONTHLY=$MANTA_REQUEST_DEST_DAILY
+MANTA_STORAGE_SOURCE_MONTHLY=$MANTA_STORAGE_DEST
+MANTA_REQUEST_SOURCE_MONTHLY=$MANTA_REQUEST_DEST
 
 
 ## Number of reducers

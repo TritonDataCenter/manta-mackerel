@@ -52,8 +52,6 @@ $ZCAT \
                 connects[owner] += 1;
         }
 } END {
-        print "# owner total options gets heads posts puts deletes traces " \
-                "connects bwin bwout headerBWIn headerBWOut"
         for (o in owners) {
                 options[o] = options[o] == "" ? 0 : options[o];
                 gets[o] = gets[o] == "" ? 0 : gets[o];
