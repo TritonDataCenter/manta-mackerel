@@ -19,19 +19,192 @@ There are three classes of usage that Mackerel meters:
 * Request: request totals by method, total transfer (bandwidth) in and out
 * Compute: TODO
 
+Important notes:
+* Disk usage is rounded up to the nearest block and represents actual disk usage.
+* Customers are metered for the object and key when linking to an object they do
+  not own.
+* Requests count toward usage for the owner of the Manta object/resource, not
+  the caller of the request.
+
 # Implementation
 
-## Input
+## Storage
 
-Services that Mackerel meters upload raw data to Manta.
-### Storage
+Storage metering consists of a map phase and three reduce phases.
+
 Storage raw data consists of postgres dumps of each moray shard in JSON format.
-The first line is a schema line that describes the format of each entry.
-Following that are rows that with an array of values.
+The first line contains the table name and describes the schema for each entry
+(newlines inserted here):
 
-* Request: audit logs from muskie
-* Compute: TODO
+    {
+      "name": "manta",
+      "keys": [
+        "_id",
+        "_key",
+        "_value",
+        "_etag",
+        "_mtime",
+        "dirname",
+        "owner",
+        "objectid"
+      ]
+    }
 
-## Output
+
+Following that are rows represented with an array of values (newlines inserted
+here):
+
+    {
+      "entry": [
+        "5",
+        "/fred/stor/tmp/samplejob-wc.json",
+        "{
+          \"dirname\": \"/fred/stor/tmp\",
+          \"key\": \"/fred/stor/tmp/samplejob-wc.json\",
+          \"mtime\": 1347054537274,
+          \"owner\": \"fred1\",
+          \"type\": \"object\",
+          \"contentLength\": 196,
+          \"contentMD5\": \"4JKnXTaH8Z4JaPnFM2t10A==\",
+          \"contentType\": \"application/json\",
+          \"etag\": \"e092a75d3687f19e0968f9c5336b75d0\",
+          \"objectId\": \"1eedf25b-cb8e-4e1f-af9f-c6c0d1755750\",
+          \"sharks\": [
+            {
+              \"url\": \"http://6a06e135-a698-4dcd-8ee3-6cd8b48995cd.stor.bh1-kvm7.joyent.us\",
+              \"server_uuid\": \"44454c4c-3200-1042-804d-c2c04f575231\",
+              \"zone_uuid\": \"6a06e135-a698-4dcd-8ee3-6cd8b48995cd\"
+            },
+            {
+              \"url\": \"http://a16f20d3-c791-4f7c-8c81-2ccdceea8dd7.stor.bh1-kvm7.joyent.us\",
+              \"server_uuid\": \"44454c4c-3200-1042-804d-c2c04f575231\",
+              \"zone_uuid\": \"a16f20d3-c791-4f7c-8c81-2ccdceea8dd7\"
+            }
+          ]
+        }",
+        "e092a75d3687f19e0968f9c5336b75d0",
+        "e092a75d3687f19e0968f9c5336b75d0",
+        "/fred/stor/tmp",
+        "fred1",
+        "1eedf25b-cb8e-4e1f-af9f-c6c0d1755750"
+      ]
+    }
+
+The map phase takes the raw data and extracts fields needed for metering from
+the _value field of each entry and outputs it in space-delimited tabular format.
+Each row represents a key pointing to an object in Manta.
+
+    fred1 object 0a9da7a2-b1ed-46dd-a58d-d87721e4e7f1 4113 2
+    fred2 object 12f392cd-3200-44d5-a443-c0e9e719e781 14 2
+    fred1 object 9d672e71-15fb-4ff3-8e1a-1e9c8fec0752 28 2
+    fred1 directory
+    fred2 object 544a51e5-52c5-49c1-9a6c-358df769dc4d 26 2
+    fred2 object 12f392cd-3200-44d5-a443-c0e9e719e781 14 2
+    fred1 object 1eedf25b-cb8e-4e1f-af9f-c6c0d1755750 196 2
+
+These results are partitioned and sent to reducers based on owner and objectid
+such that all keys that point to the same object for a single owner are
+colocated on the same reducer. Note that with cross-account links, both
+customers will be charged for the same object, even if no extra disk space is
+being used.
+
+The first reduce phase sorts the rows and aggregates each set of
+keys that point to the same object for a single owner.  Each row now represents
+a unique Manta object across a single owner's objects.
+Then, in the same phase, each owner's usage is calculated and pre-aggregated.
+Note that in calculating storage usage, the size of each object is rounded up
+to the nearest block and represents actual bytes used on disk.
+
+    # owner objects keys bytes-total directories
+    fred1 3 3 32768 1
+    fred2 2 3 16384 0
+
+These results are partitioned and sent to reducers based on owner. At this point
+all of a single customer's usage will be colocated on one reducer.
+
+The second reduce phase sums the pre-aggregated data and formats each row into
+newline-delimited JSON.
+
+    {"owner":"fred1","objects":3,"keys":3,"bytes-total":32768,"directories":1}
+    {"owner":"fred2","objects":2,"keys":3,"bytes-total":16384,"directories":0}
+
+The third reduce phase collates all output from all reducers into one file.
 
 
+## Request
+
+Request metering consists of a map phase and two reduce phases.
+
+Request raw data consists of webapi audit logs in bunyan format (formatted in
+JSON here).
+
+    {
+      "name": "audit",
+      "hostname": "fb07e9ec-5137-418e-aff2-01d00aff1a49",
+      "pid": 4400,
+      "audit": true,
+      "level": 30,
+      "remoteAddress": "10.2.201.70",
+      "remotePort": 36387,
+      "reqHeaderLength": 818,
+      "req": {
+        "method": "PUT",
+        "url": "/poseidon/stor/graphs/assets/manowar.tar.gz",
+        "headers": {
+          "accept": "application/json",
+          "content-length": "6880413",
+          ...
+        },
+        "httpVersion": "1.1",
+        "trailers": {},
+        "owner": "eba7f07c-d57c-48f6-8072-f75db963e9d6"
+      },
+      "resHeaderLength": 241,
+      "res": {
+        "statusCode": 204,
+        "headers": {
+          "etag": "d5c7ee35-e232-4bb9-b239-1ef93daffcaf",
+          "last-modified": "Wed, 28 Nov 2012 21:46:00 GMT",
+          ...
+        },
+        "trailer": false
+      },
+      "latency": 212,
+      "_audit": true,
+      "msg": "handled: 204",
+      "time": "2012-11-28T21:46:00.933Z",
+      "v": 0
+    }
+
+The map phase extracts fields needed for metering and does some
+pre-aggregation.  Mackerel meters total requests, total requests by method
+(GET, PUT, DELETE, etc), transfer in via PUT requests, transfer out via GET
+requests and bandwidth used transferring headers.
+
+    # owner total options gets heads posts puts deletes traces connects bwin bwout headerBWIn headerBWOut
+    eba7f07c-d57c-48f6-8072-f75db963e9d6 3 0 2 0 0 1 0 0 0 6880413 177 2274 714
+
+These results are partitioned such that all of a single owner's requests are on
+a single reduce node.
+
+The first reduce phase aggregates all of a customer's requests and transfer and
+formats the results into newline-delimited JSON (newlines added here).
+
+    {
+      "owner": "eba7f07c-d57c-48f6-8072-f75db963e9d6",
+      "total": 3,
+      "options": 0,
+      "gets": 2,
+      "heads": 0,
+      "posts": 0,
+      "puts": 1,
+      "deletes": 0,
+      "traces": 0,
+      "connects": 0,
+      "bwin": 6880413,
+      "bwout": 177,
+      "headerBWIn": 2274,
+      "headerBWOut": 714
+    }
+
+The second reduce phase collates all output from all reducers into one file.
