@@ -22,18 +22,15 @@ function warn() {
 }
 
 function monitor() {
-        local job=$1
-        local retry_limit=$2
-
         local count=0
         local t=1
 
-        while [ $(mjob $job | json state) != "done" ];
+        while [ $(mjob $jobid | json state) != "done" ];
         do
-                if [ $count -gt $retry_limit ]
+                if [ $count -gt $SLEEP_RETRY ]
                 then
                         echo "Error: exceeded retry limit for job output for" \
-                                " job $job"
+                                " job $jobid"
                         exit 1
                 fi
 
@@ -42,17 +39,55 @@ function monitor() {
                 count=$(expr $count + 1)
         done
 
-        mjob -o $job
+        mjob -o $jobid
 
-        failures=$(mjob -x $job)
+        local failures=$(mjob -x $jobid)
         if [ ! -z "$failures" ]
         then
-                echo "Error: failures detected for job $job on inputs:"
+                echo "Error: failures detected for job $jobid."
                 echo $failures
         fi
-
 }
 
+function split-usage() {
+        local output=$(mjob -o $job)
+
+        # create lookup file
+        mget $output \
+        | $ZCAT \
+        | json -ga owner \
+        | xargs -I owner redis-cli -H $(mdata-get auth_cache_name) /uuid/owner \
+        | tr -d \" > /tmp/_mackerel_lookup
+
+        mput -f /tmp/_mackerel_lookup $LOOKUP
+
+        # get names
+        printf -v dest_dir_fmt "MANTA_USAGE_%s_%s" $service $period
+        dest_dir_fmt=${!dest_dir_fmt}
+        eval local dest_dir=$dest_dir_fmt
+
+        printf -v job_name_fmt "MANTA_USAGE_NAME_%s_%s" $service $period
+        job_name_fmt=${!job_name_fmt}
+        eval local job_name=$job_name_fmt
+
+        printf -v name_fmt "MANTA_USAGE_NAME_%s" $period
+        name_fmt=${!name_fmt}
+        eval name=$name_fmt
+
+        # create the job
+        local jobid=$(mmkjob \
+                -n "$job_name" \
+                -s "$LOOKUP" \
+                -s "$CONFIG" \
+                -s "$SPLIT_USAGE_MAP_CMD" \
+                -m "$ZCAT \
+                    | dest=$dest_dir name=$name \
+                        /assets/$SPLIT_USAGE_MAP_CMD /assets/$LOOKUP"
+        )
+}
+
+# -- Mainline -- #
+# get opts
 while getopts ":d:p:s:" opt
 do
         case $opt in
@@ -122,6 +157,7 @@ if [ -z $period ]; then
         exit 1
 fi
 
+# set up names
 printf -v dest_dir_fmt "MANTA_%s_DEST_%s" $service $period
 dest_dir_fmt=${!dest_dir_fmt}
 eval dest_dir=$dest_dir_fmt
@@ -137,6 +173,7 @@ printf -v name_fmt "MANTA_NAME_%s" $period
 name_fmt=${!name_fmt}
 eval name=$name_fmt
 
+# Create the job
 if [ $service == "REQUEST" ]; then
         if [ $period == "HOURLY" ]; then
                 jobid=$(mmkjob \
@@ -224,13 +261,17 @@ fi
 
 fatal "$?" "creating job $job_name"
 
-
-printf -v keygen "%s_KEYGEN_%s" $service $period
+# add keys
+printf -v keygen "%KEYGEN_%s_%s" $service $period
 keygen=${!keygen}
 $keygen $date | maddkeys $jobid
 warn "$?" "adding keys to $jobid"
 
+# end the job
 mjob -e $jobid
 fatal "$?" "ending job $jobid"
 
-monitor $jobid $SLEEP_RETRY
+# monitor for output
+monitor
+# split usage into customer directories
+split-usage
