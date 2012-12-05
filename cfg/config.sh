@@ -14,20 +14,20 @@ ZEXT=gz         # file extension for compressed files
 
 ## Local files
 
-# Common utils
+# Common functions
 COMMON=$DIR/../scripts/util/common.sh
 
 # Hourly key generators
-STORAGE_KEYGEN_HOURLY=$DIR/../scripts/storage/keygen-hourly.sh
-REQUEST_KEYGEN_HOURLY=$DIR/../scripts/request/keygen-hourly.sh
+KEYGEN_STORAGE_HOURLY=$DIR/../scripts/storage/keygen-hourly.sh
+KEYGEN_REQUEST_HOURLY=$DIR/../scripts/request/keygen-hourly.sh
 
 # Daily key generators
-STORAGE_KEYGEN_DAILY=$DIR/../scripts/storage/keygen-daily.sh
-REQUEST_KEYGEN_DAILY=$DIR/../scripts/request/keygen-daily.sh
+KEYGEN_STORAGE_DAILY=$DIR/../scripts/storage/keygen-daily.sh
+KEYGEN_REQUEST_DAILY=$DIR/../scripts/request/keygen-daily.sh
 
 # Monthly key generators
-STORAGE_KEYGEN_MONTHLY=$DIR/../scripts/storage/keygen-monthly.sh
-REQUEST_KEYGEN_MONTHLY=$DIR/../scripts/request/keygen-monthly.sh
+KEYGEN_STORAGE_MONTHLY=$DIR/../scripts/storage/keygen-monthly.sh
+KEYGEN_REQUEST_MONTHLY=$DIR/../scripts/request/keygen-monthly.sh
 
 SLEEP_RETRY=10; # Number of times to poll job status for output before alarming
 
@@ -36,22 +36,31 @@ SLEEP_RETRY=10; # Number of times to poll job status for output before alarming
 
 ASSETS_DIR=$MANTA_BASE/assets
 
+COLLATE_CMD=$ASSETS_DIR/bin/collate
+SUM_COLUMNS=$ASSETS_DIR/bin/sum-columns
+
 BLOCK_SIZE=4096 # Manta block size in bytes
 STORAGE_MAP_CMD_HOURLY=$ASSETS_DIR/bin/storage-map
 STORAGE_REDUCE1_CMD_HOURLY=$ASSETS_DIR/bin/storage-reduce1
 STORAGE_REDUCE2_CMD_HOURLY=$ASSETS_DIR/bin/storage-reduce2
-STORAGE_REDUCE_CMD_DAILY=$ASSETS_DIR/bin/sum-columns
-STORAGE_REDUCE_CMD_MONTHLY=$ASSETS_DIR/bin/sum-columns
+STORAGE_REDUCE_CMD_DAILY=$SUM_COLUMNS
+STORAGE_REDUCE_CMD_MONTHLY=$SUM_COLUMNS
 
 REQUEST_MAP_CMD_HOURLY=$ASSETS_DIR/bin/request-map
 REQUEST_REDUCE_CMD_HOURLY=$ASSETS_DIR/bin/request-reduce
-REQUEST_REDUCE_CMD_DAILY=$ASSETS_DIR/bin/sum-columns
-REQUEST_REDUCE_CMD_MONTHLY=$ASSETS_DIR/bin/sum-columns
+REQUEST_REDUCE_CMD_DAILY=$SUM_COLUMNS
+REQUEST_REDUCE_CMD_MONTHLY=$SUM_COLUMNS
 
-COLLATE_CMD=$ASSETS_DIR/bin/collate
+SPLIT_USAGE_MAP_CMD=$ASSETS_DIR/bin/split-usage
+
+
+# library files
 LIB_SUM_COLUMNS=$ASSETS_DIR/lib/sum-columns.js
 
-CONFIG=$ASSETS_DIR/cfg/config.sh
+CONFIG=$ASSETS_DIR/cfg/config.sh # the configuration file
+
+LOOKUP=$ASSETS_DIR/tmp/lookup # where to put the redis lookup list
+
 
 ## Manta directories for metering source files and result directories
 
@@ -98,6 +107,32 @@ MANTA_REQUEST_SOURCE_DAILY=$MANTA_REQUEST_DEST
 MANTA_STORAGE_SOURCE_MONTHLY=$MANTA_STORAGE_DEST
 MANTA_REQUEST_SOURCE_MONTHLY=$MANTA_REQUEST_DEST
 
+
+# Customer-accessible usage reports
+MANTA_USAGE_STORAGE_HOURLY='reports/storage/$year/$month/$day/$hour'
+MANTA_USAGE_REQUEST_HOURLY='reports/request/$year/$month/$day/$hour'
+MANTA_USAGE_COMPUTE_HOURLY='reports/compute/$year/$month/$day/$hour'
+
+MANTA_USAGE_STORAGE_DAILY='reports/storage/$year/$month/$day'
+MANTA_USAGE_REQUEST_DAILY='reports/request/$year/$month/$day'
+MANTA_USAGE_COMPUTE_DAILY='reports/compute/$year/$month/$day'
+
+MANTA_USAGE_STORAGE_MONTHLY='reports/storage/$year/$month'
+MANTA_USAGE_REQUEST_MONTHLY='reports/request/$year/$month'
+MANTA_USAGE_COMPUTE_MONTHLY='reports/compute/$year/$month'
+
+MANTA_USAGE_NAME_STORAGE_HOURLY='usage-split-storage-hourly-$year-$month-$day-$hour'
+MANTA_USAGE_NAME_REQUEST_HOURLY='usage-split-request-hourly-$year-$month-$day-$hour'
+
+MANTA_USAGE_NAME_STORAGE_DAILY='usage-split-storage-daily-$year-$month-$day'
+MANTA_USAGE_NAME_REQUEST_DAILY='usage-split-request-daily-$year-$month-$day'
+
+MANTA_USAGE_NAME_STORAGE_MONTHLY='usage-split-storage-monthly-$year-$month'
+MANTA_USAGE_NAME_REQUEST_MONTHLY='usage-split-request-monthly-$year-$month'
+
+MANTA_USAGE_NAME_HOURLY='h$hour.txt.$ZEXT'
+MANTA_USAGE_NAME_DAILY='d$day.txt.$ZEXT'
+MANTA_USAGE_NAME_MONTHLY='m$month.txt.$ZEXT'
 
 ## Number of reducers
 

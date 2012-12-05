@@ -1,0 +1,19 @@
+#!/bin/bash -x
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $dir/../cfg/config.sh
+
+lookup=$1
+srcFD=0 # stdin
+lookupFD=5 # file descriptors 3-9 are for available for shell use
+
+eval exec "$lookupFD<$lookup" # reads in the lookup file using a FD
+
+# read the lookup and source files simultaneously
+while read -r login <&$lookupFD && read -r srcLine <&$srcFD; do
+        mmkdir $login/$dest
+        echo $srcLine \
+        | json -ga -o jsony-0 -e "owner = undefined"  \
+        | $ZIP \
+        | mpipe $login/$dest/$name
+done
