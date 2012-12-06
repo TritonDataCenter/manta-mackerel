@@ -23,6 +23,20 @@ Configuration file is in /cfg.
 Storage data comes from pg dumps from each moray shard.
 Request data comes from audit logs from muskie.
 
+# Running metering jobs
+
+Run metering jobs using
+
+    scripts/meter.sh -d <date> -p <period> -s <service>
+
+where date is in some format readable by date(1), period is one of "hourly",
+"daily", or "monthly" and service is one of "storage", "request", or "compute".
+
+Examples:
+
+    scripts/meter.sh -p hourly -s storage -d "`date`"
+    scripts/meter.sh -p monthly -s request -d "`date -d '1 hour ago'`"
+
 # Testing
 
     make test
