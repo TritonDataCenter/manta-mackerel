@@ -11,9 +11,8 @@ eval exec "$lookupFD<$lookup" # reads in the lookup file using a FD
 
 # read the lookup and source files simultaneously
 while read -r login <&$lookupFD && read -r srcLine <&$srcFD; do
-        mmkdir $login/$dest
         echo $srcLine \
         | json -ga -o jsony-0 -e "owner = undefined"  \
         | $ZIP \
-        | mpipe $login/$dest/$name
+        | mpipe /$login/$dest/$name
 done
