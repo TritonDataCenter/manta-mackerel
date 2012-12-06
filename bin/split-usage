@@ -11,7 +11,7 @@ eval exec "$lookupFD<$lookup" # reads in the lookup file using a FD
 
 # read the lookup and source files simultaneously
 while read -r login <&$lookupFD && read -r srcLine <&$srcFD; do
-        namepace=$(echo $srcLine | json -ga namespace)
+        namespace=$(echo $srcLine | json -ga namespace)
         if [ ! -z $namespace ]; then
                 name=$namespace-$name
         fi
