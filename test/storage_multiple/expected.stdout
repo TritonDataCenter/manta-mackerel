@@ -1,2 +1,2 @@
-{"owner":"fred1","objects":3,"keys":3,"bytes-total":32768,"directories":0}
-{"owner":"fred2","objects":2,"keys":2,"bytes-total":16384,"directories":0}
+{"owner":"fred2","namespace":"stor","objects":2,"keys":2,"bytes-total":16384,"directories":0}
+{"owner":"fred1","namespace":"stor","objects":3,"keys":3,"bytes-total":32768,"directories":0}

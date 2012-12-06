@@ -1,0 +1,4 @@
+{"owner":"fred1","namespace":"stor","objects":6,"keys":6,"bytes-total":65536,"directories":0}
+{"owner":"fred1","namespace":"jobs","objects":10,"keys":6,"bytes-total":65536,"directories":0}
+{"owner":"fred2","namespace":"public","objects":2,"keys":2,"bytes-total":16384,"directories":0}
+{"owner":"fred2","namespae":"jobs","objects":2,"keys":2,"bytes-total":16384,"directories":0}
