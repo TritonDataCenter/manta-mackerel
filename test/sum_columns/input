@@ -1,0 +1,6 @@
+{"owner":"fred1","namespace":"stor","objects":3,"keys":3,"bytes-total":32768,"directories":0}
+{"owner":"fred1","namespace":"stor","objects":3,"keys":3,"bytes-total":32768,"directories":0}
+{"owner":"fred1","namespace":"jobs","objects":5,"keys":3,"bytes-total":32768,"directories":0}
+{"owner":"fred1","namespace":"jobs","objects":5,"keys":3,"bytes-total":32768,"directories":0}
+{"owner":"fred2","namespace":"public","objects":2,"keys":2,"bytes-total":16384,"directories":0}
+{"owner":"fred2","namespae":"jobs","objects":2,"keys":2,"bytes-total":16384,"directories":0}

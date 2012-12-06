@@ -14,21 +14,25 @@ sort \
         numKeys = $1;
         owner = $2;
         type = $3;
-        contentLength = $5;
-        numCopies = $6;
+        dirname = $4;
+        contentLength = $6;
+        numCopies = $7;
+
+        split($4, path, "/");
+        namespace = path[3];
 
         if(type == "directory") {
-                directories[owner] += $1;
+                directories[owner,namespace] += $1;
                 next;
         }
 
-        objects[owner] += 1;
-        keys[owner] += numKeys;
+        objects[owner,namespace] += 1;
+        keys[owner,namespace] += numKeys;
 
         # numBlocks = Math.ceil(contentLength/blockSize);
         numBlocks = (contentLength/blockSize) == int(contentLength/blockSize) ?
                 (contentLength/blockSize) : (int(contentLength/blockSize) + 1);
-        size[owner] += numBlocks * numCopies * blockSize;
+        size[owner,namespace] += numBlocks * numCopies * blockSize;
 }
 END {
         for(i in keys) {

@@ -13,6 +13,6 @@ $ZCAT \
                         __meteringIndexOfValue);
 
         json -ga "entry[$index]" \
-        | json -ga owner type objectId contentLength sharks.length;
+        | json -ga owner type dirname objectId contentLength sharks.length;
 ) \
-| msplit -n $STORAGE_NUM_REDUCERS1_HOURLY -d " " -f 1,3
+| msplit -n $STORAGE_NUM_REDUCERS1_HOURLY -d " " -f 1,4

@@ -16,9 +16,10 @@ awk \
         }
 }
 END {
-        print "# owner objects keys bytes-total directories"
+        print "# owner namespace objects keys bytes-total directories"
         for (o in owners) {
-                printf("%s ",owners[o]);
+                split(owners[o],s,"\034")
+                printf("%s %s ", s[1], s[2]);
                 for (i = 2; i < NF; i++) {
                         printf("%s ", sums[owners[o],i]);
                 }
@@ -44,7 +45,7 @@ NR == 1 && /^[[:space:]]*#/ {
                 if (isnum($i)) {
                         printf(",\"%s\":%s", keys[i], $i);
                 } else {
-                        printf(",\"%s\":\"%s\"", keys[1], $1);
+                        printf(",\"%s\":\"%s\"", keys[i], $i);
                 }
         }
         printf("}\n");
