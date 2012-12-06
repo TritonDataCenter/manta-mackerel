@@ -1,6 +1,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-PATH=/opt/local/gnu/bin:/opt/marlin/node_modules/manta/bin:$PATH
+PATH=/opt/local/gnu/bin:/opt/marlin/node_modules/manta/bin:/opt/smartdc/mola/node_modules/.bin:$PATH
 MANTA_USER=poseidon
 MANTA_KEY_ID=$(ssh-keygen -l -f /root/.ssh/id_rsa.pub | awk '{print $2}')
 MANTA_URL=$(mdata-get manta_url)
