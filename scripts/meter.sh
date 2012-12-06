@@ -22,6 +22,7 @@ function warn() {
 }
 
 function monitor() {
+        local jobid=$1
         local count=0
         local t=1
 
@@ -35,7 +36,7 @@ function monitor() {
                 fi
 
                 sleep $t
-                t=$(expr $t * 2)
+                t=$(expr $t \* 2)
                 count=$(expr $count + 1)
         done
 
@@ -50,13 +51,18 @@ function monitor() {
 }
 
 function split-usage() {
-        local output=$(mjob -o $job)
+        local output=$(mjob -o $jobid)
+
+        if [ -z $output ]; then
+                echo "Warning: no output for job $jobid. Exiting.."
+                exit 1
+        fi
 
         # create lookup file
         mget $output \
         | $ZCAT \
         | json -ga owner \
-        | xargs -I owner redis-cli -H $(mdata-get auth_cache_name) /uuid/owner \
+        | xargs -I xx redis-cli -h $(mdata-get auth_cache_name) get /uuid/xx \
         | tr -d \" > /tmp/_mackerel_lookup
 
         mput -f /tmp/_mackerel_lookup $LOOKUP
@@ -74,8 +80,10 @@ function split-usage() {
         name_fmt=${!name_fmt}
         eval name=$name_fmt
 
+        cat /tmp/_mackerel_lookup | xargs -I xx mmkdir -p /xx/$dest_dir
+
         # create the job
-        local jobid=$(mmkjob \
+        local job=$(mmkjob \
                 -n "$job_name" \
                 -s "$LOOKUP" \
                 -s "$CONFIG" \
@@ -84,6 +92,15 @@ function split-usage() {
                     | dest=$dest_dir name=$name \
                         /assets/$SPLIT_USAGE_MAP_CMD /assets/$LOOKUP"
         )
+
+        echo "$output" | maddkeys $job
+        warn "$?" "adding keys to $job"
+
+        # end the job
+        mjob -e $job
+        fatal "$?" "ending job $job"
+
+        monitor $job
 }
 
 # -- Mainline -- #
@@ -143,17 +160,17 @@ do
 done
 
 if [ -z $date ]; then
-        echo "Date required." >&2
+        echo "Date required (-d)." >&2
         exit 1
 fi
 
 if [ -z $service ]; then
-        echo "Service required. One of 'request', 'storage', or 'compute'" >&2
+        echo "Service required (-s). One of 'request', 'storage', or 'compute'" >&2
         exit 1
 fi
 
 if [ -z $period ]; then
-        echo "Period required. One of 'hourly', 'daily', or 'monthly'" >&2
+        echo "Period required (-p). One of 'hourly', 'daily', or 'monthly'" >&2
         exit 1
 fi
 
@@ -262,7 +279,7 @@ fi
 fatal "$?" "creating job $job_name"
 
 # add keys
-printf -v keygen "%KEYGEN_%s_%s" $service $period
+printf -v keygen "KEYGEN_%s_%s" $service $period
 keygen=${!keygen}
 $keygen $date | maddkeys $jobid
 warn "$?" "adding keys to $jobid"
@@ -272,6 +289,6 @@ mjob -e $jobid
 fatal "$?" "ending job $jobid"
 
 # monitor for output
-monitor
+monitor $jobid
 # split usage into customer directories
 split-usage
