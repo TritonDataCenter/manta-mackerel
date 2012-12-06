@@ -29,7 +29,7 @@ DOC_FILES        = index.restdown
 BASH_FILES      := $(shell find scripts -name '*.sh') $(shell find bin -type f)
 JS_FILES        := $(shell find lib -name '*.js')
 JSL_CONF_NODE    = tools/jsl.node.conf
-3JSL_FILES_NODE   = $(JS_FILES)
+JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES    = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
