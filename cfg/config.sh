@@ -12,6 +12,8 @@ ZIP=gzip        # command to compress from stdin
 ZCAT=gzcat      # command to decompress to stdout
 ZEXT=gz         # file extension for compressed files
 
+HEADER_CONTENT_TYPE="application/x-gzip"
+
 ## Local files
 
 # Common functions

@@ -14,5 +14,5 @@ while read -r login <&$lookupFD && read -r srcLine <&$srcFD; do
         echo $srcLine \
         | json -ga -o jsony-0 -e "owner = undefined"  \
         | $ZIP \
-        | mpipe /$login/$dest/$name
+        | mpipe -H "content-type: $HEADER_CONTENT_TYPE" /$login/$dest/$name
 done

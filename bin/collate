@@ -5,4 +5,4 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
 $ZIP \
-| mpipe $dest/$name
+| mpipe -H "content-type: $HEADER_CONTENT_TYPE" $dest/$name
