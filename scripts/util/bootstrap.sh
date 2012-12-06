@@ -1,6 +1,9 @@
 #!/bin/bash -x
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../../cfg/config.sh
+MANTA_USER=poseidon
+MANTA_KEY_ID=$(ssh-keygen -l -f /root/.ssh/id_rsa.pub | awk '{print $2}')
+MANTA_URL=$(mdata-get manta_url)
 
 mmkdir -p $ASSETS_DIR/bin
 mmkdir -p $ASSETS_DIR/cfg
