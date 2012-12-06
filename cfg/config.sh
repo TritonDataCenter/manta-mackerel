@@ -111,17 +111,17 @@ MANTA_REQUEST_SOURCE_MONTHLY=$MANTA_REQUEST_DEST
 
 
 # Customer-accessible usage reports
-MANTA_USAGE_STORAGE_HOURLY='reports/storage/$year/$month/$day/$hour'
-MANTA_USAGE_REQUEST_HOURLY='reports/request/$year/$month/$day/$hour'
-MANTA_USAGE_COMPUTE_HOURLY='reports/compute/$year/$month/$day/$hour'
+MANTA_USAGE_STORAGE_HOURLY='reports/usage/storage/$year/$month/$day/$hour'
+MANTA_USAGE_REQUEST_HOURLY='reports/usage/request/$year/$month/$day/$hour'
+MANTA_USAGE_COMPUTE_HOURLY='reports/usage/compute/$year/$month/$day/$hour'
 
-MANTA_USAGE_STORAGE_DAILY='reports/storage/$year/$month/$day'
-MANTA_USAGE_REQUEST_DAILY='reports/request/$year/$month/$day'
-MANTA_USAGE_COMPUTE_DAILY='reports/compute/$year/$month/$day'
+MANTA_USAGE_STORAGE_DAILY='reports/usage/storage/$year/$month/$day'
+MANTA_USAGE_REQUEST_DAILY='reports/usage/request/$year/$month/$day'
+MANTA_USAGE_COMPUTE_DAILY='reports/usage/compute/$year/$month/$day'
 
-MANTA_USAGE_STORAGE_MONTHLY='reports/storage/$year/$month'
-MANTA_USAGE_REQUEST_MONTHLY='reports/request/$year/$month'
-MANTA_USAGE_COMPUTE_MONTHLY='reports/compute/$year/$month'
+MANTA_USAGE_STORAGE_MONTHLY='reports/usage/storage/$year/$month'
+MANTA_USAGE_REQUEST_MONTHLY='reports/usage/request/$year/$month'
+MANTA_USAGE_COMPUTE_MONTHLY='reports/usage/compute/$year/$month'
 
 MANTA_USAGE_NAME_STORAGE_HOURLY='usage-split-storage-hourly-$year-$month-$day-$hour'
 MANTA_USAGE_NAME_REQUEST_HOURLY='usage-split-request-hourly-$year-$month-$day-$hour'

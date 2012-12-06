@@ -27,6 +27,7 @@ function warn() {
 }
 
 function monitor() {
+        local jobid=$1
         local count=0
         local t=1
 
@@ -109,7 +110,7 @@ function split-usage() {
         mjob -e $job
         fatal "$?" "ending job $job"
 
-        monitor $job
+        monitor $job &
 }
 
 
@@ -298,7 +299,7 @@ function main() {
 
         local jobid
         makejob # create the job - $jobid is set as a side effect of this call
-        monitor # monitor for output
+        monitor $jobid & # monitor for output
         split-usage # split usage into customer directories
 }
 
