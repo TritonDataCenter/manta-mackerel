@@ -294,6 +294,7 @@ function main() {
                 exit 1
         fi
 
+        $dir/util/bootstrap.sh
 
         local jobid
         makejob # create the job - $jobid is set as a side effect of this call
