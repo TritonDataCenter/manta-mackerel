@@ -95,9 +95,9 @@ MANTA_JOB_NAME_REQUEST_DAILY='metering-request-daily-$year-$month-$day'
 MANTA_JOB_NAME_STORAGE_MONTHLY='metering-storage-monthly-$year-$month'
 MANTA_JOB_NAME_REQUEST_MONTHLY='metering-request-monthly-$year-$month'
 
-MANTA_NAME_HOURLY='h$hour.txt.$ZEXT'
-MANTA_NAME_DAILY='d$day.txt.$ZEXT'
-MANTA_NAME_MONTHLY='m$month.txt.$ZEXT'
+MANTA_NAME_HOURLY='h$hour.json.$ZEXT'
+MANTA_NAME_DAILY='d$day.json.$ZEXT'
+MANTA_NAME_MONTHLY='m$month.json.$ZEXT'
 
 # Source directories to pull logs from
 MANTA_STORAGE_SOURCE_HOURLY=/$MANTA_USER/stor/manatee_backups
@@ -132,9 +132,9 @@ MANTA_USAGE_NAME_REQUEST_DAILY='usage-split-request-daily-$year-$month-$day'
 MANTA_USAGE_NAME_STORAGE_MONTHLY='usage-split-storage-monthly-$year-$month'
 MANTA_USAGE_NAME_REQUEST_MONTHLY='usage-split-request-monthly-$year-$month'
 
-MANTA_USAGE_NAME_HOURLY='h$hour.txt.$ZEXT'
-MANTA_USAGE_NAME_DAILY='d$day.txt.$ZEXT'
-MANTA_USAGE_NAME_MONTHLY='m$month.txt.$ZEXT'
+MANTA_USAGE_NAME_HOURLY='h$hour.json.$ZEXT'
+MANTA_USAGE_NAME_DAILY='d$day.json.$ZEXT'
+MANTA_USAGE_NAME_MONTHLY='m$month.json.$ZEXT'
 
 ## Number of reducers
 
