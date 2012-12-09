@@ -59,7 +59,7 @@ function split-usage() {
         local output=$(mjob -o $jobid)
 
         if [ -z $output ]; then
-                echo "Warning: no output for job $jobid. Exiting.."
+                echo "Error: no output for job $jobid. Exiting.."
                 exit 1
         fi
 

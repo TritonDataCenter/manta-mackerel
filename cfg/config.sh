@@ -1,9 +1,9 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 PATH=/opt/local/gnu/bin:/opt/marlin/node_modules/manta/bin:/opt/smartdc/mola/node_modules/.bin:/opt/smartdc/mola/build/node/bin:$PATH
-MANTA_USER=poseidon
-MANTA_KEY_ID=$(ssh-keygen -l -f /root/.ssh/id_rsa.pub | awk '{print $2}')
-MANTA_URL=$(mdata-get manta_url)
+export MANTA_USER=poseidon
+export MANTA_KEY_ID=$(ssh-keygen -l -f /root/.ssh/id_rsa.pub | awk '{print $2}')
+export MANTA_URL=$(mdata-get manta_url)
 
 MANTA_BASE=/$MANTA_USER/stor/usage # base directory for metering
 

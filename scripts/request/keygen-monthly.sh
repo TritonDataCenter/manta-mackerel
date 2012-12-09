@@ -7,4 +7,4 @@ source $COMMON
 
 getDate "$@"
 
-mfind -n "d" $MANTA_REQUEST_SOURCE_MONTHLY/$year/$month
+mfind -n "d[0-9][0-9]" $MANTA_REQUEST_SOURCE_MONTHLY/$year/$month
