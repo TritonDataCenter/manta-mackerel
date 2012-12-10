@@ -13,10 +13,13 @@ eval exec "$lookupFD<$lookup" # reads in the lookup file using a FD
 while read -r login <&$lookupFD && read -r srcLine <&$srcFD; do
         namespace=$(echo $srcLine | json -ga namespace)
         if [ ! -z $namespace ]; then
-                name=$namespace-$name
+                file_name=$namespace-$name
+        else
+                file_name=$name
         fi
+
         echo $srcLine \
         | json -ga -o jsony-0 -e "owner = undefined"  \
         | $ZIP \
-        | mpipe -H "content-type: $HEADER_CONTENT_TYPE" /$login/$dest/$name
+        | mpipe -H "content-type: $HEADER_CONTENT_TYPE" /$login/$dest/$file_name
 done
