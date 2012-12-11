@@ -200,9 +200,9 @@ function makejob() {
                                 -s "$STORAGE_REDUCE_CMD_DAILY" \
                                 -s "$COLLATE_CMD" \
                                 -s "$CONFIG" \
-                                -s "$LIB_SUM_COLUMNS" \
+                                -s "$LIB_AVG_COLUMNS" \
                                 -r "/assets/$STORAGE_REDUCE_CMD_DAILY" \
-                                        -c "$STORAGE_NUM_REDUCERS_DAILY"
+                                        -c "$STORAGE_NUM_REDUCERS_DAILY" \
                                 -r "dest=$dest name=$name /assets/$COLLATE_CMD"
                         )
                 fi
@@ -212,9 +212,9 @@ function makejob() {
                                 -s "$STORAGE_REDUCE_CMD_MONTHLY" \
                                 -s "$COLLATE_CMD" \
                                 -s "$CONFIG" \
-                                -s "$LIB_SUM_COLUMNS" \
+                                -s "$LIB_AVG_COLUMNS" \
                                 -r "/assets/$STORAGE_REDUCE_CMD_MONTHLY" \
-                                        -c "$STORAGE_NUM_REDUCERS_MONTHLY"
+                                        -c "$STORAGE_NUM_REDUCERS_MONTHLY" \
                                 -r "dest=$dest name=$name /assets/$COLLATE_CMD"
                         )
                 fi
