@@ -1,4 +1,4 @@
 #!/bin/bash
 function msplit () { cat; }; export -f msplit;
 function mpipe () { cat; }; export -f mpipe;
-cat input | gzip | ../../bin/avg-columns | ../../bin/collate | gzcat
+cat input | gzip | ../../bin/sum-columns | ../../bin/collate | gzcat

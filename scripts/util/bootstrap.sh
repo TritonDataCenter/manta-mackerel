@@ -14,5 +14,7 @@ mput -f $dir/../../bin/request-map $REQUEST_MAP_CMD_HOURLY
 mput -f $dir/../../bin/request-reduce $REQUEST_REDUCE_CMD_HOURLY
 mput -f $dir/../../lib/sum-columns.js $LIB_SUM_COLUMNS
 mput -f $dir/../../bin/sum-columns $SUM_COLUMNS
+mput -f $dir/../../lib/avg-columns.js $LIB_AVG_COLUMNS
+mput -f $dir/../../bin/avg-columns $AVG_COLUMNS
 mput -f $dir/../../bin/collate $COLLATE_CMD
 mput -f $dir/../../bin/split-usage $SPLIT_USAGE_MAP_CMD
