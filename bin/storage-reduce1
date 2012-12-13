@@ -4,42 +4,5 @@
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
-sort \
-| uniq -c \
-| awk \
-'BEGIN {
-        blockSize='$BLOCK_SIZE';
-}
-{
-        numKeys = $1;
-        owner = $2;
-        type = $3;
-        dirname = $4;
-        contentLength = $6;
-        numCopies = $7;
-
-        split($4, path, "/");
-        namespace = path[3];
-
-        if(type == "directory") {
-                directories[owner,namespace] += $1;
-                next;
-        }
-
-        objects[owner,namespace] += 1;
-        keys[owner,namespace] += numKeys;
-
-        # numBlocks = Math.ceil(contentLength/blockSize);
-        numBlocks = (contentLength/blockSize) == int(contentLength/blockSize) ?
-                (contentLength/blockSize) : (int(contentLength/blockSize) + 1);
-        size[owner,namespace] += numBlocks * numCopies * blockSize;
-}
-END {
-        for(i in keys) {
-                if (directories[i] == "") {
-                        directories[i] = 0;
-                }
-                print i, objects[i], keys[i], size[i], directories[i];
-        }
-}' \
-| msplit -n $STORAGE_NUM_REDUCERS2_HOURLY -d " " -f 1
+$dir/../lib/storage-reduce1.js \
+| msplit-json -n $STORAGE_NUM_REDUCERS2_HOURLY owner
