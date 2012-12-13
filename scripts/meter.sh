@@ -299,7 +299,7 @@ function main() {
 
         local jobid
         makejob # create the job - $jobid is set as a side effect of this call
-        monitor $jobid & # monitor for output
+        monitor $jobid # monitor for output
         split-usage # split usage into customer directories
 }
 

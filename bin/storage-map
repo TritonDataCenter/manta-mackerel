@@ -5,14 +5,5 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
 $ZCAT \
-| ( \
-        # gets the index of the _value field from the first schema line
-        read -r line;
-        index=$(echo $line | \
-                json -e '__meteringIndexOfValue=keys.indexOf("_value")' \
-                        __meteringIndexOfValue);
-
-        json -ga "entry[$index]" \
-        | json -ga owner type dirname objectId contentLength sharks.length;
-) \
-| msplit -n $STORAGE_NUM_REDUCERS1_HOURLY -d " " -f 1,4
+| $dir/../lib/storage-map.js \
+| msplit-json -n $STORAGE_NUM_REDUCERS1_HOURLY owner type objectId

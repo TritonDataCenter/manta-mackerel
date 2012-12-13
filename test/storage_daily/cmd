@@ -1,4 +1,5 @@
 #!/bin/bash
+function msplit-json () { cat; }; export -f msplit-json;
 function msplit () { cat; }; export -f msplit;
 function mpipe () { cat; }; export -f mpipe;
 cat input | gzip | ../../bin/avg-columns | ../../bin/collate | gzcat
