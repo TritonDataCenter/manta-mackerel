@@ -42,7 +42,6 @@ COLLATE_CMD=$ASSETS_DIR/bin/collate
 SUM_COLUMNS=$ASSETS_DIR/bin/sum-columns
 AVG_COLUMNS=$ASSETS_DIR/bin/avg-columns
 
-BLOCK_SIZE=4096 # Manta block size in bytes
 STORAGE_MAP_CMD_HOURLY=$ASSETS_DIR/bin/storage-map
 STORAGE_REDUCE1_CMD_HOURLY=$ASSETS_DIR/bin/storage-reduce1
 STORAGE_REDUCE2_CMD_HOURLY=$ASSETS_DIR/bin/storage-reduce2
@@ -60,6 +59,9 @@ SPLIT_USAGE_MAP_CMD=$ASSETS_DIR/bin/split-usage
 # library files
 LIB_SUM_COLUMNS=$ASSETS_DIR/lib/sum-columns.js
 LIB_AVG_COLUMNS=$ASSETS_DIR/lib/avg-columns.js
+LIB_CARRIER=$ASSETS_DIR/lib/carrier.js
+LIB_STORAGE_MAP=$ASSETS_DIR/lib/storage-map.js
+LIB_STORAGE_REDUCE1=$ASSETS_DIR/lib/storage-reduce1.js
 
 CONFIG=$ASSETS_DIR/cfg/config.sh # the configuration file
 
@@ -67,6 +69,16 @@ LOOKUP=$ASSETS_DIR/tmp/lookup # where to put the redis lookup list
 
 
 ## Manta directories for metering source files and result directories
+
+# Source directories to pull logs from
+MANTA_STORAGE_SOURCE_HOURLY=/$MANTA_USER/stor/manatee_backups
+MANTA_REQUEST_SOURCE_HOURLY=/$MANTA_USER/stor/logs/muskie
+
+MANTA_STORAGE_SOURCE_DAILY=$MANTA_STORAGE_DEST
+MANTA_REQUEST_SOURCE_DAILY=$MANTA_REQUEST_DEST
+
+MANTA_STORAGE_SOURCE_MONTHLY=$MANTA_STORAGE_DEST
+MANTA_REQUEST_SOURCE_MONTHLY=$MANTA_REQUEST_DEST
 
 # Destinations for results
 MANTA_STORAGE_DEST=$MANTA_BASE/storage
@@ -88,6 +100,7 @@ MANTA_STORAGE_DEST_MONTHLY='$MANTA_STORAGE_DEST/$year/$month'
 MANTA_REQUEST_DEST_MONTHLY='$MANTA_REQUEST_DEST/$year/$month'
 MANTA_COMPUTE_DEST_MONTHLY='$MANTA_COMPUTE_DEST/$year/$month'
 
+# job name format
 MANTA_JOB_NAME_STORAGE_HOURLY='metering-storage-hourly-$year-$month-$day-$hour'
 MANTA_JOB_NAME_REQUEST_HOURLY='metering-request-hourly-$year-$month-$day-$hour'
 
@@ -97,20 +110,10 @@ MANTA_JOB_NAME_REQUEST_DAILY='metering-request-daily-$year-$month-$day'
 MANTA_JOB_NAME_STORAGE_MONTHLY='metering-storage-monthly-$year-$month'
 MANTA_JOB_NAME_REQUEST_MONTHLY='metering-request-monthly-$year-$month'
 
+# output file name format
 MANTA_NAME_HOURLY='h$hour.json.$ZEXT'
 MANTA_NAME_DAILY='d$day.json.$ZEXT'
 MANTA_NAME_MONTHLY='m$month.json.$ZEXT'
-
-# Source directories to pull logs from
-MANTA_STORAGE_SOURCE_HOURLY=/$MANTA_USER/stor/manatee_backups
-MANTA_REQUEST_SOURCE_HOURLY=/$MANTA_USER/stor/logs/muskie
-
-MANTA_STORAGE_SOURCE_DAILY=$MANTA_STORAGE_DEST
-MANTA_REQUEST_SOURCE_DAILY=$MANTA_REQUEST_DEST
-
-MANTA_STORAGE_SOURCE_MONTHLY=$MANTA_STORAGE_DEST
-MANTA_REQUEST_SOURCE_MONTHLY=$MANTA_REQUEST_DEST
-
 
 # Customer-accessible usage reports
 MANTA_USAGE_STORAGE_HOURLY='reports/usage/storage/$year/$month/$day/$hour'
@@ -125,6 +128,7 @@ MANTA_USAGE_STORAGE_MONTHLY='reports/usage/storage/$year/$month'
 MANTA_USAGE_REQUEST_MONTHLY='reports/usage/request/$year/$month'
 MANTA_USAGE_COMPUTE_MONTHLY='reports/usage/compute/$year/$month'
 
+# job name format
 MANTA_USAGE_NAME_STORAGE_HOURLY='usage-split-storage-hourly-$year-$month-$day-$hour'
 MANTA_USAGE_NAME_REQUEST_HOURLY='usage-split-request-hourly-$year-$month-$day-$hour'
 
@@ -134,6 +138,7 @@ MANTA_USAGE_NAME_REQUEST_DAILY='usage-split-request-daily-$year-$month-$day'
 MANTA_USAGE_NAME_STORAGE_MONTHLY='usage-split-storage-monthly-$year-$month'
 MANTA_USAGE_NAME_REQUEST_MONTHLY='usage-split-request-monthly-$year-$month'
 
+# output file name format
 MANTA_USAGE_NAME_HOURLY='h$hour.json.$ZEXT'
 MANTA_USAGE_NAME_DAILY='d$day.json.$ZEXT'
 MANTA_USAGE_NAME_MONTHLY='m$month.json.$ZEXT'

@@ -186,6 +186,9 @@ function makejob() {
                                 -s "$STORAGE_REDUCE2_CMD_HOURLY" \
                                 -s "$COLLATE_CMD" \
                                 -s "$CONFIG" \
+                                -s "$LIB_CARRIER" \
+                                -s "$LIB_STORAGE_MAP" \
+                                -s "$LIB_STORAGE_REDUCE1" \
                                 -m "/assets/$STORAGE_MAP_CMD_HOURLY" \
                                 -r "/assets/$STORAGE_REDUCE1_CMD_HOURLY" \
                                         -c "$STORAGE_NUM_REDUCERS1_HOURLY" \
