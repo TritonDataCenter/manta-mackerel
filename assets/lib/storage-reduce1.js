@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
-var carrier = require('./carrier');
+var mod_carrier = require('./carrier');
 
 /* BEGIN JSSTYLED */
 /*
@@ -81,7 +81,7 @@ var carrier = require('./carrier');
  *      "directories": directories,
  *      "keys": keys,
  *      "objects": objects,
- *      "bytes:" bytes
+ *      "bytes": bytes
  * }
  */
 
@@ -103,29 +103,29 @@ function addNamespace(namespace, aggr) {
         };
 }
 
-function count(obj, aggr) {
-        var owner = obj.owner;
-        var type = obj.type;
-        var namespace = obj.key.split('/')[2]; // /:uuid/:namespace/...
+function count(record, aggr) {
+        var owner = record.owner;
+        var type = record.type;
+        var namespace = record.key.split('/')[2]; // /:uuid/:namespace/...
 
-        if (aggr[owner] === undefined) {
+        if (typeof (aggr[owner]) === 'undefined') {
                 addOwner(owner, aggr);
         }
 
-        if (aggr[owner].counts[namespace] === undefined) {
+        if (typeof (aggr[owner].counts[namespace]) === 'undefined') {
                 addNamespace(namespace, aggr[owner]);
         }
 
         if (type === 'directory') {
                 aggr[owner].counts[namespace].directories += 1;
         } else if (type === 'object') {
-                var objectId = obj.objectId;
-                var size = obj.contentLength * obj.sharks.length;
+                var objectId = record.objectId;
+                var size = record.contentLength * record.sharks.length;
 
                 aggr[owner].counts[namespace].keys += 1;
 
                 // check for unique object
-                if (aggr[owner].objectIds[objectId] === undefined) {
+                if (typeof (aggr[owner].objectIds[objectId]) === 'undefined') {
                         aggr[owner].objectIds[objectId] = null; // add to index
                         aggr[owner].counts[namespace].objects += 1;
                         aggr[owner].counts[namespace].bytes += size;
@@ -153,19 +153,12 @@ function printResults(aggr) {
 
 
 function main() {
-        var carry = carrier.carry(process.openStdin());
+        var carry = mod_carrier.carry(process.openStdin());
 
         var aggr = {};
         carry.on('line', function onLine(line) {
-                var obj;
-                try {
-                        obj = JSON.parse(line);
-                } catch (e) {
-                        console.warn('Error: line not json: %s', line);
-                        return;
-                }
-
-                count(obj, aggr);
+                var record = JSON.parse(line);
+                count(record, aggr);
         });
 
         carry.on('end', function onEnd() {

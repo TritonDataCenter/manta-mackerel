@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 // Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
-var util = require('util');
-var events = require('events');
-var carrier = require('./carrier');
+var mod_carrier = require('./carrier');
 
 function isNum(n) {
         return (!isNaN(parseFloat(n)) && isFinite(n));
@@ -58,7 +56,7 @@ function onEnd(aggr) {
 
 
 function main() {
-        var carry = carrier.carry(process.openStdin());
+        var carry = mod_carrier.carry(process.openStdin());
 
         var aggr = {};
 

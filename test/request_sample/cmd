@@ -1,7 +1,6 @@
 #!/bin/bash -x
-MAP=../../bin/request-map
-REDUCE=../../bin/request-reduce
-COLLATE=../../bin/collate
+MAP=../../assets/bin/request-map
+REDUCE=../../assets/bin/request-reduce
 function msplit () { cat; }; export -f msplit;
 function mpipe () { cat; }; export -f mpipe;
-cat input | gzip | $MAP | $REDUCE | $COLLATE | gzcat
+cat input | $MAP | $REDUCE

@@ -1,8 +1,7 @@
-#!/bin/bash -x
+#!/bin/bash
 # Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
-$ZCAT \
-| $dir/../lib/avg-columns.js
+$dir/../lib/storage-reduce3.js

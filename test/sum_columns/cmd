@@ -1,1 +1,1 @@
-cat input | ../../lib/sum-columns.js
+cat input | ../../assets/lib/sum-columns.js
