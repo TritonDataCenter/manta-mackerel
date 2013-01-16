@@ -1,9 +1,7 @@
-#!/bin/bash -x
+#!/bin/bash
 # Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
-$ZCAT \
-| $dir/../lib/storage-map.js \
-| msplit-json -n $STORAGE_NUM_REDUCERS1_HOURLY owner type objectId
+$dir/../lib/avg-columns.js

@@ -1,2 +1,1 @@
-{"owner":"cc56f978-00a7-4908-8d20-9580a3f60a6e","namespace":"stor","directories":301,"keys":1523,"objects":1523,"bytes":221873696}
-{"owner":"cc56f978-00a7-4908-8d20-9580a3f60a6e","namespace":"jobs","directories":0,"keys":1,"objects":1,"bytes":0}
+{"owner":"cc56f978-00a7-4908-8d20-9580a3f60a6e","stor":{"namespace":"stor","directories":301,"keys":1523,"objects":1523,"bytes":221873696},"jobs":{"namespace":"jobs","directories":0,"keys":1,"objects":1,"bytes":0},"public":{"namespace":"public","directories":0,"keys":0,"objects":0,"bytes":0},"reports":{"namespace":"reports","directories":0,"keys":0,"objects":0,"bytes":0}}

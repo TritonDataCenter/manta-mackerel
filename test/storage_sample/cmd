@@ -1,9 +1,9 @@
 #!/bin/bash
-MAP=../../bin/storage-map
-REDUCE1=../../bin/storage-reduce1
-REDUCE2=../../bin/storage-reduce2
-COLLATE=../../bin/collate
+MAP=../../assets/bin/storage-map
+REDUCE1=../../assets/bin/storage-reduce1
+REDUCE2=../../assets/bin/storage-reduce2
+REDUCE3=../../assets/bin/storage-reduce3
 function msplit-json () { cat; }; export -f msplit-json;
 function msplit () { cat; }; export -f msplit;
 function mpipe () { cat; }; export -f mpipe;
-cat input | gzip | $MAP | $REDUCE1 | $REDUCE2 | $COLLATE | gzcat
+cat input | gzip | $MAP | $REDUCE1 | $REDUCE2 | $REDUCE3

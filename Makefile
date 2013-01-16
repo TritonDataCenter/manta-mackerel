@@ -26,15 +26,15 @@ NPM             := npm
 # Files
 #
 DOC_FILES        = index.restdown
-BASH_FILES      := $(shell find scripts -name '*.sh') $(shell find bin -type f)
-JS_FILES        := $(shell find lib -name '*.js')
+BASH_FILES      := $(shell find bin -name '*.sh') $(shell find assets/bin -type f)
+JS_FILES        := $(shell find assets/lib bin lib -name '*.js')
 JSL_CONF_NODE    = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES    = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 
-NODE_PREBUILT_VERSION=v0.8.11
+NODE_PREBUILT_VERSION=v0.8.14
 NODE_PREBUILT_TAG=zone
 
 
@@ -72,10 +72,11 @@ release: all docs $(SMF_MANIFESTS)
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/$(REPO_NAME)
 	@mkdir -p $(TMPDIR)/root
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/$(REPO_NAME)/etc
-	cp -r   $(ROOT)/build \
+	cp -r	$(ROOT)/assets \
+		$(ROOT)/build \
 		$(ROOT)/bin \
 		$(ROOT)/cfg \
-                $(ROOT)/lib \
+		$(ROOT)/lib \
 		$(ROOT)/scripts \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \

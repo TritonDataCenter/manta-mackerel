@@ -4,8 +4,7 @@
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
-$ZCAT \
-| bunyan -j --strict -c "this.audit == true && this.req.url !== '/ping' &&
+bunyan -j --strict -c "this.audit == true && this.req.url !== '/ping' &&
                                 this.req.owner" \
 | json -ga req.owner req.method resHeaderLength reqHeaderLength \
         req.headers.content-length res.headers.content-length \

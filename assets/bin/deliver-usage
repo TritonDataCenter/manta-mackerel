@@ -1,0 +1,8 @@
+#!/bin/bash
+# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $dir/../cfg/config.sh
+
+$dir/../lib/deliver-usage.js | \
+mpipe -H "content-type: $HEADER_CONTENT_TYPE" $DEST

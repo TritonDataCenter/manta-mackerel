@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
-var carrier = require('./carrier');
+var mod_carrier = require('./carrier');
 
 /* BEGIN JSSTYLED */
 /*
@@ -44,12 +44,12 @@ var carrier = require('./carrier');
 /* END JSSTYLED */
 
 function main() {
-        var carry = carrier.carry(process.openStdin());
+        var carry = mod_carrier.carry(process.openStdin());
         var index;
 
         function onLine(line) {
-                var obj = JSON.parse(line);
-                console.log(obj.entry[index]);
+                var record = JSON.parse(line);
+                console.log(record.entry[index]);
         }
 
         carry.once('line', function firstLine(line) {
@@ -58,4 +58,6 @@ function main() {
         });
 }
 
-main();
+if (require.main === module) {
+        main();
+}

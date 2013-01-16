@@ -1,8 +1,8 @@
-#!/bin/bash -x
+#!/bin/bash
 # Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
-$dir/../lib/storage-reduce1.js \
-| msplit-json -n $STORAGE_NUM_REDUCERS2_HOURLY owner
+$dir/../lib/sum-columns.js \
+| msplit-json -n $STORAGE_NUM_REDUCERS3_HOURLY owner
