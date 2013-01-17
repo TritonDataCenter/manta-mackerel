@@ -20,120 +20,165 @@ There are three classes of usage that Mackerel meters:
 * Compute: TODO
 
 Important notes:
-* Disk usage is rounded up to the nearest block and represents actual disk usage.
 * Customers are metered for the object and key when linking to an object they do
   not own.
-* Requests count toward usage for the owner of the Manta object/resource, not
-  the caller of the request.
+* Requests count toward usage for the owner of the Manta object, not the caller
+  of the request.
 
 # Implementation
 
 ## Storage
 
-Storage metering consists of a map phase and three reduce phases.
+Storage hourly metering consists of a map phase three reduce phases.
 
 Storage raw data consists of postgres dumps of each moray shard in JSON format.
 The first line contains the table name and describes the schema for each entry
-(newlines inserted here):
+(pretty-printed here):
 
-    {
-      "name": "manta",
-      "keys": [
-        "_id",
-        "_key",
-        "_value",
-        "_etag",
-        "_mtime",
-        "dirname",
-        "owner",
-        "objectid"
-      ]
-    }
-
-
-Following that are rows represented with an array of values (newlines inserted
-here):
-
-    {
-      "entry": [
-        "5",
-        "/fred/stor/tmp/samplejob-wc.json",
-        "{
-          \"dirname\": \"/fred/stor/tmp\",
-          \"key\": \"/fred/stor/tmp/samplejob-wc.json\",
-          \"mtime\": 1347054537274,
-          \"owner\": \"fred1\",
-          \"type\": \"object\",
-          \"contentLength\": 196,
-          \"contentMD5\": \"4JKnXTaH8Z4JaPnFM2t10A==\",
-          \"contentType\": \"application/json\",
-          \"etag\": \"e092a75d3687f19e0968f9c5336b75d0\",
-          \"objectId\": \"1eedf25b-cb8e-4e1f-af9f-c6c0d1755750\",
-          \"sharks\": [
-            {
-              \"url\": \"http://6a06e135-a698-4dcd-8ee3-6cd8b48995cd.stor.bh1-kvm7.joyent.us\",
-              \"server_uuid\": \"44454c4c-3200-1042-804d-c2c04f575231\",
-              \"zone_uuid\": \"6a06e135-a698-4dcd-8ee3-6cd8b48995cd\"
-            },
-            {
-              \"url\": \"http://a16f20d3-c791-4f7c-8c81-2ccdceea8dd7.stor.bh1-kvm7.joyent.us\",
-              \"server_uuid\": \"44454c4c-3200-1042-804d-c2c04f575231\",
-              \"zone_uuid\": \"a16f20d3-c791-4f7c-8c81-2ccdceea8dd7\"
-            }
+        {
+          "name": "manta",
+          "keys": [
+            "_id",
+            "_txn_snap",
+            "_key",
+            "_value",
+            "_etag",
+            "_mtime",
+            "dirname",
+            "owner",
+            "objectid",
+            "type"
           ]
-        }",
-        "e092a75d3687f19e0968f9c5336b75d0",
-        "e092a75d3687f19e0968f9c5336b75d0",
-        "/fred/stor/tmp",
-        "fred1",
-        "1eedf25b-cb8e-4e1f-af9f-c6c0d1755750"
-      ]
-    }
+        }
 
-The map phase takes the raw data and extracts fields needed for metering from
-the _value field of each entry and outputs it in space-delimited tabular format.
-Each row represents a key pointing to an object in Manta.
+Following that are rows in JSON format with arrays of values that correspond to
+the schema from the first line.
 
-    fred1 object 0a9da7a2-b1ed-46dd-a58d-d87721e4e7f1 4113 2
-    fred2 object 12f392cd-3200-44d5-a443-c0e9e719e781 14 2
-    fred1 object 9d672e71-15fb-4ff3-8e1a-1e9c8fec0752 28 2
-    fred1 directory
-    fred2 object 544a51e5-52c5-49c1-9a6c-358df769dc4d 26 2
-    fred2 object 12f392cd-3200-44d5-a443-c0e9e719e781 14 2
-    fred1 object 1eedf25b-cb8e-4e1f-af9f-c6c0d1755750 196 2
+        {
+          "entry": [
+            "58",
+            "\\N",
+            "/cc56f978-00a7-4908-8d20-9580a3f60a6e/stor/logs/postgresql/2012/11/12/18/49366a2c.log.bz2",
+            "{
+                     \"dirname\":\"/cc56f978-00a7-4908-8d20-9580a3f60a6e/stor/logs/postgresql/2012/11/12/18\",
+                     \"key\":\"/cc56f978-00a7-4908-8d20-9580a3f60a6e/stor/logs/postgresql/2012/11/12/18/49366a2c.log.bz2\",
+                     \"headers\":{},
+                     \"mtime\":1352746869592,
+                     \"owner\":\"cc56f978-00a7-4908-8d20-9580a3f60a6e\",
+                     \"type\":\"object\",
+                     \"contentLength\":84939,
+                     \"contentMD5\":\"iSdRMW7Irsw1UwYoRDFmIA==\",
+                     \"contentType\":\"application/x-bzip2\",
+                     \"etag\":\"5fcc0345-1044-4b67-b7e8-98ee692001bc\",
+                     \"objectId\":\"5fcc0345-1044-4b67-b7e8-98ee692001bc\",
+                     \"sharks\":[{
+                             \"availableMB\":20477,
+                             \"percentUsed\":1,
+                             \"datacenter\":\"bh1-kvm1\",
+                             \"server_uuid\":\"44454c4c-4700-1034-804a-c7c04f354d31\",
+                             \"zone_uuid\":\"ef8b166a-ac3e-4d59-bb73-a65e2b17ba44\",
+                             \"url\":\"http://ef8b166a-ac3e-4d59-bb73-a65e2b17ba44.stor.bh1-kvm1.joyent.us\"
+                     }, {
+                             \"availableMB\":20477,
+                             \"percentUsed\":1,
+                             \"datacenter\":\"bh1-kvm1\",
+                             \"server_uuid\":\"44454c4c-4700-1034-804a-c7c04f354d31\",
+                             \"zone_uuid\":\"59fb8bd3-67a7-4da2-bb68-287e2db01ec1\",
+                             \"url\":\"http://59fb8bd3-67a7-4da2-bb68-287e2db01ec1.stor.bh1-kvm1.joyent.us\"
+                     }]
+             }",
+            "6C4D4587",
+            "1352746869598",
+            "/cc56f978-00a7-4908-8d20-9580a3f60a6e/stor/logs/postgresql/2012/11/12/18",
+            "cc56f978-00a7-4908-8d20-9580a3f60a6e",
+            "5fcc0345-1044-4b67-b7e8-98ee692001bc",
+            "object"
+          ]
+        }
 
-These results are partitioned and sent to reducers based on owner and objectid
-such that all keys that point to the same object for a single owner are
-colocated on the same reducer. Note that with cross-account links, both
-customers will be charged for the same object, even if no extra disk space is
-being used.
+The map phase takes extracts the '_value' field and emits it as output. These
+records are partitioned and sent to reducers by owner, type, and objectId such
+that all keys that point to the same object for a single owner are colocated on
+a reducer. Note that with cross-account links, both users will be charged
+for the same object, even if no extra disk space is being used. Cardinality of
+data is the number of keys in Manta.
 
-The first reduce phase sorts the rows and aggregates each set of
-keys that point to the same object for a single owner.  Each row now represents
-a unique Manta object across a single owner's objects.
-Then, in the same phase, each owner's usage is calculated and pre-aggregated.
-Note that in calculating storage usage, the size of each object is rounded up
-to the nearest block and represents actual bytes used on disk.
+The first reduce phase deduplicates any keys that point to the same object and
+aggregates usage per owner by namespace.  ObjectIds are indexed in-memory and
+any keys that point to the same object only increment a user's number of keys.
+Once aggregation is finished, one record is emitted per owner per namespace
+partitioned to that reducer.
 
-    # owner objects keys bytes-total directories
-    fred1 3 3 32768 1
-    fred2 2 3 16384 0
+        {
+             "owner": "cc56f978-00a7-4908-8d20-9580a3f60a6e",
+             "namespace": "stor",
+             "directories": 2,
+             "keys": 19,
+             "objects": 10,
+             "bytes": 59393
+        }
 
-These results are partitioned and sent to reducers based on owner. At this point
-all of a single customer's usage will be colocated on one reducer.
+These results are partitioned and sent to reducers based on owner and
+namespace. Cardinality of data is on the order of number of users * number of
+namespaces.
 
-The second reduce phase sums the pre-aggregated data and formats each row into
-newline-delimited JSON.
+The second reduce phase sums up all of a user's usage for a single namespace.
+The output format is the same as the output format of the first reduce phase.
 
-    {"owner":"fred1","objects":3,"keys":3,"bytes-total":32768,"directories":1}
-    {"owner":"fred2","objects":2,"keys":3,"bytes-total":16384,"directories":0}
+        {
+             "owner": "cc56f978-00a7-4908-8d20-9580a3f60a6e",
+             "namespace": "stor",
+             "directories": 111,
+             "keys": 234,
+             "objects": 184,
+             "bytes": 348582
+        }
 
-The third reduce phase collates all output from all reducers into one file.
+Results are partitioned by owner. Cardinality of data is number of users *
+number of namespaces.
 
+The third reduce phase combines a usage across different namespaces for a single
+user into a single JSON record. If a user has no usage for a namespace, zero
+usage is added to the record for that namespace at this time.
+
+        {
+             "owner": cc56f978-00a7-4908-8d20-9580a3f60a6,
+             "stor": {
+                     "namespace": "stor",
+                     "directories": 111,
+                     "keys": 234,
+                     "objects": 184,
+                     "bytes": 348582
+             },
+             "public": {
+                     "namespace": "public",
+                     "directories": 2,
+                     "keys": 5,
+                     "objects": 5,
+                     "bytes": 2235
+             },
+             "reports": {
+                     "namespace": "reports",
+                     "directories": 6,
+                     "keys": 7,
+                     "objects": 9,
+                     "bytes": 12592
+             },
+             "jobs": {
+                     "namespace": "jobs",
+                     "directories": 0,
+                     "keys": 0,
+                     "objects": 0,
+                     "bytes": 0
+             }
+        }
+
+Then, all results are sent to a final reduce phase where reports are delivered
+to each user's reports namespace. See Deliver Usage.
 
 ## Request
 
-Request metering consists of a map phase and two reduce phases.
+Request metering consists of a map phase and a reduce phase.
 
 Request raw data consists of webapi audit logs in bunyan format (formatted in
 JSON here).
@@ -187,8 +232,8 @@ requests and bandwidth used transferring headers.
 These results are partitioned such that all of a single owner's requests are on
 a single reduce node.
 
-The first reduce phase aggregates all of a customer's requests and transfer and
-formats the results into newline-delimited JSON (newlines added here).
+The reduce phase aggregates all of a user's requests and transfer and formats
+the results into newline-delimited JSON (newlines added here).
 
     {
       "owner": "eba7f07c-d57c-48f6-8072-f75db963e9d6",
@@ -207,4 +252,5 @@ formats the results into newline-delimited JSON (newlines added here).
       "headerBWOut": 714
     }
 
-The second reduce phase collates all output from all reducers into one file.
+Then, all results are sent to a final reduce phase where reports are delivered
+to each user's reports namespace. See Deliver Usage.
