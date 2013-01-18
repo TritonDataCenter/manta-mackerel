@@ -1,6 +1,8 @@
 #!/bin/bash -x
 # Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
+set -o pipefail
+
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/../cfg/config.sh
 
