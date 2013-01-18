@@ -88,13 +88,13 @@ function main() {
                         return;
                 }
 
-                // remove owner field from the user's personal report
-                delete record.owner;
-
                 // we shouldn't encounter this user again; remove his entry
                 // in the lookup table so that we will only have users with
                 // no usage left at the end
                 delete lookup[record.owner];
+
+                // remove owner field from the user's personal report
+                delete record.owner;
 
                 writeToUserDir(record, login, client, function (err) {
                         if (err) {
