@@ -9,7 +9,7 @@ function getDate() {
         fi
 
         local input="$@"
-        date=$(date --utc -d "$input" "+%Y-%m-%d %H")
+        date=$(date --utc -d "$input")
 
         if [ $? -ne 0 ]
         then
