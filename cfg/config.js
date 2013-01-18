@@ -244,7 +244,7 @@ c.jobs.request = {
                 },
                 linkPath: mbase + '/request/latest-hourly',
                 DEST: mbase + '/request/$year/$month/$day/$hour/h$hour.json',
-                user_DEST: userbase + '/request/$year/$month/$day/$hour/h$hour.json'
+                USER_DEST: userbase + '/request/$year/$month/$day/$hour/h$hour.json'
         },
         daily: {
                 keygen: lbase + '/lib/keygen/findOneLevel.js',
@@ -280,7 +280,7 @@ c.jobs.request = {
                 },
                 linkPath: mbase + '/request/latest-daily',
                 DEST: mbase + '/request/$year/$month/$day/d$day.json',
-                user_DEST: userbase + '/request/$year/$month/$day/d$day.json'
+                USER_DEST: userbase + '/request/$year/$month/$day/d$day.json'
         },
         monthly: {
                 keygen: lbase + '/lib/keygen/findOneLevel.js',
@@ -316,7 +316,7 @@ c.jobs.request = {
                 },
                 linkPath: mbase + '/request/latest-monthly',
                 DEST: mbase + '/request/$year/$month/m$month.json',
-                user_DEST: userbase + '/request/$year/$month/m$month.json'
+                USER_DEST: userbase + '/request/$year/$month/m$month.json'
         }
 };
 /*
