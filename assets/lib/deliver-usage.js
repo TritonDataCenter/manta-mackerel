@@ -27,8 +27,6 @@ function writeToUserDir(record, login, client, cb) {
         var size = Buffer.byteLength(line);
         var mstream = new mod_memorystream();
 
-        console.warn('Writing to ' + path);
-
         client.mkdirp(mod_path.dirname(path), function (err) {
                 if (err) {
                         console.warn('Error mkdirp ' + mod_path.dirname(path));
@@ -36,6 +34,7 @@ function writeToUserDir(record, login, client, cb) {
                         cb(err);
                         return;
                 }
+                console.warn(mod_path.dirname(path) + ' created.');
                 put();
         });
 
@@ -47,6 +46,7 @@ function writeToUserDir(record, login, client, cb) {
                                 cb(err);
                                 return;
                         }
+                        console.warn(path + ' written.');
                         cb();
                 });
 
@@ -109,7 +109,8 @@ function main() {
         carry.once('end', function onEnd() {
                 var count = 0;
                 // lookup should only contain users with no usage now
-                Object.keys(lookup).forEach(function (k) {
+                var uuids = Object.keys(lookup);
+                uuids.forEach(function (k) {
                         var login = lookup[k];
                         count++;
 
@@ -124,7 +125,7 @@ function main() {
                                         error = true;
                                 }
 
-                                if (count >= lookup.length && error) {
+                                if (count >= uuids.length && error) {
                                         process.exit(1);
                                 }
                         }
