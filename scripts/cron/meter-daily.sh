@@ -6,5 +6,7 @@ source $dir/common.sh
 
 getDate "$@"
 
-$dir/../../bin/meter -p daily -s storage -d "$date"
-$dir/../../binmeter -p daily -s request -d "$date"
+NODE=$dir/../../build/node/bin/node
+
+$NODE $dir/../../bin/meter -p daily -s storage -d "$date"
+$NODE $dir/../../bin/meter -p daily -s request -d "$date"
