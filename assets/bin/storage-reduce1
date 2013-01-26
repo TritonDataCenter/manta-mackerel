@@ -1,10 +1,9 @@
 #!/bin/bash
-# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+# Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $dir/../cfg/config.sh
 
 $dir/../lib/storage-reduce1.js \
-| msplit-json -n $STORAGE_NUM_REDUCERS2_HOURLY owner namespace
+| msplit-json -n $NUM_REDUCERS owner namespace

@@ -1,10 +1,10 @@
 #!/bin/bash
-# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+# Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $dir/../cfg/config.sh
 
+mkdirp $DEST && \
 $dir/../lib/deliver-usage.js | \
 mpipe -H "content-type: $HEADER_CONTENT_TYPE" $DEST

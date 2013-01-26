@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Copyright (c) 2012, Joyent, Inc. All rights reserved.
+// Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 var mod_carrier = require('./carrier');
 

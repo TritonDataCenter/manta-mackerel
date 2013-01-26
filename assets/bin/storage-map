@@ -1,11 +1,10 @@
 #!/bin/bash
-# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+# Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $dir/../cfg/config.sh
 
 $ZCAT \
 | $dir/../lib/storage-map.js \
-| msplit-json -n $STORAGE_NUM_REDUCERS1_HOURLY owner type objectId
+| msplit-json -n $NUM_REDUCERS owner type objectId
