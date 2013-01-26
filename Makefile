@@ -27,7 +27,7 @@ NPM             := npm
 #
 DOC_FILES        = index.restdown
 BASH_FILES      := $(shell find bin -name '*.sh') $(shell find assets/bin -type f)
-JS_FILES        := $(shell find assets/lib bin lib -name '*.js')
+JS_FILES        := $(shell find assets/lib bin lib -name '*.js' -type f)
 JSL_CONF_NODE    = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES    = $(JS_FILES)
@@ -75,7 +75,7 @@ release: all docs $(SMF_MANIFESTS)
 	cp -r	$(ROOT)/assets \
 		$(ROOT)/build \
 		$(ROOT)/bin \
-		$(ROOT)/cfg \
+		$(ROOT)/etc \
 		$(ROOT)/lib \
 		$(ROOT)/scripts \
 		$(ROOT)/node_modules \

@@ -1,5 +1,5 @@
 export DEST="/poseidon/stor/usage/test/storage/2013/01/10/22/h22.json.gz"
-export CUST_DEST="/reports/usage/storage/2013/01/10/22/h22.json.gz"
+export USER_DEST="/reports/usage/storage/2013/01/10/22/h22.json.gz"
 export ZCAT="gzcat"
 export HEADER_CONTENT_TYPE="application/x-json-stream"
 export NAMESPACES="stor public jobs reports"

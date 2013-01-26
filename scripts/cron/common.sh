@@ -1,5 +1,5 @@
 #!/bin/bash -x
-# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+# Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 function getDate() {
         if [ -z "$1" ]

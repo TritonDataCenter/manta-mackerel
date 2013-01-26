@@ -1,10 +1,9 @@
 #!/bin/bash -x
-# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+# Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $dir/../cfg/config.sh
 
 bunyan -j --strict -c "this.audit == true && this.req.url !== '/ping' &&
                                 this.req.owner" \
@@ -75,4 +74,4 @@ bunyan -j --strict -c "this.audit == true && this.req.url !== '/ping' &&
                         bwin[o], bwout[o], headerBWIn[o], headerBWOut[o];
         }
 }' \
-| msplit -n $REQUEST_NUM_REDUCERS_HOURLY -d " " -f 1
+| msplit -n $NUM_REDUCERS -d " " -f 1

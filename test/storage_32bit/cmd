@@ -6,4 +6,6 @@ REDUCE3=../../assets/bin/storage-reduce3
 function msplit-json () { cat; }; export -f msplit-json;
 function msplit () { cat; }; export -f msplit;
 function mpipe () { cat; }; export -f mpipe;
+export NAMESPACES="stor public jobs reports"
+export ZCAT="gzcat"
 cat input | gzip | $MAP | $REDUCE1 | $REDUCE2 | $REDUCE3
