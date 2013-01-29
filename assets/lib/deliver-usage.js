@@ -6,7 +6,7 @@ var mod_child_process = require('child_process');
 var mod_events = require('events');
 var mod_path = require('path');
 var mod_manta = require('/opt/marlin/node_modules/manta/lib');
-var mod_memorystream = require('./memorystream');
+var mod_MemoryStream = require('./memorystream');
 
 var lookup = require('../cfg/lookup.json'); // maps uuid->login
 
@@ -25,7 +25,7 @@ function writeToUserDir(record, login, client, cb) {
         var path = '/' + login + process.env.USER_DEST;
         var line = JSON.stringify(record) + '\n';
         var size = Buffer.byteLength(line);
-        var mstream = new mod_memorystream();
+        var mstream = new mod_MemoryStream();
 
         client.mkdirp(mod_path.dirname(path), function (err) {
                 if (err) {
