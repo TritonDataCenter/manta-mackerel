@@ -29,7 +29,8 @@ var userbase = '/reports/usage'; // user-accessible base directory
 // redis config
 c.redis = {
         port: 6379,
-        host: 'auth.beta.joyent.us', // TODO retrieve this programmatically - via environment?
+        host: REDIS_HOST, // replaced with $(mdata-get auth_cache_name) at zone
+                          // setup time (see manta.git)
 
         // optional client options
         maxParallel: undefined, // maximum parallel requests sent to redis
