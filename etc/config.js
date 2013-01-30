@@ -29,8 +29,8 @@ var userbase = '/reports/usage'; // user-accessible base directory
 // redis config
 c.redis = {
         port: 6379,
-        host: REDIS_HOST, // replaced with $(mdata-get auth_cache_name) at zone
-                          // setup time (see manta.git)
+        host: 'REDIS_HOST', // replaced with $(mdata-get auth_cache_name) at zone
+                            // setup time (see manta.git)
 
         // optional client options
         maxParallel: undefined, // maximum parallel requests sent to redis
