@@ -5,6 +5,6 @@ set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-mmkdir -p $DEST && \
+mmkdir -p $(dirname $DEST) && \
 $dir/../lib/deliver-usage.js | \
 mpipe -H "content-type: $HEADER_CONTENT_TYPE" $DEST
