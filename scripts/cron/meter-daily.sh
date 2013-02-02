@@ -8,5 +8,5 @@ getDate "$@"
 
 NODE=$dir/../../build/node/bin/node
 
-$NODE $dir/../../bin/meter -p daily -s storage -d "$date"
-$NODE $dir/../../bin/meter -p daily -s request -d "$date"
+$NODE $dir/../../bin/meter -r -p daily -s storage -d "$date"
+$NODE $dir/../../bin/meter -r -p daily -s request -d "$date"
