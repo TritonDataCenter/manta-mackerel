@@ -1,36 +1,54 @@
 #!/usr/bin/env node
-// Copyright (c) 2012, Joyent, Inc. All rights reserved.
+// Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 /*
- * Configuration file for mackerel job runner
+ * Dynamically generated JSON configuration file for mackerel
+ *
  * If run directly, prints out config as JSON for easy parsing/printing (e.g.
  * pipe to 'json').
+ *
+ * SECTIONS:
+ * - local helper variables
+ * - redis config
+ * - backfill config
+ * - assets
+ * - backoff settings
+ * - job configuration
  */
 
 var c = {};
 
-// -- manta config
 // manta client config file
 c.mantaConfigFile = '/opt/smartdc/common/etc/config.json';
-var user;
+
+/******************************/
+/*   LOCAL HELPER VARIABLES   */
+/******************************/
+
+var user, mbase, md, lbase, ld, userbase;
+
 try {
         user = require(c.mantaConfigFile).manta.user;
 } catch (e) {
         user = 'poseidon';
 }
 
-// -- assets
-var mbase = '/' + user + '/stor/usage'; // manta base directory
-var md = mbase + '/assets'; // manta assets directory
-var lbase = '/opt/smartdc/mackerel'; // local base directory
-var ld = lbase + '/assets'; // local assets directory
-var userbase = '/reports/usage'; // user-accessible base directory
+mbase = '/' + user + '/stor/usage'; // manta base directory
+md = mbase + '/assets'; // manta assets directory
+lbase = '/opt/smartdc/mackerel'; // local base directory
+ld = lbase + '/assets'; // local assets directory
+userbase = '/reports/usage'; // user-accessible base directory
 
-// redis config
+
+/******************************/
+/*        REDIS CONFIG        */
+/******************************/
+
 c.redis = {
         port: 6379,
-        host: 'REDIS_HOST', // replaced with $(mdata-get auth_cache_name) at zone
-                            // setup time (see manta.git)
+
+        // replaced with $(mdata-get auth_cache_name at zone setup time
+        host: 'REDIS_HOST',
 
         // optional client options
         maxParallel: undefined, // maximum parallel requests sent to redis
@@ -42,6 +60,21 @@ c.redis = {
         minTimeout: undefined,
         maxTimeout: undefined
 }
+
+
+/******************************/
+/*       BACKFILL CONFIG      */
+/******************************/
+
+c.backfill = {
+        path: mbase + '/jobs', // where to store failed job records
+        alarmAfter: 24 // hours
+};
+
+
+/******************************/
+/*           ASSETS           */
+/******************************/
 
 // assets is a mapping from the manta object path to the local file path
 c.assets = {}
@@ -64,8 +97,15 @@ c.assets[md + '/lib/storage-map.js'] = ld + '/lib/storage-map.js';
 c.assets[md + '/lib/storage-reduce1.js'] = ld + '/lib/storage-reduce1.js';
 c.assets[md + '/lib/storage-reduce3.js'] = ld + '/lib/storage-reduce3.js';
 c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
-c.assets[md + '/cfg/lookup.json'] = ld + '/cfg/auto-generated-lookup.json';
+// since the lookup file is generated at job run time, meter.js needs to know
+// the manta path for the lookup file
+c.mantaLookupPath = md + '/cfg/lookup.json';
+c.assets[c.mantaLookupPath] = ld + '/cfg/auto-generated-lookup.json';
 
+
+/******************************/
+/*       BACKOFF SETTINGS     */
+/******************************/
 
 // retry configuration settings for job result monitoring
 c.monitorBackoff = {};
@@ -74,10 +114,15 @@ c.monitorBackoff.maxDelay = 120000; // 2 minutes
 c.monitorBackoff.failAfter = 20; // ~ 30 minutes total
 
 // retry configuration settings for job failures
-c.backoff = {};
-c.backoff.initialDelay = 60000; // 1 minute
-c.backoff.maxDelay = 600000; // 10 minutes
-c.backoff.failAfter = 5;
+c.retryBackoff = {};
+c.retryBackoff.initialDelay = 60000; // 1 minute
+c.retryBackoff.maxDelay = 600000; // 10 minutes
+c.retryBackoff.failAfter = 2;
+
+
+/******************************/
+/*      JOB CONFIGURATION     */
+/******************************/
 
 // job configuration
 // each job object must have a 'keygen' field pointing to the path of the
@@ -88,7 +133,7 @@ c.jobs.storage = {
                 // keygen path (required)
                 keygen: lbase + '/lib/keygen/StorageHourlyKeyGenerator.js',
 
-                // additional keygen arguments
+                // additional keygen arguments (date will always be passed in)
                 keygenArgs: {
                         // where to find source keys
                         source: '/poseidon/stor/manatee_backups'

@@ -114,6 +114,13 @@ function main() {
                         var login = lookup[k];
                         count++;
 
+                        if (!emptyRecord) {
+                                console.warn('Error: an empty record template' +
+                                        ' was ever created. Perhaps no input' +
+                                        ' was read?');
+                                process.exit(1);
+                        }
+
                         emptyRecord.owner = k;
                         console.log(JSON.stringify(emptyRecord));
                         delete emptyRecord.owner;
