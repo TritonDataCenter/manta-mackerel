@@ -29,6 +29,11 @@ Important notes:
 
 ## Storage
 
+Daily storage metering sums up the usage from every hour on the given calendar
+day, and monthly storage metering sums up the usage from every day on the given
+calendar month.  This means daily and monthly storage metering represent
+*unit-hours* of usage (i.e., byte-hours, key-count-hours).
+
 Storage hourly metering consists of a map phase three reduce phases.
 
 Storage raw data consists of postgres dumps of each moray shard in JSON format.
@@ -178,7 +183,11 @@ to each user's reports namespace. See Deliver Usage.
 
 ## Request
 
-Request metering consists of a map phase and a reduce phase.
+Daily request metering sums up the usage from every hour on the given calendar
+day, and monthly request metering sums up the usage from every day on the given
+calendar month. This means daily and monthly request reports
+
+Request hourly metering consists of a map phase and a reduce phase.
 
 Request raw data consists of webapi audit logs in bunyan format (formatted in
 JSON here).
@@ -254,3 +263,21 @@ the results into newline-delimited JSON (newlines added here).
 
 Then, all results are sent to a final reduce phase where reports are delivered
 to each user's reports namespace. See Deliver Usage.
+
+## Compute
+
+To be implemented.
+
+## Deliver Usage
+
+The last phase in all metering jobs is a reduce phase called Deliver Usage that
+        1. collates output from all the reducers in the previous phase,
+        2. adds any users with no usage to the usage report,
+        3. translates UUID to login, and
+        4. delivers each user's report to the user's /:login/reports directory.
+
+In order to do add users with no usage and translate UUIDs to login, an asset
+is generated and uploaded before each job that contains a mapping of all users'
+UUIDs to their logins. This cache of translations may be outdated by the time
+the job finishes. A cache miss should only happen if a new user was added since
+the job started.
