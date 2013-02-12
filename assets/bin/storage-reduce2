@@ -6,4 +6,4 @@ set -o pipefail
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 $dir/../lib/sum-columns.js \
-| msplit -j -n $NUM_REDUCERS owner
+| msplit -j -n $NUM_REDUCERS -f owner

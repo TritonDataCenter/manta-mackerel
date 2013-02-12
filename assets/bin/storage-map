@@ -7,4 +7,4 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 $ZCAT \
 | $dir/../lib/storage-map.js \
-| msplit -j -n $NUM_REDUCERS owner type objectId
+| msplit -j -n $NUM_REDUCERS -f owner,type,objectId
