@@ -3,26 +3,31 @@
 
 var mod_carrier = require('./carrier');
 
-function isNum(n) {
-        return (!isNaN(parseFloat(n)) && isFinite(n));
-}
-
-
 function parseLine(line) {
         return (JSON.parse(line));
 }
 
-
 function getAggKey(obj) {
         var key = '';
         Object.keys(obj).forEach(function (k) {
-                if (!isNum(obj[k])) {
+                if (typeof (obj[k]) !== 'number') {
                         key += obj[k];
                 }
         });
         return (key);
 }
 
+// assumes arg1 and arg2 have the same structure
+// arg1 += arg2;
+function plusEquals(arg1, arg2) {
+        Object.keys(arg1).forEach(function (k) {
+                if (typeof (arg1[k]) === 'object') {
+                        plusEquals(arg1[k], arg2[k]);
+                } else if (typeof (arg1[k]) === 'number') {
+                        arg1[k] += arg2[k];
+                }
+        });
+}
 
 function onLine(aggr, line) {
         var parsed = parseLine(line);
@@ -30,21 +35,10 @@ function onLine(aggr, line) {
         var aggKey = getAggKey(parsed);
 
         if (!aggr[aggKey]) {
-                aggr[aggKey] = {};
-                Object.keys(parsed).forEach(function (k) {
-                        if (!isNum(parsed[k])) {
-                                aggr[aggKey][k] = parsed[k];
-                                return;
-                        }
-                        aggr[aggKey][k] = 0;
-                });
+                aggr[aggKey] = parsed;
+        } else {
+                plusEquals(aggr[aggKey], parsed);
         }
-        Object.keys(parsed).forEach(function (k) {
-                if (!isNum(parsed[k])) {
-                        return;
-                }
-                aggr[aggKey][k] += parsed[k];
-        });
 }
 
 
