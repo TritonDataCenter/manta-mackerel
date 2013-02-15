@@ -8,17 +8,16 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 bunyan -j --strict -c \
         "this.audit == true &&
         this.req.url !== '/ping' &&
-        this.req.owner &&
-        this.res.statusCode >= 200 &&
-        this.res.statusCode <= 204" \
-| json -ga req.owner req.method resHeaderLength reqHeaderLength \
+        this.req.owner" \
+| json -ga req.owner req.method resHeaderLength reqHeaderLength res.statusCode \
         req.headers.content-length res.headers.content-length \
 | awk '{
         owner = $1;
         method = $2;
         resHeaderLength = $3;
         reqHeaderLength = $4;
-        contentLength = $5;
+        statusCode = $5;
+        contentLength = $6;
 
         owners[owner] = owner;
 
@@ -30,7 +29,7 @@ bunyan -j --strict -c \
         }
         if (method == "GET") {
                 gets[owner] += 1;
-                if (contentLength) {
+                if (contentLength && statusCode >= 200 && statusCode <= 204) {
                         bwout[owner] += contentLength;
                 }
         }
@@ -42,7 +41,7 @@ bunyan -j --strict -c \
         }
         if (method == "PUT") {
                 puts[owner] += 1;
-                if (contentLength) {
+                if (contentLength && statusCode >= 200 && statusCode <= 204) {
                         bwin[owner] += contentLength;
                 }
         }
