@@ -5,8 +5,12 @@ set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-bunyan -j --strict -c "this.audit == true && this.req.url !== '/ping' &&
-                                this.req.owner" \
+bunyan -j --strict -c \
+        "this.audit == true &&
+        this.req.url !== '/ping' &&
+        this.req.owner &&
+        this.res.statusCode >= 200 &&
+        this.res.statusCode <= 204" \
 | json -ga req.owner req.method resHeaderLength reqHeaderLength \
         req.headers.content-length res.headers.content-length \
 | awk '{
