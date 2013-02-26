@@ -87,6 +87,18 @@ var mod_carrier = require('./carrier');
 
 /* END JSSTYLED */
 
+var _error = false;
+
+/*
+ * exit with exit code if needed to let marlin know something wrong happened
+ *
+ * _error is only set when we encounter an error where processing can continue
+ * e.g. malformed line, unrecognized type
+ */
+process.on('exit', function () {
+        process.exit(_error ? 12 : 0); // 12 chosen arbitrarily here
+});
+
 function addOwner(owner, aggr) {
         aggr[owner] = {
                 counts: {},
@@ -106,7 +118,14 @@ function addNamespace(namespace, aggr) {
 function count(record, aggr) {
         var owner = record.owner;
         var type = record.type;
-        var namespace = record.key.split('/')[2]; // /:uuid/:namespace/...
+        var namespace;
+        try {
+                namespace = record.key.split('/')[2]; // /:uuid/:namespace/...
+        } catch (e) {
+                console.warn(e);
+                _error = true;
+                return;
+        }
 
         if (typeof (aggr[owner]) === 'undefined') {
                 addOwner(owner, aggr);
@@ -119,8 +138,15 @@ function count(record, aggr) {
         if (type === 'directory') {
                 aggr[owner].counts[namespace].directories += 1;
         } else if (type === 'object') {
-                var objectId = record.objectId;
-                var size = record.contentLength * record.sharks.length;
+                try {
+                        var objectId = record.objectId;
+                        var size = record.contentLength * record.sharks.length;
+                } catch (e) {
+                        console.warn(e);
+                        _error = true;
+                        return;
+                }
+
 
                 aggr[owner].counts[namespace].keys += 1;
 
@@ -130,7 +156,11 @@ function count(record, aggr) {
                         aggr[owner].counts[namespace].objects += 1;
                         aggr[owner].counts[namespace].bytes += size;
                 }
+        } else {
+                console.warn('Unrecognized object type: ' + record);
+                _error = true;
         }
+
 }
 
 
@@ -157,7 +187,20 @@ function main() {
 
         var aggr = {};
         carry.on('line', function onLine(line) {
-                var record = JSON.parse(line);
+                try {
+                        var record = JSON.parse(line);
+                } catch (e) {
+                        _error = true;
+                        console.warn(e);
+                        return;
+                }
+
+                if (!record.owner || !record.type) {
+                        _error = true;
+                        console.warn('Missing owner or type field: ' + line);
+                        return;
+                }
+
                 count(record, aggr);
         });
 

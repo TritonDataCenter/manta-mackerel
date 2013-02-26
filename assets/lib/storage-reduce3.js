@@ -72,6 +72,18 @@ var mod_carrier = require('./carrier');
 
 /* END JSSTYLED */
 
+var _error = false;
+
+/*
+ * exit with exit code if needed to let marlin know something wrong happened
+ *
+ * _error is only set when we encounter an error where processing can continue
+ * e.g. missing fields, etc
+ */
+process.on('exit', function () {
+        process.exit(_error ? 12 : 0); // 12 chosen arbitrarily here
+});
+
 function emptyUsage(namespace) {
         return ({
                 namespace: namespace,
@@ -88,9 +100,15 @@ function main() {
         var namespaces = (process.env.NAMESPACES).split(' ');
 
         carry.on('line', function onLine(line) {
-                var record = JSON.parse(line);
-                var owner = record.owner;
-                var namespace = record.namespace;
+                try {
+                        var record = JSON.parse(line);
+                        var owner = record.owner;
+                        var namespace = record.namespace;
+                } catch (e) {
+                        console.log(e);
+                        _error = true;
+                        return;
+                }
                 record.owner = undefined;
                 aggr[owner] = aggr[owner] || {owner: owner};
                 aggr[owner][namespace] = record;
