@@ -66,10 +66,17 @@ c.redis = {
 /*       BACKFILL CONFIG      */
 /******************************/
 
-c.backfill = {
-        path: mbase + '/jobs', // where to store failed job records
-        alarmAfter: 24 // hours
-};
+c.backfillPath = mbase + '/jobs'; // where to store failed job records
+c.alarmAfter = 24; // hours
+
+/******************************/
+/*   WORKFLOW CLIENT CONFIG   */
+/******************************/
+
+c.workflow = {
+        url: 'http://localhost:8080',
+        path: lbase + '/lib/workflows'
+}
 
 
 /******************************/
@@ -108,16 +115,18 @@ c.assets[c.mantaLookupPath] = ld + '/cfg/auto-generated-lookup.json';
 /******************************/
 
 // retry configuration settings for job result monitoring
-c.monitorBackoff = {};
-c.monitorBackoff.initialDelay = 1000; // 1 second
-c.monitorBackoff.maxDelay = 120000; // 2 minutes
-c.monitorBackoff.failAfter = 20; // ~ 30 minutes total
+c.monitorBackoff = {
+        initialDelay: 1000, // 1 second
+        maxDelay: 120000, // 2 minutes
+        failAfter: 30 // ~ 50 minutes total
+};
 
 // retry configuration settings for job failures
-c.retryBackoff = {};
-c.retryBackoff.initialDelay = 60000; // 1 minute
-c.retryBackoff.maxDelay = 600000; // 10 minutes
-c.retryBackoff.failAfter = 2;
+c.retryBackoff = {
+        initialDelay: 60000, // 1 minute
+        maxDelay: 600000, // 10 minutes
+        failAfter: 1
+};
 
 
 /******************************/
@@ -139,6 +148,10 @@ c.jobs.storage = {
                         source: '/poseidon/stor/manatee_backups'
                 },
 
+                // name of the workflow. depends on which key generator is
+                // used for this job
+                workflow: 'storage-hourly-runjob',
+
                 // manta destination path for link to latest report
                 linkPath: mbase + '/storage/latest-hourly',
 
@@ -147,6 +160,7 @@ c.jobs.storage = {
                         name: 'metering-storage-hourly-$year-$month-$day-$hour',
                         phases: [ {
                                 type : 'storage-map',
+                                memory: 4096,
                                 assets : [
                                         md + '/bin/storage-map',
                                         md + '/lib/carrier.js',
@@ -161,7 +175,7 @@ c.jobs.storage = {
                                         md + '/lib/storage-reduce1.js'
                                 ],
                                 exec: '/assets' + md + '/bin/storage-reduce1',
-                                count: 2
+                                count: 4
                         }, {
                                 type: 'reduce',
                                 assets : [
@@ -170,7 +184,7 @@ c.jobs.storage = {
                                         md + '/lib/sum-columns.js'
                                 ],
                                 exec: '/assets' + md + '/bin/storage-reduce2',
-                                count: 2
+                                count: 4
                         }, {
                                 type: 'reduce',
                                 assets: [
@@ -179,7 +193,7 @@ c.jobs.storage = {
                                         md + '/lib/storage-reduce3.js'
                                 ],
                                 exec: '/assets' + md + '/bin/storage-reduce3',
-                                count: 2
+                                count: 4
                         }, {
                                 type: 'reduce',
                                 assets: [
@@ -215,6 +229,7 @@ c.jobs.storage = {
                         source: '/poseidon/stor/usage/storage/$year/$month/$day',
                         regex: 'h[0-9][0-9]'
                 },
+                workflow: 'find-runjob',
                 linkPath: mbase + '/storage/latest-daily',
                 job: {
                         name: 'metering-storage-daily-$year-$month-$day',
@@ -252,6 +267,7 @@ c.jobs.storage = {
                         source: '/poseidon/stor/usage/storage/$year/$month',
                         regex: 'd[0-9][0-9]'
                 },
+                workflow: 'find-runjob',
                 linkPath: mbase + '/storage/latest-monthly',
                 job: {
                         name: 'metering-storage-daily-$year-$month',
@@ -290,6 +306,7 @@ c.jobs.request = {
                 keygenArgs: {
                         source: '/poseidon/stor/logs/muskie/$year/$month/$day/$hour'
                 },
+                workflow: 'find-runjob',
                 linkPath: mbase + '/request/latest-hourly',
                 job: {
                         name: 'metering-request-hourly-$year-$month-$day-$hour',
@@ -331,6 +348,7 @@ c.jobs.request = {
                         source: '/poseidon/stor/usage/request/$year/$month/$day',
                         regex: 'h[0-9][0-9]'
                 },
+                workflow: 'find-runjob',
                 linkPath: mbase + '/request/latest-daily',
                 job: {
                         name: 'metering-request-daily-$year-$month-$day',
@@ -368,6 +386,7 @@ c.jobs.request = {
                         source: '/poseidon/stor/usage/request/$year/$month',
                         regex: 'd[0-9][0-9]'
                 },
+                workflow: 'find-runjob',
                 linkPath: mbase + '/request/latest-monthly',
                 job: {
                         name: 'metering-request-daily-$year-$month',
