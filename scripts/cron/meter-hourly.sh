@@ -10,4 +10,3 @@ NODE=$dir/../../build/node/bin/node
 
 $NODE $dir/../../bin/meter -r -p hourly -s storage -d "$date"
 $NODE $dir/../../bin/meter -r -p hourly -s request -d "$date"
-$NODE $dir/../../bin/meter -b
