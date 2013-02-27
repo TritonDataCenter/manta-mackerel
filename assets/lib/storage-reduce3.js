@@ -106,7 +106,6 @@ function main() {
                         var namespace = record.namespace;
                 } catch (e) {
                         console.log(e);
-                        _error = true;
                         return;
                 }
                 record.owner = undefined;
