@@ -125,7 +125,7 @@ c.monitorBackoff = {
 c.retryBackoff = {
         initialDelay: 60000, // 1 minute
         maxDelay: 600000, // 10 minutes
-        failAfter: 1
+        failAfter: 2
 };
 
 
@@ -160,7 +160,6 @@ c.jobs.storage = {
                         name: 'metering-storage-hourly-$year-$month-$day-$hour',
                         phases: [ {
                                 type : 'storage-map',
-                                memory: 4096,
                                 assets : [
                                         md + '/bin/storage-map',
                                         md + '/lib/carrier.js',
@@ -169,13 +168,14 @@ c.jobs.storage = {
                                 exec : '/assets' + md + '/bin/storage-map'
                         }, {
                                 type: 'reduce',
+                                memory: 2048,
                                 assets : [
                                         md + '/bin/storage-reduce1',
                                         md + '/lib/carrier.js',
                                         md + '/lib/storage-reduce1.js'
                                 ],
                                 exec: '/assets' + md + '/bin/storage-reduce1',
-                                count: 4
+                                count: 1
                         }, {
                                 type: 'reduce',
                                 assets : [
@@ -184,7 +184,7 @@ c.jobs.storage = {
                                         md + '/lib/sum-columns.js'
                                 ],
                                 exec: '/assets' + md + '/bin/storage-reduce2',
-                                count: 4
+                                count: 1
                         }, {
                                 type: 'reduce',
                                 assets: [
@@ -193,7 +193,7 @@ c.jobs.storage = {
                                         md + '/lib/storage-reduce3.js'
                                 ],
                                 exec: '/assets' + md + '/bin/storage-reduce3',
-                                count: 4
+                                count: 1
                         }, {
                                 type: 'reduce',
                                 assets: [
