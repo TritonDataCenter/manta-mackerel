@@ -5,5 +5,8 @@ set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-$dir/../lib/sum-columns.js \
-| msplit -j -n $NUM_REDUCERS -f owner
+$dir/../lib/sum-columns.js 2>stderr \
+| msplit -j -n $NUM_REDUCERS -f owner 2>>stderr
+
+[ -s stderr ] && mmkdir -p $(dirname $MANTA_OUTPUT_BASE) \
+         && mput -f stderr $MANTA_OUTPUT_BASE && cat stderr 1>&2

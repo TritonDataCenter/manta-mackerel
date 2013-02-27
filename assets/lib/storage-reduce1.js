@@ -87,17 +87,6 @@ var mod_carrier = require('./carrier');
 
 /* END JSSTYLED */
 
-var _error = false;
-
-/*
- * exit with exit code if needed to let marlin know something wrong happened
- *
- * _error is only set when we encounter an error where processing can continue
- * e.g. malformed line, unrecognized type
- */
-process.on('exit', function () {
-        process.exit(_error ? 12 : 0); // 12 chosen arbitrarily here
-});
 
 function addOwner(owner, aggr) {
         aggr[owner] = {
@@ -123,7 +112,6 @@ function count(record, aggr) {
                 namespace = record.key.split('/')[2]; // /:uuid/:namespace/...
         } catch (e) {
                 console.warn(e);
-                _error = true;
                 return;
         }
 
@@ -143,7 +131,6 @@ function count(record, aggr) {
                         var size = record.contentLength * record.sharks.length;
                 } catch (e) {
                         console.warn(e);
-                        _error = true;
                         return;
                 }
 
@@ -158,7 +145,6 @@ function count(record, aggr) {
                 }
         } else {
                 console.warn('Unrecognized object type: ' + record);
-                _error = true;
         }
 
 }
@@ -190,13 +176,11 @@ function main() {
                 try {
                         var record = JSON.parse(line);
                 } catch (e) {
-                        _error = true;
                         console.warn(e);
                         return;
                 }
 
                 if (!record.owner || !record.type) {
-                        _error = true;
                         console.warn('Missing owner or type field: ' + line);
                         return;
                 }

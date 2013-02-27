@@ -70,18 +70,6 @@ var mod_carrier = require('./carrier');
  */
 /* END JSSTYLED */
 
-var _error = false;
-
-/*
- * exit with exit code if needed to let marlin know something wrong happened
- *
- * _error is only set when we encounter an error where processing can continue
- * e.g. malformed line, unrecognized schema etc
- */
-process.on('exit', function () {
-        process.exit(_error ? 12 : 0); // 12 chosen arbitrarily here
-});
-
 
 function validSchema(obj) {
         var fields =
@@ -104,7 +92,6 @@ function main() {
                         var record = JSON.parse(line);
                 } catch (e) {
                         console.warn(e);
-                        _error = true;
                         return;
                 }
 
@@ -112,7 +99,6 @@ function main() {
                         !validSchema(JSON.parse(record.entry[index]))) {
 
                         console.warn('Unrecognized line: ' + line);
-                        _error = true;
                         return;
                 }
 

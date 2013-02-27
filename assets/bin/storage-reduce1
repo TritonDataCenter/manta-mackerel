@@ -5,5 +5,8 @@ set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-$dir/../lib/storage-reduce1.js \
-| msplit -j -n $NUM_REDUCERS -f owner,namespace
+$dir/../lib/storage-reduce1.js 2>stderr \
+| msplit -j -n $NUM_REDUCERS -f owner,namespace 2>>stderr
+
+[ -s stderr ] && mmkdir -p $(dirname $MANTA_OUTPUT_BASE) \
+         && mput -f stderr $MANTA_OUTPUT_BASE && cat stderr 1>&2
