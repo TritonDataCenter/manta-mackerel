@@ -9,6 +9,6 @@ $dir/../lib/sum-columns.js 2>stderr
 code=$?
 
 [ -s stderr ] && mmkdir -p $(dirname $MANTA_OUTPUT_BASE) \
-         && mput -f stderr $MANTA_OUTPUT_BASE && cat stderr 1>&2
+         && mput -f stderr "$MANTA_OUTPUT_BASE"stderr && cat stderr 1>&2
 
 exit $code
