@@ -5,4 +5,10 @@ set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-$dir/../lib/avg-columns.js
+$dir/../lib/avg-columns.js 2>stderr
+code=$?
+
+[ -s stderr ] && mmkdir -p $(dirname $MANTA_OUTPUT_BASE) \
+         && mput -f stderr $MANTA_OUTPUT_BASE && cat stderr 1>&2
+
+exit $code
