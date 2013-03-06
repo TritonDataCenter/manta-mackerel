@@ -15,11 +15,13 @@ metering runs at is hourly. Daily reports are generated from hourly reports, and
 monthly reports are generated from daily reports.
 
 There are three classes of usage that Mackerel meters:
+
 * Storage: bytes stored on disk, number of keys, number of objects
 * Request: request totals by method, total transfer (bandwidth) in and out
 * Compute: TODO
 
 Important notes:
+
 * Customers are metered for the object and key when linking to an object they do
   not own.
 * Requests count toward usage for the owner of the Manta object, not the caller
