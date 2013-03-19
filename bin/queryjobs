@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+var bunyan = require('bunyan');
+var path = require('path');
+var wfclient =  require('wf-client');
+var config = require('../etc/config.js');
+
+if (process.argv.length <= 3) {
+        console.warn('Usage: ' + path.basename(process.argv[1]) +
+                ' <key> <value> [ <key> <value> ...]');
+        process.exit(1);
+}
+
+var log = bunyan.createLogger({
+        level: (process.env.LOG_LEVEL || 'info'),
+        name: 'checkJob',
+        stream: process.stdout
+});
+
+var query = {};
+for(var i = 2; i < process.argv.length-1; i++) {
+        query[process.argv[i]] = process.argv[i+1];
+}
+
+var client = new wfclient({
+        url: config.workflow.url,
+        path: config.workflow.path,
+        log: log
+});
+
+client.listJobs(query, function (err, jobs) {
+        for (var job in jobs) {
+                delete jobs[job].chain;
+                console.log(JSON.stringify(jobs[job], null, 2));
+        }
+});

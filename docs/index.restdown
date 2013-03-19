@@ -273,6 +273,7 @@ To be implemented.
 ## Deliver Usage
 
 The last phase in all metering jobs is a reduce phase called Deliver Usage that
+
         1. collates output from all the reducers in the previous phase,
         2. adds any users with no usage to the usage report,
         3. translates UUID to login, and
