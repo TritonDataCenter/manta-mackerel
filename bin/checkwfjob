@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+var bunyan = require('bunyan');
+var path = require('path');
+var wfclient =  require('wf-client');
+var config = require('../etc/config.js');
+
+if (process.argv.length <= 2) {
+        console.warn('Usage: ' + path.basename(process.argv[1]) + ' <uuid>');
+        process.exit(1);
+}
+
+var log = bunyan.createLogger({
+        level: (process.env.LOG_LEVEL || 'info'),
+        name: 'checkJob',
+        stream: process.stdout
+});
+
+var uuid = process.argv[2];
+
+var client = new wfclient({
+        url: config.workflow.url,
+        path: config.workflow.path,
+        log: log
+});
+
+client.getJob(uuid, function (err, job) {
+        log.info({err: err, job: job}, 'job');
+});

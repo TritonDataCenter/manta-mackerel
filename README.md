@@ -112,5 +112,41 @@ Configuration settings include:
 
 
 # Testing
+    Mackerel needs a Manta deployment and a Moray (which can be any Moray, i.e.
+    SDC Moray or a Manta Moray). Set MORAY_URL to point to that Moray.
+    There are two ways to point to the Manta deployment:
+    1) Set MANTA_URL, MANTA_USER and optionally SSH_KEY, where SSH_KEY is the
+        path to the private key you want to use.
+    2) Set MANTA_CONFIG, where MANTA_CONFIG is the path to a JSON configuration
+        file.
 
+    Sample Manta config file:
+
+        {
+            "manta": {
+                "connectTimeout": 1000,
+                "retry": {
+                    "attempts": 5,
+                    "minTimeout": 1000
+                },
+                "sign": {
+                    "key": "/home/dev/.ssh/id_rsa",
+                    "keyId": "e3:4d:9b:26:bd:ef:a1:db:43:ae:4b:f7:bc:69:a7:24"
+                },
+                "url": "https://manta-beta.joyentcloud.com",
+                "user": "fredkuo"
+            }
+        }
+
+    Examples:
+
+    MORAY_URL="http://10.99.99.17:2020" \
+    SSH_KEY=~/.ssh/id_rsa \
+    MANTA_URL="https://manta-beta.joyentcloud.com" \
+    MANTA_USER=fredkuo \
     make test
+
+    MORAY_URL="http://10.99.99.17:2020" \
+    MANTA_CONFIG=~/config/manta_config.json \
+    make test
+
