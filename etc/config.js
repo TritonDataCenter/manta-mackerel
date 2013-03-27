@@ -43,7 +43,7 @@ userbase = '/reports/usage'; // user-accessible base directory
 
 
 /******************************/
-/*    REDIS CONFIG    */
+/*        REDIS CONFIG        */
 /******************************/
 
 c.redis = {
