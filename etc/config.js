@@ -9,8 +9,8 @@
  *
  * SECTIONS:
  * - local helper variables
- * - redis config
- * - backfill config
+ * - mahi config
+ * - workflow config
  * - assets
  * - backoff settings
  * - job configuration
@@ -20,8 +20,6 @@ var c = {};
 
 // manta client config file
 c.mantaConfigFile = '/opt/smartdc/common/etc/config.json';
-c.mahiConfigFile = './mahi.json';
-c.workflowConfigFile = './workflow.json';
 
 /******************************/
 /*   LOCAL HELPER VARIABLES   */
@@ -35,29 +33,35 @@ try {
     user = 'poseidon';
 }
 
+
+/*
+ * Modify these variables to match your environment.
+ */
+
 mbase = '/' + user + '/stor/usage'; // manta base directory
 md = mbase + '/assets'; // manta assets directory
-lbase = '/opt/smartdc/mackerel'; // local base directory
-ld = lbase + '/assets'; // local assets directory
 userbase = '/reports/usage'; // user-accessible base directory
 
+lbase = '/opt/smartdc/mackerel'; // local base directory
+ld = lbase + '/assets'; // local assets directory
+
 
 /******************************/
-/*        REDIS CONFIG        */
+/*         MAHI CONFIG        */
 /******************************/
 
-c.redis = {
-    port: 6379,
-
+c.mahi = {
     // replaced with $(mdata-get auth_cache_name) at zone setup time
     host: 'REDIS_HOST',
+    port: 6379,
 
     // optional client options
     maxParallel: undefined, // maximum parallel requests sent to redis
-    options: {}, // additional options passed to client
+    redis_options: undefined, // additional options passed to the client
 
     // for retry
     connectTimeout: undefined,
+    checkInterval: undefined,
     retries: undefined,
     minTimeout: undefined,
     maxTimeout: undefined
@@ -65,24 +69,18 @@ c.redis = {
 
 
 /******************************/
-/*       BACKFILL CONFIG      */
-/******************************/
-
-c.backfillPath = mbase + '/jobs'; // where to store failed job records
-c.alarmAfter = 24; // hours
-
-/******************************/
 /*   WORKFLOW CLIENT CONFIG   */
 /******************************/
 
 c.workflow = {
+    // TODO replace with mdata-get ??? at zone setup time
     url: 'http://localhost:8080',
     path: lbase + '/lib/workflows'
 };
 
 
 /******************************/
-/*       ASSETS       */
+/*           ASSETS           */
 /******************************/
 
 // assets is a mapping from the manta object path to the local file path
@@ -121,13 +119,6 @@ c.monitorBackoff = {
     initialDelay: 1000, // 1 second
     maxDelay: 120000, // 2 minutes
     failAfter: 30 // ~ 50 minutes total
-};
-
-// retry configuration settings for job failures
-c.retryBackoff = {
-    initialDelay: 60000, // 1 minute
-    maxDelay: 600000, // 10 minutes
-    failAfter: 2
 };
 
 
