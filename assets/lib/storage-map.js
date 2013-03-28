@@ -74,9 +74,9 @@ var mod_carrier = require('./carrier');
 function validSchema(obj) {
         var fields =
                 ['key', 'owner', 'type'];
-        for(var i = 0; i < fields.length; i++) {
+        for (var i = 0; i < fields.length; i++) {
                 if (!obj[fields[i]]) {
-                        return (false)
+                        return (false);
                 }
         }
         return (true);
@@ -95,7 +95,7 @@ function main() {
                         return;
                 }
 
-                if(!record.entry || !record.entry[index] ||
+                if (!record.entry || !record.entry[index] ||
                         !validSchema(JSON.parse(record.entry[index]))) {
 
                         console.warn('Unrecognized line: ' + line);
