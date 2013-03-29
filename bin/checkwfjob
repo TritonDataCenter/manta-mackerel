@@ -25,4 +25,5 @@ var client = new wfclient({
 
 client.getJob(uuid, function (err, job) {
         log.info({err: err, job: job}, 'job');
+        client.close();
 });
