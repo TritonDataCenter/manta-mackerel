@@ -10,23 +10,13 @@
                 "bunyan": "0.18.2",
                 "carrier": "0.1.7",
                 "memorystream-mcavage": "0.1.1",
-                "node-libmanta": "git+ssh://git@git.joyent.com:node-libmanta.git#29c61332467db29932a8a90e541062dbb99407ce",
+                "node-libmanta": "git+ssh://git@git.joyent.com:node-libmanta.git#7ef266547ed44178fee5c93d398771bb43507977",
                 "node-manta": "git+ssh://git@github.com:joyent/node-manta.git#ce7317b152d90c9a2bf226ce01d2392ed95c5233",
-                "node-moray": "git+ssh://git@git.joyent.com:node-moray.git#6248cbed48f0e86d9eb25bb708cc54ee99ddadde",
-                "node-uuid": "1.4.0",
-                "once": "1.1.1",
                 "posix-getopt": "1.0.0",
-                "redis": "0.8.2",
-                "restify": "2.3.4",
-                "sigyan": "0.2.0",
                 "vasync": "1.3.3",
-                "wf": "0.8.0",
-                "wf-client": "git+ssh://git@git.joyent.com:wf-client.git#c5d0a1f139d5319e",
-                "wf-moray-backend": "git+ssh://git@git.joyent.com:node-workflow-moray-backend.git#7fff1e4",
-                "xtend": "1.0.3"
+                "wf-client": "git+ssh://git@git.joyent.com:wf-client.git#592814ce97ee535c784a0b8dd4259c0df7849e63"
         },
         "devDependencies": {
-                "tap": "~0.3",
                 "nodeunit" : "0.7.4",
                 "ansidiff": "1.0.0"
         },
