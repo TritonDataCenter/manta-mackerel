@@ -106,8 +106,8 @@ c.assets[md + '/lib/storage-reduce3.js'] = ld + '/lib/storage-reduce3.js';
 c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
 // since the lookup file is generated at job run time, meter.js needs to know
 // the manta path for the lookup file
-c.mantaLookupPath = md + '/cfg/lookup.json';
-c.assets[c.mantaLookupPath] = ld + '/cfg/auto-generated-lookup.json';
+c.mantaLookupPath = md + '/etc/lookup.json';
+c.assets[c.mantaLookupPath] = ld + '/etc/lookup.json';
 
 
 /******************************/
