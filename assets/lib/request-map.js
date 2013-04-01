@@ -2,6 +2,8 @@
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 var mod_carrier = require('./carrier');
+var mod_range_check = require('./range_check');
+var ranges = require('../etc/ranges.json');
 
 function shouldProcess(record) {
         return (record.audit &&
@@ -15,6 +17,12 @@ function okStatus(code) {
 
 
 function getNetwork(record) {
+        var ip = record.req.headers['x-forwarded-for'];
+        for (var r in ranges) {
+                if (mod_range_check.in_range(ip, ranges[r].ranges)) {
+                        return (ranges[r].name);
+                }
+        }
         return ('external');
 }
 
@@ -25,51 +33,48 @@ function count(record, aggr) {
         var reqHeaderLength = record.reqHeaderLength;
         var statusCode = record.res.statusCode;
         var network = getNetwork(record);
+        var r;
 
         // get the content-length if it exists
-        // content-length is a string when it's in the req header
         var contentLength = record.res.headers['content-length'] ||
                 +record.req.headers['content-length'] || 0;
+        // _____^ content-length is a string when it's in the req header
 
-        aggr[owner] = aggr[owner] || {
-                'owner': owner,
-                'requests': {
-                        'OPTION': 0,
-                        'GET': 0,
-                        'HEAD': 0,
-                        'POST': 0,
-                        'PUT': 0,
-                        'DELETE': 0,
-                        'total': 0
-                },
-                'bandwidth': {
-                        'external': {
-                                'in': 0,
-                                'out': 0,
-                                'headerIn': 0,
-                                'headerOut': 0
-                        },
-                        'internal': {
-                                'in': 0,
-                                'out': 0,
-                                'headerIn': 0,
-                                'headerOut': 0
-                        }
+        if (!aggr[owner]) {
+                aggr[owner] = {
+                        owner: owner
+                };
+                for (r in ranges) {
+                        aggr[owner][ranges[r].name] = {
+                                requests: {
+                                        OPTION: 0,
+                                        GET: 0,
+                                        HEAD: 0,
+                                        POST: 0,
+                                        PUT: 0,
+                                        DELETE: 0,
+                                },
+                                bandwidth: {
+                                        in: 0,
+                                        out: 0,
+                                        headerIn: 0,
+                                        headerOut: 0
+                                }
+                        };
                 }
-        };
+        }
 
-        aggr[owner].requests[method]++;
-        aggr[owner].requests.total++;
-        aggr[owner].bandwidth[network].headerIn += reqHeaderLength;
-        aggr[owner].bandwidth[network].headerOut += resHeaderLength;
+        aggr[owner][network].requests[method]++;
+        aggr[owner][network].bandwidth.headerIn += reqHeaderLength;
+        aggr[owner][network].bandwidth.headerOut += resHeaderLength;
 
         // only count bandwidth for successful GET & PUT
         if (method === 'GET' && okStatus(statusCode)) {
-                aggr[owner].bandwidth[network].in += contentLength;
+                aggr[owner][network].bandwidth.in += contentLength;
         }
 
         if (method === 'PUT' && okStatus(statusCode)) {
-                aggr[owner].bandwidth[network].out += contentLength;
+                aggr[owner][network].bandwidth.out += contentLength;
         }
 }
 

@@ -27,6 +27,7 @@ c.mantaConfigFile = '/opt/smartdc/common/etc/config.json';
 
 var user, mbase, md, lbase, ld, userbase;
 
+// running the file should always generate valid json, so wrap this in try/catch
 try {
     user = require(c.mantaConfigFile).manta.user;
 } catch (e) {
@@ -104,6 +105,10 @@ c.assets[md + '/lib/storage-map.js'] = ld + '/lib/storage-map.js';
 c.assets[md + '/lib/storage-reduce1.js'] = ld + '/lib/storage-reduce1.js';
 c.assets[md + '/lib/storage-reduce3.js'] = ld + '/lib/storage-reduce3.js';
 c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
+c.assets[md + '/etc/ranges.json'] = ld + '/etc/ranges.json';
+c.assets[md + '/lib/node_modules/ipaddr.js'] = lbase + '/node_modules/range_check/node_modules/ipaddr.js/lib/ipaddr.js';
+c.assets[md + '/lib/php.js'] = lbase + '/node_modules/range_check/php.js';
+c.assets[md + '/lib/range_check.js'] = lbase + '/node_modules/range_check/range_check.js';
 // since the lookup file is generated at job run time, meter.js needs to know
 // the manta path for the lookup file
 c.mantaLookupPath = md + '/etc/lookup.json';
