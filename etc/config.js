@@ -203,6 +203,13 @@ c.jobs.storage = {
 
         // specific job environment settings that will be prepended to each exec string
         env: {
+            // NOTE: the order in which the namespaces appear here will be
+            // the order in which links appearing in multiple namespaces will
+            // be counted
+            // example: if links pointing to the same object appear in both
+            // /stor and /public, and the desired behavior is to count the
+            // object under the /stor namespace over the public namespace,
+            // put "stor" before "public" in the space-separated list below:
             NAMESPACES: 'stor public jobs reports',
             ZCAT: 'gzcat',
 

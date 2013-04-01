@@ -55,17 +55,16 @@ var mod_carrier = require('./carrier');
  * aggr format:
  * {
  *      owner: {
- *              "counts": {
- *                      namespace: {
- *                              "directories": directories,
- *                              "keys": keys,
- *                              "objects": objects,
- *                              "bytes": bytes
- *                      }
+ *              "dirs": {
+ *                      namespace: 0,
  *                      ...
  *              },
- *              "objectIds": {
- *                      objectId: null,
+ *              "objects": {
+ *                      objectId: {
+ *                              namespace: 0,
+ *                              ...
+ *                              _size: 0
+ *                      },
  *                      ...
  *              }
  *      },
@@ -88,21 +87,7 @@ var mod_carrier = require('./carrier');
 /* END JSSTYLED */
 
 
-function addOwner(owner, aggr) {
-        aggr[owner] = {
-                counts: {},
-                objectIds: {}
-        };
-}
-
-function addNamespace(namespace, aggr) {
-        aggr.counts[namespace] = {
-                directories: 0,
-                keys: 0,
-                objects: 0,
-                bytes: 0
-        };
-}
+var NAMESPACES = (process.env.NAMESPACES).split(' ');
 
 function count(record, aggr) {
         var owner = record.owner;
@@ -115,17 +100,18 @@ function count(record, aggr) {
                 return;
         }
 
-        if (typeof (aggr[owner]) === 'undefined') {
-                addOwner(owner, aggr);
-        }
+        aggr[owner] = aggr[owner] || {
+                dirs: {},
+                objects: {}
+        };
 
-        if (typeof (aggr[owner].counts[namespace]) === 'undefined') {
-                addNamespace(namespace, aggr[owner]);
-        }
+        aggr[owner].dirs[namespace] = aggr[owner].dirs[namespace] || 0;
 
         if (type === 'directory') {
-                aggr[owner].counts[namespace].directories += 1;
+                aggr[owner].dirs[namespace]++;
         } else if (type === 'object') {
+                var index = aggr[owner].objects;
+                var n;
                 try {
                         var objectId = record.objectId;
                         var size = record.contentLength * record.sharks.length;
@@ -134,36 +120,57 @@ function count(record, aggr) {
                         return;
                 }
 
-
-                aggr[owner].counts[namespace].keys += 1;
-
-                // check for unique object
-                if (typeof (aggr[owner].objectIds[objectId]) === 'undefined') {
-                        aggr[owner].objectIds[objectId] = null; // add to index
-                        aggr[owner].counts[namespace].objects += 1;
-                        aggr[owner].counts[namespace].bytes += size;
+                if (!index[objectId]) {
+                        index[objectId] = {};
+                        for (n in NAMESPACES) {
+                                index[objectId][NAMESPACES[n]] = 0;
+                        }
                 }
+
+                index[objectId][namespace]++;
+                index[objectId]._size = size;
         } else {
                 console.warn('Unrecognized object type: ' + record);
         }
-
 }
 
-
 function printResults(aggr) {
+        var n, dirs;
         Object.keys(aggr).forEach(function (owner) {
-                Object.keys(aggr[owner].counts).forEach(function (namespace) {
-                        var counts = aggr[owner].counts[namespace];
-                        var output = {
-                                owner: owner,
-                                namespace: namespace,
-                                directories: counts.directories,
-                                keys: counts.keys,
-                                objects: counts.objects,
-                                bytes: counts.bytes
-                        };
-                        console.log(JSON.stringify(output));
+                var keys = {};
+                var bytes = {};
+                var objects = {};
+
+                for (n in NAMESPACES) {
+                        keys[NAMESPACES[n]] = 0;
+                        bytes[NAMESPACES[n]] = 0;
+                        objects[NAMESPACES[n]] = 0;
+                }
+
+                Object.keys(aggr[owner].objects).forEach(function (object) {
+                        var counted = false;
+                        var objCounts = aggr[owner].objects[object];
+                        for (n in NAMESPACES) {
+                                if (!counted && objCounts[NAMESPACES[n]] > 0) {
+                                        counted = true;
+                                        bytes[NAMESPACES[n]] += objCounts._size;
+                                        objects[NAMESPACES[n]]++;
+                                }
+                                keys[NAMESPACES[n]] += objCounts[NAMESPACES[n]];
+                        }
                 });
+
+                for (n in NAMESPACES) {
+                        dirs = aggr[owner].dirs[NAMESPACES[n]] || 0;
+                        console.log(JSON.stringify({
+                                owner: owner,
+                                namespace: NAMESPACES[n],
+                                directories: dirs,
+                                keys: keys[NAMESPACES[n]],
+                                objects: objects[NAMESPACES[n]],
+                                bytes: bytes[NAMESPACES[n]]
+                        }));
+                }
         });
 }
 
