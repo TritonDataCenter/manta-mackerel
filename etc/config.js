@@ -196,7 +196,7 @@ c.jobs.storage = {
                 type: 'reduce',
                 assets: [
                     md + '/bin/deliver-usage',
-                    md + '/cfg/lookup.json',
+                    md + '/etc/lookup.json',
                     md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
                     md + '/lib/memorystream.js'
@@ -251,7 +251,7 @@ c.jobs.storage = {
                 type: 'reduce',
                 assets: [
                     md + '/bin/deliver-usage',
-                    md + '/cfg/lookup.json',
+                    md + '/etc/lookup.json',
                     md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
                     md + '/lib/memorystream.js'
@@ -289,7 +289,7 @@ c.jobs.storage = {
                 type: 'reduce',
                 assets: [
                     md + '/bin/deliver-usage',
-                    md + '/cfg/lookup.json',
+                    md + '/etc/lookup.json',
                     md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
                     md + '/lib/memorystream.js'
@@ -318,7 +318,11 @@ c.jobs.request = {
             phases: [ {
                 type: 'storage-map',
                 assets: [
-                    md + '/bin/request-map'
+                    md + '/bin/request-map',
+                    md + '/lib/ip_addr.js',
+                    md + '/lib/php.js',
+                    md + '/lib/range_check.js',
+                    md + '/lib/request-map.js'
                 ],
                 exec: '/assets' + md + '/bin/request-map'
             }, {
@@ -332,7 +336,7 @@ c.jobs.request = {
                 type: 'reduce',
                 assets: [
                     md + '/bin/deliver-usage',
-                    md + '/cfg/lookup.json',
+                    md + '/etc/lookup.json',
                     md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
                     md + '/lib/memorystream.js'
@@ -370,7 +374,7 @@ c.jobs.request = {
                 type: 'reduce',
                 assets: [
                     md + '/bin/deliver-usage',
-                    md + '/cfg/lookup.json',
+                    md + '/etc/lookup.json',
                     md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
                     md + '/lib/memorystream.js'
@@ -408,7 +412,7 @@ c.jobs.request = {
                 type: 'reduce',
                 assets: [
                     md + '/bin/deliver-usage',
-                    md + '/cfg/lookup.json',
+                    md + '/etc/lookup.json',
                     md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
                     md + '/lib/memorystream.js'

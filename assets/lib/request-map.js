@@ -52,7 +52,7 @@ function count(record, aggr) {
                                         HEAD: 0,
                                         POST: 0,
                                         PUT: 0,
-                                        DELETE: 0,
+                                        DELETE: 0
                                 },
                                 bandwidth: {
                                         in: 0,
