@@ -70,11 +70,11 @@ function count(record, aggr) {
 
         // only count bandwidth for successful GET & PUT
         if (method === 'GET' && okStatus(statusCode)) {
-                aggr[owner][network].bandwidth.in += contentLength;
+                aggr[owner][network].bandwidth.out += contentLength;
         }
 
         if (method === 'PUT' && okStatus(statusCode)) {
-                aggr[owner][network].bandwidth.out += contentLength;
+                aggr[owner][network].bandwidth.in += contentLength;
         }
 }
 
