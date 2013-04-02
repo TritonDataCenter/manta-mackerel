@@ -135,7 +135,13 @@ c.monitorBackoff = {
 // each job object must have a 'keygen' field pointing to the path of the
 // keygen file, and a 'job' field containing the job manifest.
 c.jobs = {};
+
 c.jobs.storage = {
+
+    /******************/
+    /* STORAGE HOURLY */
+    /******************/
+
     hourly: {
         // keygen path (required)
         keygen: lbase + '/lib/keygen/StorageHourlyKeyGenerator.js',
@@ -228,6 +234,11 @@ c.jobs.storage = {
             USER_DEST: userbase + '/storage/$year/$month/$day/$hour/h$hour.json'
         }
     },
+
+    /*****************/
+    /* STORAGE DAILY */
+    /*****************/
+
     daily: {
         keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
         keygenArgs: {
@@ -246,17 +257,6 @@ c.jobs.storage = {
                     md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
-                count: 1
-            }, {
-                type: 'reduce',
-                assets: [
-                    md + '/bin/deliver-usage',
-                    md + '/etc/lookup.json',
-                    md + '/lib/carrier.js',
-                    md + '/lib/deliver-usage.js',
-                    md + '/lib/memorystream.js'
-                ],
-                exec: '/assets' + md + '/bin/deliver-usage',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
             } ]
         },
@@ -266,6 +266,11 @@ c.jobs.storage = {
             USER_DEST: userbase + '/storage/$year/$month/$day/d$day.json'
         }
     },
+
+    /*******************/
+    /* STORAGE MONTHLY */
+    /*******************/
+
     monthly: {
         keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
         keygenArgs: {
@@ -284,17 +289,6 @@ c.jobs.storage = {
                     md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
-                count: 1
-            }, {
-                type: 'reduce',
-                assets: [
-                    md + '/bin/deliver-usage',
-                    md + '/etc/lookup.json',
-                    md + '/lib/carrier.js',
-                    md + '/lib/deliver-usage.js',
-                    md + '/lib/memorystream.js'
-                ],
-                exec: '/assets' + md + '/bin/deliver-usage',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
             } ]
         },
@@ -306,6 +300,11 @@ c.jobs.storage = {
     }
 };
 c.jobs.request = {
+
+    /******************/
+    /* REQUEST HOURLY */
+    /******************/
+
     hourly: {
         keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
         keygenArgs: {
@@ -351,6 +350,11 @@ c.jobs.request = {
             USER_DEST: userbase + '/request/$year/$month/$day/$hour/h$hour.json'
         }
     },
+
+    /*****************/
+    /* REQUEST DAILY */
+    /*****************/
+
     daily: {
         keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
         keygenArgs: {
@@ -370,17 +374,6 @@ c.jobs.request = {
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
-            }, {
-                type: 'reduce',
-                assets: [
-                    md + '/bin/deliver-usage',
-                    md + '/etc/lookup.json',
-                    md + '/lib/carrier.js',
-                    md + '/lib/deliver-usage.js',
-                    md + '/lib/memorystream.js'
-                ],
-                exec: '/assets' + md + '/bin/deliver-usage',
-                count: 1 // final reduce phases must have exactly one reducer to collate results
             } ]
         },
         env: {
@@ -389,6 +382,11 @@ c.jobs.request = {
             USER_DEST: userbase + '/request/$year/$month/$day/d$day.json'
         },
     },
+
+    /*******************/
+    /* REQUEST MONTHLY */
+    /*******************/
+
     monthly: {
         keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
         keygenArgs: {
@@ -408,17 +406,6 @@ c.jobs.request = {
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
-            }, {
-                type: 'reduce',
-                assets: [
-                    md + '/bin/deliver-usage',
-                    md + '/etc/lookup.json',
-                    md + '/lib/carrier.js',
-                    md + '/lib/deliver-usage.js',
-                    md + '/lib/memorystream.js'
-                ],
-                exec: '/assets' + md + '/bin/deliver-usage',
-                count: 1 // final reduce phases must have exactly one reducer to collate results
             } ]
         },
         env: {
@@ -449,7 +436,7 @@ c.jobs.compute = {
 */
 
 if (require.main === module) {
-    console.log(JSON.stringify(c));
+    console.log(JSON.stringify(c), null, 2);
 }
 
 module.exports = c;
