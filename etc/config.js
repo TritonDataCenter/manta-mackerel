@@ -105,10 +105,8 @@ c.assets[md + '/lib/storage-map.js'] = ld + '/lib/storage-map.js';
 c.assets[md + '/lib/storage-reduce1.js'] = ld + '/lib/storage-reduce1.js';
 c.assets[md + '/lib/storage-reduce3.js'] = ld + '/lib/storage-reduce3.js';
 c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
-c.assets[md + '/etc/ranges.json'] = ld + '/etc/ranges.json';
-c.assets[md + '/lib/node_modules/ipaddr.js'] = lbase + '/node_modules/range_check/node_modules/ipaddr.js/lib/ipaddr.js';
-c.assets[md + '/lib/php.js'] = lbase + '/node_modules/range_check/php.js';
-c.assets[md + '/lib/range_check.js'] = lbase + '/node_modules/range_check/range_check.js';
+c.assets[md + '/etc/networks.json'] = ld + '/etc/networks.json';
+c.assets[md + '/lib//ipaddr.js'] = lbase + '/node_modules/ipaddr.js/lib/ipaddr.js';
 // since the lookup file is generated at job run time, meter.js needs to know
 // the manta path for the lookup file
 c.mantaLookupPath = md + '/etc/lookup.json';
@@ -318,9 +316,8 @@ c.jobs.request = {
                 type: 'storage-map',
                 assets: [
                     md + '/bin/request-map',
-                    md + '/lib/ip_addr.js',
-                    md + '/lib/php.js',
-                    md + '/lib/range_check.js',
+                    md + '/etc/networks.json',
+                    md + '/lib/ipaddr.js',
                     md + '/lib/request-map.js'
                 ],
                 exec: '/assets' + md + '/bin/request-map'
@@ -330,7 +327,7 @@ c.jobs.request = {
                     md + '/bin/request-reduce'
                 ],
                 exec: '/assets' + md + '/bin/request-reduce',
-                count: 2
+                count: 1
             }, {
                 type: 'reduce',
                 assets: [

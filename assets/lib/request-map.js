@@ -2,8 +2,21 @@
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 var mod_carrier = require('./carrier');
-var mod_range_check = require('./range_check');
-var ranges = require('../etc/ranges.json');
+var mod_ipaddr = require('./ipaddr');
+var networks = require('../etc/networks.json');
+
+function parseRanges() {
+        var parts, i, j;
+        for (i = 0; i < networks.length; i++) {
+                for (j = 0; j < networks[i].ranges.length; j++) {
+                        parts = networks[i].ranges[j].split('/');
+                        networks[i].ranges[j] = {
+                                ip: mod_ipaddr.parse(parts[0]),
+                                bits: +parts[1]
+                        };
+                }
+        }
+}
 
 function shouldProcess(record) {
         return (record.audit &&
@@ -17,10 +30,14 @@ function okStatus(code) {
 
 
 function getNetwork(record) {
-        var ip = record.req.headers['x-forwarded-for'];
-        for (var r in ranges) {
-                if (mod_range_check.in_range(ip, ranges[r].ranges)) {
-                        return (ranges[r].name);
+        var ip = mod_ipaddr.parse(record.req.headers['x-forwarded-for']);
+        var i, j, range;
+        for (i = 0; i < networks.length; i++) {
+                for (j = 0; j < networks[i].ranges.length; j++) {
+                        range = networks[i].ranges[j];
+                        if (ip.match(range.ip, range.bits)) {
+                                return (networks[i].name);
+                        }
                 }
         }
         return ('external');
@@ -33,7 +50,7 @@ function count(record, aggr) {
         var reqHeaderLength = record.reqHeaderLength;
         var statusCode = record.res.statusCode;
         var network = getNetwork(record);
-        var r;
+        var i;
 
         // get the content-length if it exists
         var contentLength = record.res.headers['content-length'] ||
@@ -44,8 +61,8 @@ function count(record, aggr) {
                 aggr[owner] = {
                         owner: owner
                 };
-                for (r in ranges) {
-                        aggr[owner][ranges[r].name] = {
+                for (i = 0; i < networks.length; i++) {
+                        aggr[owner][networks[i].name] = {
                                 requests: {
                                         OPTION: 0,
                                         GET: 0,
@@ -87,6 +104,7 @@ function printResults(aggr) {
 function main() {
         var carry = mod_carrier.carry(process.openStdin());
         var aggr = {};
+        parseRanges();
         carry.on('line', function onLine(line) {
                 var record;
 
@@ -100,6 +118,7 @@ function main() {
                         return;
                 }
 
+                // only process audit records, and ignore pings
                 if (!shouldProcess(record)) {
                         return;
                 }

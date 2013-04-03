@@ -9,11 +9,11 @@
                 "backoff": "1.2.0",
                 "bunyan": "0.18.2",
                 "carrier": "0.1.7",
+                "ipaddr.js": "0.1.1",
                 "memorystream-mcavage": "0.1.1",
                 "node-libmanta": "git+ssh://git@git.joyent.com:node-libmanta.git#7ef266547ed44178fee5c93d398771bb43507977",
                 "node-manta": "git+ssh://git@github.com:joyent/node-manta.git#MANTA-933",
                 "posix-getopt": "1.0.0",
-                "range_check": "0.0.1",
                 "vasync": "1.3.3",
                 "wf-client": "git+ssh://git@git.joyent.com:wf-client.git#592814ce97ee535c784a0b8dd4259c0df7849e63"
         },
