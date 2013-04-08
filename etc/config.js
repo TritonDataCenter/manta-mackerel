@@ -141,8 +141,8 @@ c.jobs.storage = {
     /******************/
 
     hourly: {
-        // keygen path (required)
-        keygen: lbase + '/lib/keygen/StorageHourlyKeyGenerator.js',
+        // keygen name (required)
+        keygen: 'StorageHourlyKeyGenerator',
 
         // additional keygen arguments (date will always be passed in)
         keygenArgs: {
@@ -238,7 +238,7 @@ c.jobs.storage = {
     /*****************/
 
     daily: {
-        keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
+        keygen: 'FindKeyGenerator',
         keygenArgs: {
             source: '/poseidon/stor/usage/storage/$year/$month/$day',
             regex: 'h[0-9][0-9]'
@@ -270,7 +270,7 @@ c.jobs.storage = {
     /*******************/
 
     monthly: {
-        keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
+        keygen: 'FindKeyGenerator',
         keygenArgs: {
             source: '/poseidon/stor/usage/storage/$year/$month',
             regex: 'd[0-9][0-9]'
@@ -304,7 +304,7 @@ c.jobs.request = {
     /******************/
 
     hourly: {
-        keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
+        keygen: 'FindKeyGenerator',
         keygenArgs: {
             source: '/poseidon/stor/logs/muskie/$year/$month/$day/$hour'
         },
@@ -353,7 +353,7 @@ c.jobs.request = {
     /*****************/
 
     daily: {
-        keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
+        keygen: 'FindKeyGenerator',
         keygenArgs: {
             source: '/poseidon/stor/usage/request/$year/$month/$day',
             regex: 'h[0-9][0-9]'
@@ -385,7 +385,7 @@ c.jobs.request = {
     /*******************/
 
     monthly: {
-        keygen: lbase + '/lib/keygen/FindKeyGenerator.js',
+        keygen: 'FindKeyGenerator',
         keygenArgs: {
             source: '/poseidon/stor/usage/request/$year/$month',
             regex: 'd[0-9][0-9]'

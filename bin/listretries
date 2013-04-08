@@ -1,0 +1,71 @@
+#!/usr/bin/env node
+var bunyan = require('bunyan');
+var path = require('path');
+var wfclient =  require('wf-client');
+var config = require('../etc/config.js');
+
+if (process.argv.length <= 2) {
+        console.warn('Usage: ' + path.basename(process.argv[1]) + ' <uuid>');
+        process.exit(1);
+}
+
+var log = bunyan.createLogger({
+        level: (process.env.LOG_LEVEL || 'info'),
+        name: 'checkJob',
+        stream: process.stdout
+});
+
+var uuid = process.argv[2];
+
+var client = new wfclient({
+        url: config.workflow.url,
+        path: config.workflow.path,
+        log: log
+});
+
+var prevlist = [];
+var afterlist = [];
+
+function getJobAfter(uuid, cb) {
+        client.getJob(uuid, function (err, job) {
+                if (err) {
+                        console.warn(err);
+                        cb(err);
+                }
+                if (job.next_attempt) {
+                        afterlist.push(job.next_attempt);
+                        getJobAfter(job.next_attempt, cb);
+                } else {
+                        cb(null, afterlist);
+                }
+        });
+}
+
+function getJobBefore(uuid, cb) {
+        client.getJob(uuid, function (err, job) {
+                if (err) {
+                        console.warn(err);
+                        cb(err);
+                }
+                if (job.prev_attempt) {
+                        prevlist.push(job.prev_attempt);
+                        getJobBefore(job.prev_attempt, cb);
+                } else {
+                        cb(null, prevlist);
+                }
+        });
+}
+
+var i;
+getJobAfter(uuid, function (err, after) {
+        getJobBefore(uuid, function (err2, before) {
+                for (i = before.length - 1; i >= 0; i--) {
+                        console.log(before[i]);
+                }
+                console.log(uuid);
+                for (i = 0; i < after.length; i++) {
+                        console.log(after[i]);
+                }
+                client.close();
+        });
+});

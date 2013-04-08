@@ -24,6 +24,11 @@ var client = new wfclient({
 });
 
 client.getJob(uuid, function (err, job) {
-        log.info({err: err, job: job}, 'job');
+        if (err) {
+                console.warn(err);
+                client.close();
+                return;
+        }
+        console.log(JSON.stringify(job, null, 2));
         client.close();
 });
