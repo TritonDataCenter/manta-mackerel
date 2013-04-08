@@ -8,15 +8,15 @@
         "dependencies": {
                 "assert-plus": "0.1.2",
                 "backoff": "1.2.0",
-                "bunyan": "0.18.2",
+                "bunyan": "0.21.1",
                 "carrier": "0.1.7",
                 "ipaddr.js": "0.1.1",
+                "libmanta": "git+ssh://git@git.joyent.com:node-libmanta.git#master",
+                "manta": "git+ssh://git@github.com:joyent/node-manta.git#MANTA-933",
                 "memorystream-mcavage": "0.1.1",
-                "node-libmanta": "git+ssh://git@git.joyent.com:node-libmanta.git#7ef266547ed44178fee5c93d398771bb43507977",
-                "node-manta": "git+ssh://git@github.com:joyent/node-manta.git#MANTA-933",
                 "posix-getopt": "1.0.0",
                 "vasync": "1.3.3",
-                "wf-client": "git+ssh://git@git.joyent.com:wf-client.git#592814ce97ee535c784a0b8dd4259c0df7849e63"
+                "wf-client": "git+ssh://git@git.joyent.com:wf-client.git#master"
         },
         "devDependencies": {
                 "nodeunit" : "0.7.4",
