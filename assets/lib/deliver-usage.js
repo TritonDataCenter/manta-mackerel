@@ -8,7 +8,7 @@ var mod_path = require('path');
 var mod_manta = require('/opt/marlin/node_modules/manta/lib');
 var mod_MemoryStream = require('./memorystream');
 
-var lookup = require('../cfg/lookup.json'); // maps uuid->login
+var lookup = require('../etc/lookup.json'); // maps uuid->login
 
 function zero(obj) {
         Object.keys(obj).forEach(function (k) {

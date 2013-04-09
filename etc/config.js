@@ -104,6 +104,7 @@ c.assets[md + '/lib/memorystream.js'] = lbase + '/node_modules/memorystream-mcav
 c.assets[md + '/lib/storage-map.js'] = ld + '/lib/storage-map.js';
 c.assets[md + '/lib/storage-reduce1.js'] = ld + '/lib/storage-reduce1.js';
 c.assets[md + '/lib/storage-reduce3.js'] = ld + '/lib/storage-reduce3.js';
+c.assets[md + '/lib/request-map.js'] = ld + '/lib/request-map.js';
 c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
 c.assets[md + '/etc/networks.json'] = ld + '/etc/networks.json';
 c.assets[md + '/lib//ipaddr.js'] = lbase + '/node_modules/ipaddr.js/lib/ipaddr.js';
