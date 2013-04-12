@@ -401,13 +401,13 @@ c.jobs.compute = {
     hourly: {
         keygen: 'FindKeyGenerator',
         keygenArgs: {
-            source: '/poseidon/stor/usage/request/$year/$month/$day/$hour,
+            source: '/poseidon/stor/usage/request/$year/$month/$day/$hour',
         },
         workflow: 'find-runjob',
         linkePath: mbase + '/compute/latest-hourly',
         job: {
             name: 'metering-compute-hourly-$year-$month-$dayT$hour',
-            phases [ {
+            phases: [ {
                 type: 'map',
                 assets: [
                     md + '/bin/compute-map',
@@ -434,7 +434,7 @@ c.jobs.compute = {
                 ],
                 exec: '/assets' + md + '/bin/deliver-usage',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
-            }
+            } ]
         },
         env: {
             HEADER_CONTENT_TYPE: 'application/x-json-stream',
@@ -495,6 +495,7 @@ c.jobs.compute = {
                 count: 1
             } ]
         }
+    }
 }
 
 
