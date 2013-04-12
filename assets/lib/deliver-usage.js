@@ -34,19 +34,14 @@ function writeToUserDir(record, login, client, cb) {
                         cb(err);
                         return;
                 }
-                console.warn(mod_path.dirname(path) + ' created.');
-                put();
-        });
 
-        function put() {
-                client.put(path, mstream, {size: size}, function (err) {
-                        if (err) {
+                client.put(path, mstream, {size: size}, function (err2) {
+                        if (err2) {
                                 console.warn('Error put ' + path);
-                                console.warn(err);
-                                cb(err);
+                                console.warn(err2);
+                                cb(err2);
                                 return;
                         }
-                        console.warn(path + ' written.');
                         cb();
                 });
 
@@ -54,7 +49,8 @@ function writeToUserDir(record, login, client, cb) {
                         mstream.write(line);
                         mstream.end();
                 });
-        }
+        });
+
 }
 
 function main() {
@@ -116,7 +112,7 @@ function main() {
 
                         if (!emptyRecord) {
                                 console.warn('Error: an empty record template' +
-                                        ' was ever created. Perhaps no input' +
+                                        ' was never created. Perhaps no input' +
                                         ' was read?');
                                 process.exit(1);
                         }

@@ -86,28 +86,23 @@ c.workflow = {
 
 // assets is a mapping from the manta object path to the local file path
 c.assets = {};
-c.assets[md + '/bin/avg-columns'] = ld + '/bin/avg-columns';
 c.assets[md + '/bin/deliver-usage'] = ld + '/bin/deliver-usage';
 c.assets[md + '/bin/request-map'] = ld + '/bin/request-map';
-c.assets[md + '/bin/request-reduce'] = ld + '/bin/request-reduce';
 c.assets[md + '/bin/split-usage'] = ld + '/bin/split-usage';
 c.assets[md + '/bin/storage-map'] = ld + '/bin/storage-map';
 c.assets[md + '/bin/storage-reduce1'] = ld + '/bin/storage-reduce1';
-c.assets[md + '/bin/storage-reduce2'] = ld + '/bin/storage-reduce2';
 c.assets[md + '/bin/storage-reduce3'] = ld + '/bin/storage-reduce3';
 c.assets[md + '/bin/sum-columns'] = ld + '/bin/sum-columns';
-c.assets[md + '/bin/avg-columns'] = ld + '/bin/avg-columns';
-c.assets[md + '/lib/sum-columns.js'] = ld + '/lib/sum-columns.js';
-c.assets[md + '/lib/avg-columns.js'] = ld + '/lib/avg-columns.js';
+c.assets[md + '/etc/networks.json'] = ld + '/etc/networks.json';
+c.assets[md + '/lib//ipaddr.js'] = lbase + '/node_modules/ipaddr.js/lib/ipaddr.js';
 c.assets[md + '/lib/carrier.js'] = lbase + '/node_modules/carrier/lib/carrier.js';
+c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
 c.assets[md + '/lib/memorystream.js'] = lbase + '/node_modules/memorystream-mcavage/index.js';
+c.assets[md + '/lib/request-map.js'] = ld + '/lib/request-map.js';
 c.assets[md + '/lib/storage-map.js'] = ld + '/lib/storage-map.js';
 c.assets[md + '/lib/storage-reduce1.js'] = ld + '/lib/storage-reduce1.js';
 c.assets[md + '/lib/storage-reduce3.js'] = ld + '/lib/storage-reduce3.js';
-c.assets[md + '/lib/request-map.js'] = ld + '/lib/request-map.js';
-c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
-c.assets[md + '/etc/networks.json'] = ld + '/etc/networks.json';
-c.assets[md + '/lib//ipaddr.js'] = lbase + '/node_modules/ipaddr.js/lib/ipaddr.js';
+c.assets[md + '/lib/sum-columns.js'] = ld + '/lib/sum-columns.js';
 // since the lookup file is generated at job run time, meter.js needs to know
 // the manta path for the lookup file
 c.mantaLookupPath = md + '/etc/lookup.json';
@@ -160,7 +155,7 @@ c.jobs.storage = {
 
         // job manifest (required)
         job: {
-            name: 'metering-storage-hourly-$year-$month-$day-$hour',
+            name: 'metering-storage-hourly-$year-$month-$dayT$hour',
             phases: [ {
                 type : 'storage-map',
                 assets : [
@@ -181,12 +176,12 @@ c.jobs.storage = {
                 count: 1
             }, {
                 type: 'reduce',
-                assets : [
-                    md + '/bin/storage-reduce2',
-                    md + '/lib/carrier.js',
-                    md + '/lib/sum-columns.js'
+                assets: [
+                    md + '/bin/sum-columns',
+                    md + '/lib/sum-columns.js',
+                    md + '/lib/carrier.js'
                 ],
-                exec: '/assets' + md + '/bin/storage-reduce2',
+                exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
             }, {
                 type: 'reduce',
@@ -258,11 +253,6 @@ c.jobs.storage = {
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
             } ]
-        },
-        env: {
-            HEADER_CONTENT_TYPE: 'application/x-json-stream',
-            DEST: mbase + '/storage/$year/$month/$day/d$day.json',
-            USER_DEST: userbase + '/storage/$year/$month/$day/d$day.json'
         }
     },
 
@@ -290,14 +280,10 @@ c.jobs.storage = {
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
             } ]
-        },
-        env: {
-            HEADER_CONTENT_TYPE: 'application/x-json-stream',
-            DEST: mbase + '/storage/$year/$month/m$month.json',
-            USER_DEST: userbase + '/storage/$year/$month/m$month.json'
         }
     }
 };
+
 c.jobs.request = {
 
     /******************/
@@ -312,7 +298,7 @@ c.jobs.request = {
         workflow: 'find-runjob',
         linkPath: mbase + '/request/latest-hourly',
         job: {
-            name: 'metering-request-hourly-$year-$month-$day-$hour',
+            name: 'metering-request-hourly-$year-$month-$dayT$hour',
             phases: [ {
                 type: 'storage-map',
                 assets: [
@@ -325,9 +311,11 @@ c.jobs.request = {
             }, {
                 type: 'reduce',
                 assets: [
-                    md + '/bin/request-reduce'
+                    md + '/bin/sum-columns',
+                    md + '/lib/sum-columns.js',
+                    md + '/lib/carrier.js'
                 ],
-                exec: '/assets' + md + '/bin/request-reduce',
+                exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
             }, {
                 type: 'reduce',
@@ -373,12 +361,7 @@ c.jobs.request = {
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
             } ]
-        },
-        env: {
-            HEADER_CONTENT_TYPE: 'application/x-json-stream',
-            DEST: mbase + '/request/$year/$month/$day/d$day.json',
-            USER_DEST: userbase + '/request/$year/$month/$day/d$day.json'
-        },
+        }
     },
 
     /*******************/
@@ -405,36 +388,118 @@ c.jobs.request = {
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
             } ]
-        },
-        env: {
-            HEADER_CONTENT_TYPE: 'application/x-json-stream',
-            DEST: mbase + '/request/$year/$month/m$month.json',
-            USER_DEST: userbase + '/request/$year/$month/m$month.json'
         }
     }
 };
-/*
+
 c.jobs.compute = {
+
+    /******************/
+    /* COMPUTE HOURLY */
+    /******************/
+
     hourly: {
-        phases [ {
+        keygen: 'FindKeyGenerator',
+        keygenArgs: {
+            source: '/poseidon/stor/usage/request/$year/$month/$day/$hour,
         },
-        ...
+        workflow: 'find-runjob',
+        linkePath: mbase + '/compute/latest-hourly',
+        job: {
+            name: 'metering-compute-hourly-$year-$month-$dayT$hour',
+            phases [ {
+                type: 'map',
+                assets: [
+                    md + '/bin/compute-map',
+                    md + '/lib/compute-map.js'
+                ],
+                exec: '/assets' + md + '/bin/compute-map'
+            }, {
+                type: 'reduce',
+                assets: [
+                    md + '/bin/sum-columns',
+                    md + '/lib/sum-columns.js',
+                    md + '/lib/carrier.js'
+                ],
+                exec: '/assets' + md + '/bin/sum-columns',
+                count: 1
+            }, {
+                type: 'reduce',
+                assets: [
+                    md + '/bin/deliver-usage',
+                    md + '/etc/lookup.json',
+                    md + '/lib/carrier.js',
+                    md + '/lib/deliver-usage.js',
+                    md + '/lib/memorystream.js'
+                ],
+                exec: '/assets' + md + '/bin/deliver-usage',
+                count: 1 // final reduce phases must have exactly one reducer to collate results
+            }
+        },
+        env: {
+            HEADER_CONTENT_TYPE: 'application/x-json-stream',
+            DEST: mbase + '/compute/$year/$month/$day/$hour/h$hour.json',
+            USER_DEST: userbase + '/compute/$year/$month/$day/$hour/h$hour.json'
+        }
     },
+
+    /*****************/
+    /* COMPUTE DAILY */
+    /*****************/
+
     daily: {
-        phases [ {
+        keygen: 'FindKeyGenerator',
+        keygenArgs: {
+            source: '/poseidon/stor/usage/compute/$year/$month/$day',
+            regex: 'h[0-9][0-9]'
         },
-        ...
+        workflow: 'find-runjob',
+        linkPath: mbase + '/compute/latest-daily',
+        job: {
+            name: 'metering-compute-daily-$year-$month-$day',
+            phases: [ {
+                type: 'reduce',
+                assets: [
+                    md + '/bin/sum-columns',
+                    md + '/lib/carrier.js',
+                    md + '/lib/sum-columns.js'
+                ],
+                exec: '/assets' + md + '/bin/sum-columns',
+                count: 1
+            } ]
+        }
     },
+
+    /*******************/
+    /* COMPUTE MONTHLY */
+    /*******************/
+
     monthly: {
-        phases [{
+        keygen: 'FindKeyGenerator',
+        keygenArgs: {
+            source: '/poseidon/stor/usage/compute/$year/$month',
+            regex: 'd[0-9][0-9]'
         },
-        ...
-    }
+        workflow: 'find-runjob',
+        linkPath: mbase + '/compute/latest-monthly',
+        job: {
+            name: 'metering-compute-monthly-$year-$month',
+            phases: [ {
+                type: 'reduce',
+                assets: [
+                    md + '/bin/sum-columns',
+                    md + '/lib/sum-columns.js',
+                    md + '/lib/carrier.js'
+                ],
+                exec: '/assets' + md + '/bin/sum-columns',
+                count: 1
+            } ]
+        }
 }
-*/
+
 
 if (require.main === module) {
-    console.log(JSON.stringify(c), null, 2);
+    console.log(JSON.stringify(c, null, 2));
 }
 
 module.exports = c;

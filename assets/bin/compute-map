@@ -5,7 +5,7 @@ set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-$dir/../lib/sum-columns.js 2>stderr #\
+$dir/../lib/compute-map.js 2>stderr #\
 #| msplit -j -n $NUM_REDUCERS -f owner 2>>stderr
 code=$?
 

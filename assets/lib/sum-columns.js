@@ -3,40 +3,75 @@
 
 var mod_carrier = require('./carrier');
 
-function parseLine(line) {
-        return (JSON.parse(line));
+function hrtimePlusEquals(oldvalue, newvalue) {
+        oldvalue[0] += newvalue[0];
+        oldvalue[1] += newvalue[1];
+        if (oldvalue[1] > 1e9) {
+                oldvalue[0]++;
+                oldvalue[1] -= 1e9;
+        }
+        return (oldvalue);
 }
+
 
 function getAggKey(obj) {
         var key = '';
         Object.keys(obj).forEach(function (k) {
-                if (typeof (obj[k]) !== 'number') {
+                if (typeof (obj[k]) === 'string') {
                         key += obj[k];
                 }
         });
         return (key);
 }
 
-// assumes arg1 and arg2 have the same structure
-// arg1 += arg2;
-function plusEquals(arg1, arg2) {
-        Object.keys(arg1).forEach(function (k) {
-                if (typeof (arg1[k]) === 'object') {
-                        plusEquals(arg1[k], arg2[k]);
-                } else if (typeof (arg1[k]) === 'number') {
-                        arg1[k] += arg2[k];
+
+function copyProperties(from, to) {
+        Object.keys(from).forEach(function (k) {
+                var i;
+                if (typeof (to[k]) === 'undefined') {
+                        if (Array.isArray(from[k])) {
+                                to[k] = new Array(from[k].length);
+                                for (i = 0; i < from[k].length; i++) {
+                                        copyProperties(from[k], to[k]);
+                                }
+                        } else if (typeof (from[k]) === 'object') {
+                                copyProperties(from[k], to[k]);
+                        } else if (typeof (from[k]) === 'number') {
+                                to[k] = 0;
+                        } else {
+                                to[k] = from[k];
+                        }
+                } else if (typeof (to[k]) === 'object') {
+                        copyProperties(from[k], to[k]);
                 }
         });
 }
 
-function onLine(aggr, line) {
-        var parsed = parseLine(line);
 
+// assumes oldvalue and newvalue have the same structure
+// oldvalue += newvalue;
+function plusEquals(oldvalue, newvalue) {
+        Object.keys(oldvalue).forEach(function (k) {
+                // consider any array of length 2 to be a hrtime
+                if (Array.isArray(oldvalue[k]) && oldvalue[k].length === 2) {
+                        hrtimePlusEquals(oldvalue[k], newvalue[k]);
+                } else if (typeof (oldvalue[k]) === 'object') {
+                        plusEquals(oldvalue[k], newvalue[k]);
+                } else if (typeof (oldvalue[k]) === 'number') {
+                        oldvalue[k] += newvalue[k];
+                }
+        });
+}
+
+
+function onLine(aggr, line) {
+        var parsed = JSON.parse(line);
         var aggKey = getAggKey(parsed);
 
         if (!aggr[aggKey]) {
                 aggr[aggKey] = parsed;
         } else {
+                copyProperties(parsed, aggr[aggKey]);
                 plusEquals(aggr[aggKey], parsed);
         }
 }

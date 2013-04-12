@@ -1,6 +1,7 @@
 #!/bin/bash
-MAP=../../assets/bin/request-map
+MAP=../../assets/bin/compute-map
 REDUCE=../../assets/bin/sum-columns
+function msplit-json () { cat; }; export -f msplit-json;
 function msplit () { cat; }; export -f msplit;
 function mpipe () { cat; }; export -f mpipe;
 cat input | $MAP | $REDUCE
