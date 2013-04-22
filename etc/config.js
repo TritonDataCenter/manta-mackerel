@@ -16,7 +16,9 @@
  * - job configuration
  */
 
+var path = require('path');
 var c = {};
+module.exports = c;
 
 // manta client config file
 c.mantaConfigFile = '/opt/smartdc/common/etc/config.json';
@@ -28,11 +30,17 @@ c.mantaConfigFile = '/opt/smartdc/common/etc/config.json';
 var user, mbase, md, lbase, ld, userbase;
 
 // running the file should always generate valid json, so wrap this in try/catch
+// and give a default value
 try {
     user = require(c.mantaConfigFile).manta.user;
 } catch (e) {
-    user = 'poseidon';
+    if (typeof(process.env.TEST_USER) !== 'undefined') {
+        user = process.env.TEST_USER;
+    } else {
+        user = 'poseidon';
+    }
 }
+c.mantaUser = user;
 
 
 /*
@@ -43,9 +51,10 @@ mbase = '/' + user + '/stor/usage'; // manta base directory
 md = mbase + '/assets'; // manta assets directory
 userbase = '/reports/usage'; // user-accessible base directory
 
-lbase = '/opt/smartdc/mackerel'; // local base directory
+lbase = path.resolve(__dirname, '..'); // local base directory
 ld = lbase + '/assets'; // local assets directory
 
+c.mantaBaseDir = mbase;
 
 /******************************/
 /*         MAHI CONFIG        */
@@ -94,7 +103,7 @@ c.assets[md + '/bin/storage-reduce1'] = ld + '/bin/storage-reduce1';
 c.assets[md + '/bin/storage-reduce3'] = ld + '/bin/storage-reduce3';
 c.assets[md + '/bin/sum-columns'] = ld + '/bin/sum-columns';
 c.assets[md + '/etc/networks.json'] = ld + '/etc/networks.json';
-c.assets[md + '/lib//ipaddr.js'] = lbase + '/node_modules/ipaddr.js/lib/ipaddr.js';
+c.assets[md + '/lib/ipaddr.js'] = lbase + '/node_modules/ipaddr.js/lib/ipaddr.js';
 c.assets[md + '/lib/carrier.js'] = lbase + '/node_modules/carrier/lib/carrier.js';
 c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
 c.assets[md + '/lib/memorystream.js'] = lbase + '/node_modules/memorystream-mcavage/index.js';
@@ -304,6 +313,7 @@ c.jobs.request = {
                 assets: [
                     md + '/bin/request-map',
                     md + '/etc/networks.json',
+                    md + '/lib/carrier.js',
                     md + '/lib/ipaddr.js',
                     md + '/lib/request-map.js'
                 ],
@@ -401,10 +411,10 @@ c.jobs.compute = {
     hourly: {
         keygen: 'FindKeyGenerator',
         keygenArgs: {
-            source: '/poseidon/stor/usage/request/$year/$month/$day/$hour',
+            source: '/poseidon/stor/logs/marlin-agent/$year/$month/$day/$hour'
         },
         workflow: 'find-runjob',
-        linkePath: mbase + '/compute/latest-hourly',
+        linkPath: mbase + '/compute/latest-hourly',
         job: {
             name: 'metering-compute-hourly-$year-$month-$dayT$hour',
             phases: [ {
@@ -503,4 +513,3 @@ if (require.main === module) {
     console.log(JSON.stringify(c, null, 2));
 }
 
-module.exports = c;

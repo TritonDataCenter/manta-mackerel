@@ -6,12 +6,18 @@ var mod_ipaddr = require('./ipaddr');
 var networks = require('../etc/networks.json');
 
 function parseRanges() {
-        var parts, i, j;
+        var parts, ip, i, j;
         for (i = 0; i < networks.length; i++) {
                 for (j = 0; j < networks[i].ranges.length; j++) {
                         parts = networks[i].ranges[j].split('/');
+                        var ip = mod_ipaddr.parse(parts[0]);
+
+                        if (ip.kind() === 'ipv4') {
+                                ip = ip.toIPv4MappedAddress();
+                        }
+
                         networks[i].ranges[j] = {
-                                ip: mod_ipaddr.parse(parts[0]),
+                                ip: ip,
                                 bits: +parts[1]
                         };
                 }
@@ -30,8 +36,17 @@ function okStatus(code) {
 
 
 function getNetwork(record) {
+        if (typeof(record.req.headers['x-forwarded-for']) === 'undefined' ) {
+                return ('internal');
+        }
+
         var ip = mod_ipaddr.parse(record.req.headers['x-forwarded-for']);
         var i, j, range;
+
+        if (ip.kind() === 'ipv4') {
+                ip = ip.toIPv4MappedAddress();
+        }
+
         for (i = 0; i < networks.length; i++) {
                 for (j = 0; j < networks[i].ranges.length; j++) {
                         range = networks[i].ranges[j];
