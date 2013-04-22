@@ -5,6 +5,8 @@ Browsing: <https://mo.joyent.com/mackerel>
 Who: Fred Kuo
 Docs: <https://mo.joyent.com/docs/mackerel>
 Tickets/bugs: <https://devhub.joyent.com/jira/browse/MANTA-195>
+//TODO
+Mention bandwidth overhead in marlin compute jobs
 
 
 # Overview
@@ -18,135 +20,156 @@ executed as part of a Marlin job (assets).
 Job creation code is in /lib
 Programs that generate job input keys are in /lib/keygen
 Assets are in /assets
-Configuration file is in /etc
+Configuration files are in /etc
 
-Storage data comes from pg dumps from each Moray shard.
-Request data comes from audit logs from Muskie.
+Storage data comes from Postgres dumps from each Moray shard.
+Request data comes from Muskie audit logs.
+Compute data comes from marlin agent audit logs.
 
 # Running metering jobs
 
 Run metering jobs using
 
-    bin/meter -d date -p period -s service [-c configPath]
+    bin/meter [-f configPath] [-w] -d date -p period -c category
 
-where date is in some format readable by date(1), period is one of "hourly",
-"daily", or "monthly" and service is one of "storage", "request", or "compute".
+where date is in some format readable by `Date.parse()`, period is one of
+`hourly`, `daily`, or `monthly` and category is one of `storage`, `request`, or
+`compute`.  Set the -w to use workflow to manage the metering job.
 
 Examples:
 
-    bin/meter -p hourly -s storage -d "$(date)"
-    bin/meter -p monthly -s request -d "$(date -d '1 month ago')"
-    bin/meter -p daily -s compute -d "$(date -d '2 days ago')" -c path/to/config
+    bin/meter -p hourly -c storage -d "$(date)"
+    bin/meter -p monthly -c request -d "$(date -d '1 month ago')" -w
+    bin/meter -p daily -c compute -d "$(date -d '2 days ago')" -f path/to/config
 
 # Configuration file
 
-The configuration file should be in a format compatible with require (i.e.
-JSON or a module that exports a JS object).
+The configuration file config.js should be in a format compatible with require
+(i.e.  JSON or a module that exports a JS object).
 
 Configuration settings include:
 
-        {
-                // local path to manta client config
-                'mantaConfigFile': '/path/to/file',
+    {
+        // local path to manta client config
+        'mantaConfigFile': '/path/to/file',
 
-                // mapping from manta object to local file path
-                'assets': {
-                        '/manta/asset/path': '/local/file/path',
-                        ...
-                }
-
-                // retry configuration settings for result monitoring
-                'backoff': {
-                        'initialDelay': 1000, // milliseconds
-                        'maxDelay': 120000, // milliseconds
-                        'failAfter': 20 // count
-                }
-
-                // job configuration settings
-                'jobs': {
-                        service: { // e.g. storage, request, compute
-                                period: { // e.g. hourly, daily, monthly
-                                        'keygen': '/local/path/to/keygen.js',
-
-                                        // any arguments to pass to the keygen
-                                        'keygenArgs': {
-                                                'source': '/manta/source/path'
-                                        },
-
-                                        // the job manifest passed to marlin
-                                        'job': {
-                                                'name': name,
-                                                'phases': [ {
-                                                        'type': type,
-                                                        'assets': [...],
-                                                        'exec': execStr,
-                                                        ...
-                                                }, {
-                                                ...
-                                                } ]
-                                        },
-
-                                        // where to create a link to the result
-                                        'linkPath': '/path/to/latest'
-
-                                        // any environment variables you need
-                                        // set at job runtime
-                                        env: {
-                                                'DEST': '/manta/path.json',
-                                                ...
-                                        }
-                                },
-                                ...
-                        },
-                        ...
-                },
-
-                // redis config
-                c.redis = {
-                        port: 6379,
-                        hostname: 'localhost',
-                        clientOpts: { ... } // any additional client options
-                }
+        // mapping from manta object to local file path
+        'assets': {
+            '/manta/asset/path': '/local/file/path',
+            ...
         }
 
+        // where the uuid->login mapping is written to locally
+        'mantaLookupPath': '/path/to/file'
+
+        // retry configuration settings for result monitoring
+        'monitorBackoff': {
+            'initialDelay': 1000, // milliseconds
+            'maxDelay': 120000, // milliseconds
+            'failAfter': 20 // count
+        }
+
+        // mahi config
+        c.mahi = {
+            host: 'localhost',
+            port: 6379
+        }
+
+        // job configuration settings
+        'jobs': {
+            category: { // e.g. storage, request, compute
+                period: { // e.g. hourly, daily, monthly
+                    'keygen': '/local/path/to/keygen.js',
+
+                    // any arguments to pass to the keygen
+                    'keygenArgs': {
+                        'source': '/manta/source/path'
+                    },
+
+                    // the job manifest passed to marlin
+                    'job': {
+                        'name': name,
+                        'phases': [ {
+                                'type': type,
+                                'assets': [...],
+                                'exec': execStr,
+                                ...
+                        }, {
+                        ...
+                        } ]
+                    },
+
+                    // which workflow to use
+                    'workflow': workflowname
+
+                    // where to create a link to the result
+                    'linkPath': '/path/to/latest'
+
+                    // any environment variables you need
+                    // set at job runtime
+                    env: {
+                        'DEST': '/manta/path.json',
+                        ...
+                    }
+                },
+                ...
+            },
+            ...
+        },
+
+    }
+
+Request metering categorizes requests and bandwidth by the network it came
+from.  Specify the ranges and networks in networks.json as an array of {name,
+ranges} tuples, where ranges is an array of IP ranges (v6 supported) in CIDR
+notation.
+
+A request is categorized for a network by looking through the array
+and checking for matches for any of the ranges in each network, and the first
+matching range is selected, so the order of the tuples is important.
+
+    [
+        {
+            'name': 'internal',
+            'ranges': [ '10.0.0.0/8', '192.168.0.0/16' ]
+        },
+        {
+            'name': 'external',
+            'ranges': [ '0.0.0.0/0' ]
+        }
+    ]
 
 
 # Testing
-    Mackerel needs a Manta deployment and a Moray (which can be any Moray, i.e.
-    SDC Moray or a Manta Moray). Set MORAY_URL to point to that Moray.
-    There are two ways to point to the Manta deployment:
-    1) Set MANTA_URL, MANTA_USER and optionally SSH_KEY, where SSH_KEY is the
-        path to the private key you want to use.
-    2) Set MANTA_CONFIG, where MANTA_CONFIG is the path to a JSON configuration
-        file.
 
-    Sample Manta config file:
+Mackerel needs a Manta deployment. Point to a Manta deployment by filling in
+the fields in `etc/test-config.js`, which overrides config entries in the normal
+config file at `etc/config.js`. Set `TEST_USER` in your environment to match the
+user in the manta config file. Entries to override include:
 
-        {
-            "manta": {
-                "connectTimeout": 1000,
-                "retry": {
-                    "attempts": 5,
-                    "minTimeout": 1000
-                },
-                "sign": {
-                    "key": "/home/dev/.ssh/id_rsa",
-                    "keyId": "e3:4d:9b:26:bd:ef:a1:db:43:ae:4b:f7:bc:69:a7:24"
-                },
-                "url": "https://manta-beta.joyentcloud.com",
-                "user": "fredkuo"
-            }
+    * mantaConfigFile: path to a manta config file.
+    * mahi.host: mahi host for generating lookups
+    * workflow.url: url of a manta workflow
+
+Sample Manta config file:
+
+    {
+        "manta": {
+            "connectTimeout": 1000,
+            "retry": {
+                "attempts": 5,
+                "minTimeout": 1000
+            },
+            "sign": {
+                "key": "/home/dev/.ssh/id_rsa",
+                "keyId": "e3:4d:9b:26:bd:ef:a1:db:43:ae:4b:f7:bc:69:a7:24"
+            },
+            "url": "https://manta-beta.joyentcloud.com",
+            "user": "fredkuo"
         }
+    }
 
-    Examples:
 
-    MORAY_URL="http://10.99.99.17:2020" \
-    SSH_KEY=~/.ssh/id_rsa \
-    MANTA_URL="https://manta-beta.joyentcloud.com" \
-    MANTA_USER=fredkuo \
-    make test
+Examples:
 
-    MORAY_URL="http://10.99.99.17:2020" \
-    MANTA_CONFIG=~/config/manta_config.json \
-    make test
-
+    TEST_USER=fredkuo make test
