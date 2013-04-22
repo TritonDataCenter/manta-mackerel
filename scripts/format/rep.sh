@@ -4,22 +4,29 @@ LDAP_CREDS="-D cn=root -w secret"
 LDAP_URL=ldaps://10.3.80.8
 PATH=/usr/openldap/bin:$PATH
 
-# TODO: get latest reliably
-STORAGE=/poseidon/stor/usage/storage/2013/02/20/14/h14.json
+echo "Generated $(date)"
+
+
+
+STORAGE=/poseidon/stor/usage/storage/latest-hourly
 REQUESTS=/poseidon/stor/usage/request/latest-daily
 
-USERS=$(mget -q $STORAGE | json -ga -c 'stor.bytes > 0' -e 'total=stor.bytes+public.bytes' owner stor.bytes public.bytes total | sort -nk4)
+echo "Storage data from the hour of $(mls $(dirname $STORAGE) | json -ga -c "this.name === '$(basename $STORAGE)'" mtime)"
+echo "Request data from the calendar day preceding $(mls $(dirname $REQUESTS) | json -ga -c "this.name === '$(basename $REQUESTS)'" mtime)"
 
-printf "%-25s  %-15s  %-15s  %-15s\n" "LOGIN" "TOTAL" "STORAGE" "PUBLIC"
+USERS=$(mget -q $STORAGE | json -ga -c 'stor.bytes > 0' -e 'total=stor.bytes+public.bytes+jobs.bytes' owner stor.bytes public.bytes jobs.bytes total | sort -nk5)
+
+printf "%-25s  %-15s  %-15s  %-15s  %-15s\n" "LOGIN" "TOTAL" "STORAGE" "PUBLIC" "JOBS"
 while read -r line; do
     UUID=$(echo $line | awk '{print $1}')
     STOR=$(echo $line | awk '{print $2}')
     PUB=$(echo $line | awk '{print $3}')
-    TOTAL=$(echo $line | awk '{print $4}')
+    JOBS=$(echo $line | awk '{print $4}')
+    TOTAL=$(echo $line | awk '{print $5}')
 
     LOGIN=$(LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL $LDAP_CREDS -b ou=users,o=smartdc uuid=$UUID login | grep -v dn | nawk  -F ': ' '{print $2}')
 
-    printf "%-25s  %-15s  %-15s  %-15s\n" $LOGIN $TOTAL $STOR $PUB
+    printf "%-25s  %-15s  %-15s  %-15s  %-15s\n" $LOGIN $TOTAL $STOR $PUB $JOBS
 done <<< "$USERS"
 
 
