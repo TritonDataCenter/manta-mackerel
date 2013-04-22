@@ -7,5 +7,6 @@ cscope.in.out
 cscope.po.out
 cscope.out
 smf/manifests/bapi.xml
+assets/etc/lookup.json
 .*.swp
 .*.swo
