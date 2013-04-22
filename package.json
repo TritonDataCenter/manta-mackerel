@@ -10,7 +10,6 @@
                 "backoff": "1.2.0",
                 "bunyan": "0.21.1",
                 "carrier": "0.1.7",
-                "ipaddr.js": "0.1.1",
                 "libmanta": "git+ssh://git@git.joyent.com:node-libmanta.git#master",
                 "manta": "git+ssh://git@github.com:joyent/node-manta.git#MANTA-933",
                 "marlin": "git+ssh://git@git.joyent.com:marlin.git#master",
