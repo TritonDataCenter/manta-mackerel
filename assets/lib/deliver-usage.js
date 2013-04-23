@@ -68,6 +68,12 @@ function main() {
                 // the format of the first real record, to be used for users
                 // with no usage
                 emptyRecord = zero(JSON.parse(line));
+
+                // XXX special case for compute: empty the time section
+                if (emptyRecord.time) {
+                        emptyRecord.time = {};
+                }
+
                 carry.on('line', onLine);
                 onLine(line);
         });

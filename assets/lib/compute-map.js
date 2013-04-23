@@ -1,6 +1,30 @@
 #!/usr/bin/env node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
+/*
+ *    {
+ *        "owner": "59159a6e-51b5-4e27-bca4-6cd9c8626eb2",
+ *        "time": {
+ *            "268435456": [
+ *                1316,
+ *                463384821
+ *            ],
+ *            "536870912": [
+ *                60,
+ *                110549076
+ *            ],
+ *            "2147483648": [
+ *                6,
+ *                237815959
+ *            ]
+ *        },
+ *        "bandwidth": {
+ *            "in": 223248,
+ *            "out": 17610
+ *        }
+ *    }
+ */
+
 var mod_marlin;
 
 try {
