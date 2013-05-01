@@ -28,8 +28,10 @@ Important notes:
   reports, respectively. Since each hourly report is a snapshot of usage at
   that hour, daily and monthly reports are in **unit-hours** of usage (e.g.
   byte-hours).
+* Objects smaller than 4096 bytes are rounded up to 4096 bytes.
 * Requests count toward usage for the owner of the Manta object, not the caller
   of the request.
+* Request count only includes **successful** requests (200-204).
 * Compute is measured in **wall time** (not CPU time).
 
 # Record Format

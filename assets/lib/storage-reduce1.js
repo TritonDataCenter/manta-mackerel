@@ -61,7 +61,8 @@ var mod_carrier = require('./carrier');
  *              },
  *              "objects": {
  *                      objectId: {
- *                              namespace: 0,
+ *                              namespace: 0, // count of # keys in this
+ *                                            // namespace for this objectId
  *                              ...
  *                              _size: 0
  *                      },
@@ -140,11 +141,13 @@ function printResults(aggr) {
                 var keys = {};
                 var bytes = {};
                 var objects = {};
+                // var actualBytes = {};
 
                 for (n in NAMESPACES) {
                         keys[NAMESPACES[n]] = 0;
                         bytes[NAMESPACES[n]] = 0;
                         objects[NAMESPACES[n]] = 0;
+                        // actualBytes[NAMESPACES[n]] = 0;
                 }
 
                 Object.keys(aggr[owner].objects).forEach(function (object) {
@@ -153,7 +156,10 @@ function printResults(aggr) {
                         for (n in NAMESPACES) {
                                 if (!counted && objCounts[NAMESPACES[n]] > 0) {
                                         counted = true;
-                                        bytes[NAMESPACES[n]] += objCounts._size;
+                                        var size = objCounts._size;
+                                        bytes[NAMESPACES[n]] +=
+                                                Math.max(4096, size);
+                                        // actualBytes[NAMESPACES[n]] += size;
                                         objects[NAMESPACES[n]]++;
                                 }
                                 keys[NAMESPACES[n]] += objCounts[NAMESPACES[n]];
@@ -169,6 +175,7 @@ function printResults(aggr) {
                                 keys: keys[NAMESPACES[n]],
                                 objects: objects[NAMESPACES[n]],
                                 bytes: bytes[NAMESPACES[n]]
+                                // actualBytes: actualBytes[NAMESPACES[n]]
                         }));
                 }
         });
