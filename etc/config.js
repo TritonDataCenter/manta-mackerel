@@ -21,7 +21,7 @@ var c = {};
 module.exports = c;
 
 // manta client config file
-c.mantaConfigFile = '/opt/smartdc/common/etc/config.json';
+c.mantaConfigFile = '/opt/smartdc/common/etc/manta-config.json';
 
 /******************************/
 /*   LOCAL HELPER VARIABLES   */
