@@ -102,16 +102,13 @@ c.assets[md + '/bin/storage-map'] = ld + '/bin/storage-map';
 c.assets[md + '/bin/storage-reduce1'] = ld + '/bin/storage-reduce1';
 c.assets[md + '/bin/storage-reduce3'] = ld + '/bin/storage-reduce3';
 c.assets[md + '/bin/sum-columns'] = ld + '/bin/sum-columns';
-c.assets[md + '/etc/networks.json'] = ld + '/etc/networks.json';
-c.assets[md + '/lib/ipaddr.js'] = lbase + '/node_modules/ipaddr.js/lib/ipaddr.js';
-c.assets[md + '/lib/carrier.js'] = lbase + '/node_modules/carrier/lib/carrier.js';
 c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
-c.assets[md + '/lib/memorystream.js'] = lbase + '/node_modules/memorystream-mcavage/index.js';
 c.assets[md + '/lib/request-map.js'] = ld + '/lib/request-map.js';
 c.assets[md + '/lib/storage-map.js'] = ld + '/lib/storage-map.js';
 c.assets[md + '/lib/storage-reduce1.js'] = ld + '/lib/storage-reduce1.js';
 c.assets[md + '/lib/storage-reduce3.js'] = ld + '/lib/storage-reduce3.js';
 c.assets[md + '/lib/sum-columns.js'] = ld + '/lib/sum-columns.js';
+c.assets[md + '/node_modules.tar'] = ld +'/node_modules.tar';
 // since the lookup file is generated at job run time, meter.js needs to know
 // the manta path for the lookup file
 c.mantaLookupPath = md + '/etc/lookup.json';
@@ -168,8 +165,8 @@ c.jobs.storage = {
             phases: [ {
                 type : 'storage-map',
                 assets : [
+                    md + '/node_modules.tar',
                     md + '/bin/storage-map',
-                    md + '/lib/carrier.js',
                     md + '/lib/storage-map.js'
                 ],
                 exec : '/assets' + md + '/bin/storage-map'
@@ -177,8 +174,8 @@ c.jobs.storage = {
                 type: 'reduce',
                 memory: 2048,
                 assets : [
+                    md + '/node_modules.tar',
                     md + '/bin/storage-reduce1',
-                    md + '/lib/carrier.js',
                     md + '/lib/storage-reduce1.js'
                 ],
                 exec: '/assets' + md + '/bin/storage-reduce1',
@@ -186,17 +183,17 @@ c.jobs.storage = {
             }, {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
                     md + '/lib/sum-columns.js',
-                    md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
             }, {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/storage-reduce3',
-                    md + '/lib/carrier.js',
                     md + '/lib/storage-reduce3.js'
                 ],
                 exec: '/assets' + md + '/bin/storage-reduce3',
@@ -204,11 +201,10 @@ c.jobs.storage = {
             }, {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/deliver-usage',
                     md + '/etc/lookup.json',
-                    md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
-                    md + '/lib/memorystream.js'
                 ],
                 exec: '/assets' + md + '/bin/deliver-usage',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
@@ -255,9 +251,9 @@ c.jobs.storage = {
             phases: [ {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
                     md + '/lib/sum-columns.js',
-                    md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
@@ -282,9 +278,9 @@ c.jobs.storage = {
             phases: [ {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
                     md + '/lib/sum-columns.js',
-                    md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
@@ -311,30 +307,27 @@ c.jobs.request = {
             phases: [ {
                 type: 'storage-map',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/request-map',
-                    md + '/etc/networks.json',
-                    md + '/lib/carrier.js',
-                    md + '/lib/ipaddr.js',
                     md + '/lib/request-map.js'
                 ],
                 exec: '/assets' + md + '/bin/request-map'
             }, {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
                     md + '/lib/sum-columns.js',
-                    md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
             }, {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/deliver-usage',
                     md + '/etc/lookup.json',
-                    md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
-                    md + '/lib/memorystream.js'
                 ],
                 exec: '/assets' + md + '/bin/deliver-usage',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
@@ -364,8 +357,8 @@ c.jobs.request = {
             phases: [ {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
-                    md + '/lib/carrier.js',
                     md + '/lib/sum-columns.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
@@ -391,9 +384,9 @@ c.jobs.request = {
             phases: [ {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
                     md + '/lib/sum-columns.js',
-                    md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
@@ -420,6 +413,7 @@ c.jobs.compute = {
             phases: [ {
                 type: 'map',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/compute-map',
                     md + '/lib/compute-map.js'
                 ],
@@ -427,20 +421,19 @@ c.jobs.compute = {
             }, {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
                     md + '/lib/sum-columns.js',
-                    md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1
             }, {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/deliver-usage',
                     md + '/etc/lookup.json',
-                    md + '/lib/carrier.js',
                     md + '/lib/deliver-usage.js',
-                    md + '/lib/memorystream.js'
                 ],
                 exec: '/assets' + md + '/bin/deliver-usage',
                 count: 1 // final reduce phases must have exactly one reducer to collate results
@@ -470,8 +463,8 @@ c.jobs.compute = {
             phases: [ {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
-                    md + '/lib/carrier.js',
                     md + '/lib/sum-columns.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
@@ -497,9 +490,9 @@ c.jobs.compute = {
             phases: [ {
                 type: 'reduce',
                 assets: [
+                    md + '/node_modules.tar',
                     md + '/bin/sum-columns',
                     md + '/lib/sum-columns.js',
-                    md + '/lib/carrier.js'
                 ],
                 exec: '/assets' + md + '/bin/sum-columns',
                 count: 1

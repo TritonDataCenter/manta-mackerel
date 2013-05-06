@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-var mod_carrier = require('./carrier');
+var mod_carrier = require('carrier');
 
 function parseLine(line) {
         return (JSON.parse(line));

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-var mod_carrier = require('./carrier');
+var mod_carrier = require('carrier');
 var mod_child_process = require('child_process');
 var mod_events = require('events');
 var mod_path = require('path');
-var mod_manta = require('/opt/marlin/node_modules/manta/lib');
-var mod_MemoryStream = require('./memorystream');
+var mod_manta = require('manta');
+var mod_MemoryStream = require('memorystream');
 
 var lookup = require('../etc/lookup.json'); // maps uuid->login
 
@@ -22,7 +22,7 @@ function zero(obj) {
 }
 
 function writeToUserDir(record, login, client, cb) {
-        var path = '/' + login + process.env.USER_DEST;
+        var path = '/' + login + process.env['USER_DEST'];
         var line = JSON.stringify(record) + '\n';
         var size = Buffer.byteLength(line);
         var mstream = new mod_MemoryStream();
@@ -35,7 +35,12 @@ function writeToUserDir(record, login, client, cb) {
                         return;
                 }
 
-                client.put(path, mstream, {size: size}, function (err2) {
+                var opts = {
+                        size: size,
+                        type: process.env['HEADER_CONTENT_TYPE']
+                };
+
+                client.put(path, mstream, opts, function (err2) {
                         if (err2) {
                                 console.warn('Error put ' + path);
                                 console.warn(err2);
@@ -59,7 +64,7 @@ function main() {
 
         var client = mod_manta.createClient({
                 sign: null,
-                url: process.env.MANTA_URL
+                url: process.env['MANTA_URL']
         });
 
         var carry = mod_carrier.carry(process.openStdin());

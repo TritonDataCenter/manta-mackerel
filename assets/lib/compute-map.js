@@ -25,15 +25,7 @@
  *    }
  */
 
-var mod_marlin;
-
-try {
-        // if running on marlin
-        mod_marlin = require('/opt/marlin/lib/meter');
-} catch (e) {
-        // if running locally
-        mod_marlin = require('marlin/lib/meter');
-}
+var mod_marlin = require('marlin/lib/meter.js');
 
 function hrtimePlusEquals(oldvalue, newvalue) {
         oldvalue[0] += newvalue[0];
