@@ -55,8 +55,9 @@ TMPDIR                  := /tmp/$(STAMP)
 # Repo-specific targets
 #
 .PHONY: all
-all: assets $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS)
+all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) assets
 	$(NPM) rebuild
+
 $(NODEUNIT): | $(NPM_EXEC)
 	$(NPM) install
 
@@ -95,7 +96,7 @@ publish: release
 	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/$(REPO_NAME)/$(RELEASE_TARBALL)
 
 .PHONY: assets
-assets:
+assets: $(NODEUNIT)
 	tar -cf $(ROOT)/assets/node_modules.tar node_modules
 
 
