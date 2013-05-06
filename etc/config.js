@@ -20,8 +20,10 @@ var path = require('path');
 var c = {};
 module.exports = c;
 
-// manta client config file
-c.mantaConfigFile = '/opt/smartdc/common/etc/manta-config.json';
+c.manta = require('./config.json').manta;
+c.mahi = require('./config.json').mahi;
+c.workflow = require('./config.json').workflow;
+c.monitorBackoff = require('./config.json').monitorBackoff;
 
 /******************************/
 /*   LOCAL HELPER VARIABLES   */
@@ -29,19 +31,7 @@ c.mantaConfigFile = '/opt/smartdc/common/etc/manta-config.json';
 
 var user, mbase, md, lbase, ld, userbase;
 
-// running the file should always generate valid json, so wrap this in try/catch
-// and give a default value
-try {
-    user = require(c.mantaConfigFile).manta.user;
-} catch (e) {
-    if (typeof(process.env.TEST_USER) !== 'undefined') {
-        user = process.env.TEST_USER;
-    } else {
-        user = 'poseidon';
-    }
-}
-c.mantaUser = user;
-
+user = c.manta.user;
 
 /*
  * Modify these variables to match your environment.
@@ -113,18 +103,6 @@ c.assets[md + '/node_modules.tar'] = ld +'/node_modules.tar';
 // the manta path for the lookup file
 c.mantaLookupPath = md + '/etc/lookup.json';
 c.assets[c.mantaLookupPath] = ld + '/etc/lookup.json';
-
-
-/******************************/
-/*       BACKOFF SETTINGS     */
-/******************************/
-
-// retry configuration settings for job result monitoring
-c.monitorBackoff = {
-    initialDelay: 1000, // 1 second
-    maxDelay: 120000, // 2 minutes
-    failAfter: 30 // ~ 50 minutes total
-};
 
 
 /******************************/

@@ -84,8 +84,8 @@ before(function (cb) {
         this.log = helper.createLogger();
         var self = this;
 
-        this.client = manta.createClientFromFileSync(config.mantaConfigFile,
-                this.log);
+        config.manta.log = this.log;
+        this.client = manta.createClient(config.manta);
 
         this.dir = '/' + this.client.user + '/stor/mackerel-test';
         processLookups(this.client.user);
