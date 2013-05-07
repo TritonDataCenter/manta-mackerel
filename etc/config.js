@@ -141,7 +141,7 @@ c.jobs.storage = {
         job: {
             name: 'metering-storage-hourly-$year-$month-$dayT$hour',
             phases: [ {
-                type : 'storage-map',
+                type : 'map',
                 assets : [
                     md + '/node_modules.tar',
                     md + '/bin/storage-map',
@@ -283,7 +283,7 @@ c.jobs.request = {
         job: {
             name: 'metering-request-hourly-$year-$month-$dayT$hour',
             phases: [ {
-                type: 'storage-map',
+                type: 'map',
                 assets: [
                     md + '/node_modules.tar',
                     md + '/bin/request-map',
