@@ -393,6 +393,183 @@ task's memory level.
 For more information about how compute metering works, see the [marlin
 metering docs](https://mo.joyent.com/docs/marlin/master/#compute-metering).
 
+Raw compute metering record:
+
+    {
+      "name": "MarlinAgent",
+      "hostname": "headnode",
+      "pid": 80253,
+      "level": 30,
+      "hrtimestamp": [
+        169762,
+        761884737
+      ],
+      "metricsCumul": {
+        "hrtimestamp": [
+          66092,
+          469882712
+        ],
+        "cpu": {
+          "snaptime": 66092510135691,
+          "data": {
+            "nsec_user": 14352434735,
+            "nsec_sys": 2706572095,
+            "nsec_waitrq": 765373211,
+            "avenrun_1min": 0,
+            "avenrun_5min": 0,
+            "avenrun_15min": 0,
+            "": 0
+          }
+        },
+        "memory": {
+          "snaptime": 66092502451271,
+          "data": {
+            "rss": 38219776,
+            "physcap": 268435456,
+            "swap": 53465088,
+            "swapcap": 268435456,
+            "nover": 0,
+            "pagedout": 0,
+            "pgpgin": 0,
+            "anonpgin": 0,
+            "execpgin": 0,
+            "fspgin": 0,
+            "anon_alloc_fail": 0,
+            "n_pf_throttle": 0,
+            "n_pf_throttle_usec": 0
+          }
+        },
+        "vfs": {
+          "snaptime": 66092492807949,
+          "data": {
+            "nread": 1407084,
+            "reads": 1142,
+            "rtime": 118670336,
+            "rlentime": 118686112,
+            "nwritten": 273584,
+            "writes": 891,
+            "wtime": 619764205,
+            "wlentime": 619764205,
+            "10ms_ops": 6,
+            "100ms_ops": 1,
+            "1s_ops": 0,
+            "10s_ops": 0,
+            "delay_cnt": 13,
+            "delay_time": 91205
+          }
+        },
+        "zfs": {
+          "snaptime": 66092482017316,
+          "data": {
+            "nread": 115712,
+            "reads": 13,
+            "rtime": 102114349,
+            "rlentime": 102114348,
+            "nwritten": 0,
+            "writes": 0,
+            "waittime": 60313005
+          }
+        },
+        "vnic0": {
+          "snaptime": 66092469950848,
+          "data": {
+            "ierrors": 0,
+            "rbytes64": 216154,
+            "ipackets64": 4699,
+            "obytes64": 10580,
+            "opackets64": 230
+          }
+        },
+        "config_disk": 2
+      },
+      "metricsDelta": {
+        "hrtimestamp": [
+          5,
+          16506581
+        ],
+        "cpu": {
+          "snaptime": 5016624584,
+          "data": {
+            "nsec_user": 906760,
+            "nsec_sys": 206500,
+            "nsec_waitrq": 18722,
+            "avenrun_1min": 0,
+            "avenrun_5min": 0,
+            "avenrun_15min": 0,
+            "": 0
+          }
+        },
+        "memory": {
+          "snaptime": 5016605095,
+          "data": {
+            "rss": 38219776,
+            "physcap": 268435456,
+            "swap": 53465088,
+            "swapcap": 268435456,
+            "nover": 0,
+            "pagedout": 0,
+            "pgpgin": 0,
+            "anonpgin": 0,
+            "execpgin": 0,
+            "fspgin": 0,
+            "anon_alloc_fail": 0,
+            "n_pf_throttle": 0,
+            "n_pf_throttle_usec": 0
+          }
+        },
+        "vfs": {
+          "snaptime": 5016575246,
+          "data": {
+            "nread": 0,
+            "reads": 0,
+            "rtime": 0,
+            "rlentime": 0,
+            "nwritten": 0,
+            "writes": 0,
+            "wtime": 0,
+            "wlentime": 0,
+            "10ms_ops": 0,
+            "100ms_ops": 0,
+            "1s_ops": 0,
+            "10s_ops": 0,
+            "delay_cnt": 0,
+            "delay_time": 91205
+          }
+        },
+        "zfs": {
+          "snaptime": 5016552651,
+          "data": {
+            "nread": 0,
+            "reads": 0,
+            "rtime": 0,
+            "rlentime": 0,
+            "nwritten": 0,
+            "writes": 0,
+            "waittime": 0
+          }
+        },
+        "vnic0": {
+          "snaptime": 5016532503,
+          "data": {
+            "ierrors": 0,
+            "rbytes64": 216154,
+            "ipackets64": 4699,
+            "obytes64": 10580,
+            "opackets64": 230
+          }
+        }
+      },
+      "jobId": "11f014d5-cf45-4599-98e9-4c12bfdeae86",
+      "owner": "fce1674a-6b89-4070-aa16-ea0a09007745",
+      "taskId": "5e214f3d-4027-4dd3-bd90-9c08c637ac56",
+      "event": "TaskCheckpoint",
+      "computeAudit": true,
+      "serverUuid": "44454c4c-3200-1042-804b-c2c04f575231",
+      "mantaComputeId": "1.cn.bh1.joyent.us",
+      "msg": "",
+      "time": "2013-05-08T18:13:36.792Z",
+      "v": 0
+    }
 
 ## Deliver Usage
 
