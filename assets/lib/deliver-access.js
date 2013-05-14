@@ -15,12 +15,12 @@ var files = {}; // keeps track of all the files we create
 /*
  * Allow all headers, then auth and x-forwarded-for headers will be removed
  * after applying this whitelist. The IP in the x-forwarded-for header will
- * be used for the top-level remoteAddress IP.
+ * be used for the top-level remoteAddress IP. 
  */
 var whitelist = {
         'req': {
                 'method': 'string',
-                'url': 'string',
+                'url': 'string', // renamed 'request-uri' see RFC 2616
                 'headers': true, // XXX see above
                 'httpVersion': 'string',
                 'caller': {
@@ -45,7 +45,9 @@ function sanitize(record) {
         var output = mod_screen.screen(record, whitelist);
         if (output.req && output.req.headers) {
                 output['remoteAddress'] = output.req.headers['x-forwarded-for'];
+                output.req.headers['request-uri'] = output.req['url'];
                 delete output.req.headers['x-forwarded-for'];
+                delete output.req.headers['url'];
                 delete output.req.headers['authorization'];
         }
         return (output);
