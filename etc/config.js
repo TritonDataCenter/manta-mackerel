@@ -47,52 +47,17 @@ ld = lbase + '/assets'; // local assets directory
 c.mantaBaseDir = mbase;
 
 /******************************/
-/*         MAHI CONFIG        */
-/******************************/
-
-c.mahi = {
-    // replaced with $(mdata-get auth_cache_name) at zone setup time
-    host: 'REDIS_HOST',
-    port: 6379,
-
-    // optional client options
-    maxParallel: undefined, // maximum parallel requests sent to redis
-    redis_options: undefined, // additional options passed to the client
-
-    // for retry
-    connectTimeout: undefined,
-    checkInterval: undefined,
-    retries: undefined,
-    minTimeout: undefined,
-    maxTimeout: undefined
-}
-
-
-/******************************/
-/*   WORKFLOW CLIENT CONFIG   */
-/******************************/
-
-c.workflow = {
-    // TODO replace with mdata-get ??? at zone setup time
-    url: 'http://localhost:8080',
-    path: lbase + '/lib/workflows'
-};
-
-
-/******************************/
 /*           ASSETS           */
 /******************************/
 
 // assets is a mapping from the manta object path to the local file path
 c.assets = {};
-c.assets[md + '/bin/deliver-usage'] = ld + '/bin/deliver-usage';
 c.assets[md + '/bin/request-map'] = ld + '/bin/request-map';
-c.assets[md + '/bin/split-usage'] = ld + '/bin/split-usage';
 c.assets[md + '/bin/storage-map'] = ld + '/bin/storage-map';
 c.assets[md + '/bin/storage-reduce1'] = ld + '/bin/storage-reduce1';
 c.assets[md + '/bin/storage-reduce3'] = ld + '/bin/storage-reduce3';
 c.assets[md + '/bin/sum-columns'] = ld + '/bin/sum-columns';
-c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
+c.assets[md + '/lib/deliver-access.js'] = ld + '/lib/deliver-access.js';
 c.assets[md + '/lib/request-map.js'] = ld + '/lib/request-map.js';
 c.assets[md + '/lib/storage-map.js'] = ld + '/lib/storage-map.js';
 c.assets[md + '/lib/storage-reduce1.js'] = ld + '/lib/storage-reduce1.js';
@@ -287,6 +252,7 @@ c.jobs.request = {
                 assets: [
                     md + '/node_modules.tar',
                     md + '/bin/request-map',
+                    md + '/lib/deliver-access.js',
                     md + '/lib/request-map.js'
                 ],
                 exec: '/assets' + md + '/bin/request-map'
@@ -314,6 +280,8 @@ c.jobs.request = {
         env: {
             HEADER_CONTENT_TYPE: 'application/x-json-stream',
             DEST: mbase + '/request/$year/$month/$day/$hour/h$hour.json',
+            // location for customer-accessible, sanitized muskie access logs
+            ACCESS_DEST: '/reports/access-logs/$year/$month/$day/$hour/h$hour.json',
             USER_DEST: userbase + '/request/$year/$month/$day/$hour/h$hour.json'
         }
     },
