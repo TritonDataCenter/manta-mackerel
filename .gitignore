@@ -8,5 +8,6 @@ cscope.po.out
 cscope.out
 smf/manifests/bapi.xml
 assets/etc/lookup.json
+assets/node_modules.tar
 .*.swp
 .*.swo
