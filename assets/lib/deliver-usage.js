@@ -6,7 +6,7 @@ var mod_child_process = require('child_process');
 var mod_events = require('events');
 var mod_path = require('path');
 var mod_manta = require('manta');
-var mod_MemoryStream = require('memorystream');
+var mod_MemoryStream = require('readable-stream/passthrough.js');
 
 var lookup = require('../etc/lookup.json'); // maps uuid->login
 var ERROR = false;

@@ -255,6 +255,7 @@ c.jobs.request = {
             phases: [ {
                 type: 'map',
                 assets: [
+                    md + '/etc/lookup.json',
                     md + '/node_modules.tar',
                     md + '/bin/request-map',
                     md + '/lib/deliver-access.js',
