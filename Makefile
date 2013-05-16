@@ -97,7 +97,7 @@ publish: release
 
 .PHONY: assets
 assets: $(NODEUNIT)
-	tar -cf $(ROOT)/assets/node_modules.tar node_modules
+	tar -zcf $(ROOT)/assets/node_modules.tar node_modules
 
 
 include ./tools/mk/Makefile.deps
