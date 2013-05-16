@@ -45,6 +45,7 @@ lbase = path.resolve(__dirname, '..'); // local base directory
 ld = lbase + '/assets'; // local assets directory
 
 c.mantaBaseDir = mbase;
+c.localBaseDir = lbase;
 
 /******************************/
 /*           ASSETS           */
@@ -58,6 +59,8 @@ c.assets[md + '/bin/storage-reduce1'] = ld + '/bin/storage-reduce1';
 c.assets[md + '/bin/storage-reduce3'] = ld + '/bin/storage-reduce3';
 c.assets[md + '/bin/sum-columns'] = ld + '/bin/sum-columns';
 c.assets[md + '/lib/deliver-access.js'] = ld + '/lib/deliver-access.js';
+c.assets[md + '/lib/deliver-usage.js'] = ld + '/lib/deliver-usage.js';
+c.assets[md + '/bin/deliver-usage'] = ld + '/bin/deliver-usage';
 c.assets[md + '/lib/request-map.js'] = ld + '/lib/request-map.js';
 c.assets[md + '/lib/storage-map.js'] = ld + '/lib/storage-map.js';
 c.assets[md + '/lib/storage-reduce1.js'] = ld + '/lib/storage-reduce1.js';
@@ -97,7 +100,7 @@ c.jobs.storage = {
 
         // name of the workflow. depends on which key generator is
         // used for this job
-        workflow: 'storage-hourly-runjob',
+        workflow: 'runjob',
 
         // manta destination path for link to latest report
         linkPath: mbase + '/storage/latest-hourly',
