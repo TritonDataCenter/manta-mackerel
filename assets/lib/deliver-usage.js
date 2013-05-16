@@ -9,6 +9,7 @@ var mod_manta = require('manta');
 var mod_MemoryStream = require('memorystream');
 
 var lookup = require('../etc/lookup.json'); // maps uuid->login
+var ERROR = false;
 
 function zero(obj) {
         Object.keys(obj).forEach(function (k) {
@@ -60,7 +61,6 @@ function writeToUserDir(record, login, client, cb) {
 
 function main() {
         var emptyRecord;
-        var error = false;
 
         var client = mod_manta.createClient({
                 sign: null,
@@ -68,6 +68,36 @@ function main() {
         });
 
         var carry = mod_carrier.carry(process.openStdin());
+
+        function onLine(line) {
+                console.log(line); // re-emit input as output
+
+                var record = JSON.parse(line);
+                var login = lookup[record.owner];
+
+                if (!login) {
+                        console.warn('No login found for UUID ' + record.owner);
+                        ERROR = true;
+                        return;
+                }
+
+                // we shouldn't encounter this user again; remove his entry
+                // in the lookup table so that we will only have users with
+                // no usage left at the end
+                delete lookup[record.owner];
+
+                // remove owner field from the user's personal report
+                delete record.owner;
+
+                writeToUserDir(record, login, client, function (err) {
+                        if (err) {
+                                // error printed by parent
+                                ERROR = true;
+                        }
+                });
+
+        }
+
         carry.once('line', function firstLine(line) {
                 // generate a record with all number fields set to 0 based on
                 // the format of the first real record, to be used for users
@@ -83,43 +113,11 @@ function main() {
                 onLine(line);
         });
 
-        function onLine(line) {
-                console.log(line); // re-emit input as output
-
-                var record = JSON.parse(line);
-                var login = lookup[record.owner];
-
-                if (!login) {
-                        console.warn('No login found for UUID ' + record.owner);
-                        error = true;
-                        return;
-                }
-
-                // we shouldn't encounter this user again; remove his entry
-                // in the lookup table so that we will only have users with
-                // no usage left at the end
-                delete lookup[record.owner];
-
-                // remove owner field from the user's personal report
-                delete record.owner;
-
-                writeToUserDir(record, login, client, function (err) {
-                        if (err) {
-                                // error printed by parent
-                                error = true;
-                        }
-                });
-
-        }
-
-
         carry.once('end', function onEnd() {
-                var count = 0;
                 // lookup should only contain users with no usage now
                 var uuids = Object.keys(lookup);
                 uuids.forEach(function (k) {
                         var login = lookup[k];
-                        count++;
 
                         if (!emptyRecord) {
                                 console.warn('Error: an empty record template' +
@@ -132,21 +130,19 @@ function main() {
                         console.log(JSON.stringify(emptyRecord));
                         delete emptyRecord.owner;
 
-                        writeToUserDir(emptyRecord, login, client, checkError);
-                        function checkError(err) {
+                        writeToUserDir(emptyRecord, login, client,
+                                function checkError(err) {
                                 if (err) {
-                                        // error printed by parent
-                                        error = true;
+                                        ERROR = true;
                                 }
-
-                                if (count >= uuids.length && error) {
-                                        process.exit(1);
-                                }
-                        }
+                        });
                 });
         });
 }
 
 if (require.main === module) {
+        process.on('exit', function onExit() {
+                process.exit(ERROR);
+        });
         main();
 }

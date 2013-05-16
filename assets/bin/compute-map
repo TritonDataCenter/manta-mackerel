@@ -5,12 +5,5 @@ set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-$dir/../lib/compute-map.js 2>stderr #\
-#| msplit -j -n $NUM_REDUCERS -f owner 2>>stderr
-code=$?
-
-[ -s stderr ] && mmkdir -p $(dirname $MANTA_OUTPUT_BASE) \
-         && mput -f stderr "$MANTA_OUTPUT_BASE"stderr \
-         && cat stderr 1>&2
-
-exit $code
+$dir/../lib/compute-map.js \
+| msplit -j -n $NUM_REDUCERS -f owner

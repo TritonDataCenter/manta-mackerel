@@ -11,11 +11,12 @@ var mod_screen = require('screener');
 var mod_vasync = require('vasync');
 
 var files = {}; // keeps track of all the files we create
+var ERROR = false;
 
 /*
  * Allow all headers, then auth and x-forwarded-for headers will be removed
  * after applying this whitelist. The IP in the x-forwarded-for header will
- * be used for the top-level remoteAddress IP. 
+ * be used for the top-level remoteAddress IP.
  */
 var whitelist = {
         'req': {
@@ -67,7 +68,7 @@ function write(owner, record, cb) {
 
 
 function saveAll(cb) {
-        function save(owner) {
+        function save(owner, callback) {
                 var login = lookup[owner];
                 var key = '/' + login + process.env['ACCESS_DEST'];
 
@@ -83,18 +84,20 @@ function saveAll(cb) {
                         headers: {type: process.env['HEADER_CONTENT_TYPE']},
                         log: log,
                         iostream: 'stdout'
-                }, function callback(err) {
+                }, function saveCB(err) {
                         if (err) {
-                                console.warn(err);
+                                callback(err);
                                 return;
                         }
                         console.log(key);
+                        callback(null, key);
                 });
         }
 
         var log = new mod_bunyan({
                 name: 'deliver-audit',
-                level: 'fatal'
+                level: 'fatal',
+                stream: 'stderr'
         });
 
         var client = mod_manta.createClient({
@@ -120,10 +123,18 @@ function main() {
         var barrier = mod_vasync.barrier();
 
         function onLine(line) {
+                var record;
                 console.log(line); // re-emit each line for aggregation
 
+                // since bunyan logs may contain lines such as
+                // [ Nov 28 21:35:27 Enabled. ]
+                // we need to ignore them
+                if (line[0] != '{') {
+                        return;
+                }
+
                 try {
-                        var record = JSON.parse(line);
+                        record = JSON.parse(line);
                 } catch (e) {
                         return;
                 }
@@ -136,7 +147,7 @@ function main() {
                 barrier.start(line);
                 write(record.req.owner, output, function (err) {
                         if (err) {
-                                console.warn(err);
+                                console.warn(err.message);
                         }
                         barrier.done(line);
                 });
@@ -146,7 +157,7 @@ function main() {
                 saveAll(function (err, results) {
                         if (err) {
                                 console.warn(err);
-                                return;
+                                process.exit(1);
                         }
                 });
         }

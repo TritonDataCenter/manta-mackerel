@@ -7,11 +7,5 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $dir/.. && tar -xf node_modules.tar
 
 mmkdir -p $(dirname $DEST) && \
-$dir/../lib/deliver-usage.js 2>stderr | \
+$dir/../lib/deliver-usage.js | \
 mpipe -H "content-type: $HEADER_CONTENT_TYPE" $DEST
-code=$?
-
-[ -s stderr ] && mmkdir -p $(dirname $MANTA_OUTPUT_BASE) \
-         && mput -f stderr "$MANTA_OUTPUT_BASE"stderr && cat stderr 1>&2
-
-exit $code

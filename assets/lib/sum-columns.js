@@ -2,6 +2,7 @@
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 var mod_carrier = require('carrier');
+var lineCount = 0;
 
 function hrtimePlusEquals(oldvalue, newvalue) {
         oldvalue[0] += newvalue[0];
@@ -65,7 +66,16 @@ function plusEquals(oldvalue, newvalue) {
 
 
 function onLine(aggr, line) {
-        var parsed = JSON.parse(line);
+        lineCount++;
+
+        var parsed;
+        try {
+                parsed = JSON.parse(line);
+        } catch (e) {
+                console.warn('Error on line ' + lineCount + ': ' + e.message);
+                return;
+        }
+
         var aggKey = getAggKey(parsed);
 
         if (!aggr[aggKey]) {

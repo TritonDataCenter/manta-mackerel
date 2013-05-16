@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-var mod_carrier = require('carrier');
-
 /* BEGIN JSSTYLED */
 /*
  * sample object record:
@@ -87,6 +85,8 @@ var mod_carrier = require('carrier');
 
 /* END JSSTYLED */
 
+var mod_carrier = require('carrier');
+var ERROR = false;
 
 var NAMESPACES = (process.env.NAMESPACES).split(' ');
 
@@ -186,11 +186,14 @@ function main() {
         var carry = mod_carrier.carry(process.openStdin());
 
         var aggr = {};
+        var lineCount = 0;
         carry.on('line', function onLine(line) {
+                lineCount++;
                 try {
                         var record = JSON.parse(line);
                 } catch (e) {
-                        console.warn(e);
+                        console.warn('Error on line ' + lineCount + ': ' + e);
+                        ERROR = true;
                         return;
                 }
 
@@ -208,5 +211,10 @@ function main() {
 }
 
 if (require.main === module) {
+
+        process.on('exit', function onExit() {
+                process.exit(ERROR);
+        });
+
         main();
 }

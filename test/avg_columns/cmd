@@ -1,2 +1,1 @@
 cat input | ../../assets/bin/avg-columns
-rm stderr

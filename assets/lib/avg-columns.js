@@ -2,10 +2,7 @@
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 var mod_carrier = require('carrier');
-
-function parseLine(line) {
-        return (JSON.parse(line));
-}
+var lineCount = 0;
 
 function getAggKey(obj) {
         var key = '';
@@ -44,7 +41,16 @@ function divide(obj, divisor) {
 
 
 function onLine(aggr, line) {
-        var parsed = parseLine(line);
+        lineCount++;
+
+        var parsed;
+        try {
+                parsed = JSON.parse(line);
+        } catch (e) {
+                console.warn('Error on line ' + lineCount + ': ' + e.message);
+                return;
+        }
+
         parsed.__count = 1;
 
         var aggKey = getAggKey(parsed);

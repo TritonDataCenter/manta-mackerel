@@ -11,4 +11,3 @@ function mput () { :; }; export -f mput;
 export NAMESPACES="stor public jobs reports"
 export ZCAT="gzcat"
 cat input | gzip | MANTA_OUTPUT_BASE="asdf" $MAP |MANTA_OUTPUT_BASE="asdf"  $REDUCE1 | MANTA_OUTPUT_BASE="asdf" $REDUCE2 | MANTA_OUTPUT_BASE="asdf" $REDUCE3
-rm stderr

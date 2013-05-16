@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-var mod_carrier = require('carrier');
 
 /* BEGIN JSSTYLED */
 /*
@@ -71,18 +70,7 @@ var mod_carrier = require('carrier');
  */
 
 /* END JSSTYLED */
-
-var _error = false;
-
-/*
- * exit with exit code if needed to let marlin know something wrong happened
- *
- * _error is only set when we encounter an error where processing can continue
- * e.g. missing fields, etc
- */
-process.on('exit', function () {
-        process.exit(_error ? 12 : 0); // 12 chosen arbitrarily here
-});
+var mod_carrier = require('carrier');
 
 function emptyUsage(namespace) {
         return ({
@@ -98,6 +86,7 @@ function main() {
         var carry = mod_carrier.carry(process.openStdin());
         var aggr = {};
         var namespaces = (process.env.NAMESPACES).split(' ');
+        var lineCount = 0;
 
         carry.on('line', function onLine(line) {
                 try {
@@ -105,10 +94,11 @@ function main() {
                         var owner = record.owner;
                         var namespace = record.namespace;
                 } catch (e) {
-                        console.log(e);
+                        console.warn('Error on line ' + lineCount + ':' + e);
                         return;
                 }
-                record.owner = undefined;
+                delete record.owner;
+                delete record.namespace;
                 aggr[owner] = aggr[owner] || {owner: owner};
                 aggr[owner][namespace] = record;
         });

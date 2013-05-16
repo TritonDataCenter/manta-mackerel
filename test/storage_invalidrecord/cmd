@@ -12,4 +12,3 @@ export NAMESPACES="stor public jobs reports"
 export ZCAT="gzcat"
 export MANTA_OUTPUT_BASE="/var/tmp/asdf"
 cat input | gzip | $MAP | $REDUCE1 | $REDUCE2 | $REDUCE3
-rm stderr

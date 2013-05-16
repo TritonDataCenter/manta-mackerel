@@ -8,4 +8,3 @@ function mpipe () { cat; }; export -f mpipe;
 export NAMESPACES="stor public jobs reports"
 export ZCAT="gzcat"
 cat input | gzip | $MAP | $REDUCE1 | $REDUCE2 | $REDUCE3
-rm stderr

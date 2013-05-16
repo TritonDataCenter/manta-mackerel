@@ -7,4 +7,3 @@ function mmkdir () { :; }; export -f mmkdir;
 function mput () { :; }; export -f mput;
 
 cat input | MANTA_OUTPUT_BASE="/asdf" $REDUCE
-rm stderr

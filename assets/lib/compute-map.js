@@ -51,6 +51,8 @@ function main() {
                 stream: process.stdin
         });
 
+        reader.on('warn', console.warn.bind(null));
+
         reader.once('end', function onEnd() {
                 var report = reader.reportFlattened();
                 for (var i = 0; i < report.length; i++) {

@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-var mod_carrier = require('carrier');
-
 /* BEGIN JSSTYLED */
 /*
  * sample muskie audit record
@@ -99,6 +97,8 @@ var mod_carrier = require('carrier');
  */
 /* END JSSTYLED */
 
+var mod_carrier = require('carrier');
+
 function shouldProcess(record) {
         return (record.audit &&
                 record.req.url !== '/ping' &&
@@ -169,10 +169,13 @@ function main() {
                 // since bunyan logs may contain lines such as
                 // [ Nov 28 21:35:27 Enabled. ]
                 // we need to ignore them
+                if (line[0] != '{') {
+                        return;
+                }
+
                 try {
                         record = JSON.parse(line);
                 } catch (e) {
-                        console.warn('Line not json: ' + line);
                         return;
                 }
 

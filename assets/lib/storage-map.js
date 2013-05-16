@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-var mod_carrier = require('carrier');
-
 /* BEGIN JSSTYLED */
 /*
  * sample first line
@@ -70,6 +68,8 @@ var mod_carrier = require('carrier');
  */
 /* END JSSTYLED */
 
+var mod_carrier = require('carrier');
+var ERROR = false;
 
 function validSchema(obj) {
         var fields =
@@ -86,12 +86,15 @@ function validSchema(obj) {
 function main() {
         var carry = mod_carrier.carry(process.openStdin());
         var index;
+        var lineCount = 0;
 
         function onLine(line) {
+                lineCount++;
                 try {
                         var record = JSON.parse(line);
                 } catch (e) {
-                        console.warn(e);
+                        console.warn('Error on line ' + lineCount + ': ' + e);
+                        ERROR = true;
                         return;
                 }
 
@@ -99,6 +102,7 @@ function main() {
                         !validSchema(JSON.parse(record.entry[index]))) {
 
                         console.warn('Unrecognized line: ' + line);
+                        ERROR = true;
                         return;
                 }
 
@@ -106,12 +110,24 @@ function main() {
         }
 
         carry.once('line', function firstLine(line) {
-                index = JSON.parse(line).keys.indexOf('_value');
+                lineCount++;
+                try {
+                        index = JSON.parse(line).keys.indexOf('_value');
+                } catch (e) {
+                        console.warn('Error parsing schema ' + e);
+                        ERROR = true;
+                        return;
+                }
                 carry.on('line', onLine);
         });
 
 }
 
 if (require.main === module) {
+
+        process.on('exit', function onExit() {
+                process.exit(ERROR);
+        });
+
         main();
 }
