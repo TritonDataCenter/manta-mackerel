@@ -24,5 +24,6 @@
             "minTimeout": 1000
         },
         "connectTimeout": 1000
-    }
+    },
+    "jobsFile": "etc/jobs.json"
 }

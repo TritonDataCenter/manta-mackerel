@@ -1,5 +1,6 @@
 {
   "mantaBaseDirectory": "/poseidon/stor/usage",
+  "lookupFile": "assets/etc/lookup.json",
   "jobs": {
 
 
