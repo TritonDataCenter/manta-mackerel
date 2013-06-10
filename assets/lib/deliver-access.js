@@ -119,7 +119,7 @@ function saveAll(cb) {
                         callback(null, key);
                 });
         }
-
+        var errors = [];
         var log = new mod_bunyan({
                 name: 'deliver-audit',
                 level: 'fatal',
@@ -131,16 +131,19 @@ function saveAll(cb) {
                 url: process.env['MANTA_URL']
         });
 
-        mod_vasync.forEachParallel({
-                func: save,
-                inputs: Object.keys(files)
-        }, function (err, results) {
+        var queue = mod_vasync.queue(save, 50);
+        queue.drain = function () {
                 client.close();
-                if (err) {
-                        cb(err);
+                if (errors.length) {
+                        cb(errors);
                         return;
                 }
-                cb(null, results);
+                cb();
+        };
+        queue.push(Object.keys(files), function (err) {
+                if (err) {
+                        errors.push(err);
+                }
         });
 }
 
@@ -181,7 +184,7 @@ function main() {
         }
 
         function onDrain() {
-                saveAll(function (err, results) {
+                saveAll(function (err) {
                         if (err) {
                                 console.warn(err);
                                 process.exit(1);
