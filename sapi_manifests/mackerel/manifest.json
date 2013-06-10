@@ -1,0 +1,5 @@
+{
+	"name": "mackerel",
+	"path": "/opt/smartdc/mackerel/etc/config.json",
+	"master": true
+}

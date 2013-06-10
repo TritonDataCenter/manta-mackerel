@@ -78,6 +78,7 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/bin \
 		$(ROOT)/etc \
 		$(ROOT)/lib \
+		$(ROOT)/sapi_manifests \
 		$(ROOT)/scripts \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
