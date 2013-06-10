@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 /* BEGIN JSSTYLED */
@@ -86,6 +86,7 @@
 /* END JSSTYLED */
 
 var mod_carrier = require('carrier');
+var Big = require('big.js');
 var ERROR = false;
 
 var NAMESPACES = (process.env.NAMESPACES).split(' ');
@@ -115,7 +116,8 @@ function count(record, aggr) {
                 var n;
                 try {
                         var objectId = record.objectId;
-                        var size = record.contentLength * record.sharks.length;
+                        var size = Math.max(record.contentLength, 4096) *
+                            record.sharks.length;
                 } catch (e) {
                         console.warn(e);
                         return;
@@ -141,13 +143,11 @@ function printResults(aggr) {
                 var keys = {};
                 var bytes = {};
                 var objects = {};
-                // var actualBytes = {};
 
                 for (n in NAMESPACES) {
                         keys[NAMESPACES[n]] = 0;
-                        bytes[NAMESPACES[n]] = 0;
+                        bytes[NAMESPACES[n]] = new Big(0);
                         objects[NAMESPACES[n]] = 0;
-                        // actualBytes[NAMESPACES[n]] = 0;
                 }
 
                 Object.keys(aggr[owner].objects).forEach(function (object) {
@@ -157,9 +157,8 @@ function printResults(aggr) {
                                 if (!counted && objCounts[NAMESPACES[n]] > 0) {
                                         counted = true;
                                         var size = objCounts._size;
-                                        bytes[NAMESPACES[n]] +=
-                                                Math.max(4096, size);
-                                        // actualBytes[NAMESPACES[n]] += size;
+                                        bytes[NAMESPACES[n]] =
+                                                bytes[NAMESPACES[n]].plus(size);
                                         objects[NAMESPACES[n]]++;
                                 }
                                 keys[NAMESPACES[n]] += objCounts[NAMESPACES[n]];
@@ -174,8 +173,7 @@ function printResults(aggr) {
                                 directories: dirs,
                                 keys: keys[NAMESPACES[n]],
                                 objects: objects[NAMESPACES[n]],
-                                bytes: bytes[NAMESPACES[n]]
-                                // actualBytes: actualBytes[NAMESPACES[n]]
+                                bytes: bytes[NAMESPACES[n]].toString()
                         }));
                 }
         });

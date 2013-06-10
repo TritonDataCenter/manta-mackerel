@@ -26,6 +26,7 @@
  */
 
 var mod_marlin = require('marlin/lib/meter.js');
+var Big = require('big.js');
 
 function hrtimePlusEquals(oldvalue, newvalue) {
         oldvalue[0] += newvalue[0];
@@ -36,6 +37,25 @@ function hrtimePlusEquals(oldvalue, newvalue) {
         }
         return (oldvalue);
 }
+
+/*
+ * round the [seconds, nanoseconds] pair to the nearest second
+ */
+function roundhrtime(hrtime) {
+        return (hrtime[1] >= 5e8 ? hrtime[0] + 1 : hrtime[0]);
+}
+
+/*
+ * JSON.stringify filter function to convert bandwidth numbers to strings
+ */
+function stringify(key, value) {
+        if (key === 'bandwidth') {
+                value.in = value.in.toString();
+                value.out = value.out.toString();
+        }
+        return (value);
+}
+
 
 function main() {
         var aggr = {};
@@ -63,8 +83,8 @@ function main() {
                                 owner: owner,
                                 time: {},
                                 bandwidth: {
-                                        in: 0,
-                                        out: 0
+                                        in: new Big(0),
+                                        out: new Big(0)
                                 }
                         };
 
@@ -77,11 +97,16 @@ function main() {
                                 stats.time[res['memory.physcap']],
                                 res.time);
 
-                        stats.bandwidth.in += res['vnic0.rbytes64'];
-                        stats.bandwidth.out += res['vnic0.obytes64'];
+                        stats.bandwidth.in =
+                                stats.bandwidth.in.plus(res['vnic0.rbytes64']);
+                        stats.bandwidth.out =
+                                stats.bandwidth.out.plus(res['vnic0.obytes64']);
                 }
                 Object.keys(aggr).forEach(function (k) {
-                        console.log(JSON.stringify(aggr[k]));
+                        Object.keys(aggr[k].time).forEach(function (j) {
+                                aggr[k].time[j] = roundhrtime(aggr[k].time[j]);
+                        });
+                        console.log(JSON.stringify(aggr[k], stringify));
                 });
         });
 }

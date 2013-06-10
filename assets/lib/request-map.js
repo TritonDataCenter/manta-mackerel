@@ -98,6 +98,7 @@
 /* END JSSTYLED */
 
 var mod_carrier = require('carrier');
+var Big = require('big.js');
 
 function shouldProcess(record) {
         return (record.audit &&
@@ -118,9 +119,8 @@ function count(record, aggr) {
         var statusCode = record.res.statusCode;
 
         // get the content-length if it exists
-        var contentLength = record.res.headers['content-length'] ||
+        var contentLength = +record.res.headers['content-length'] ||
                 +record.req.headers['content-length'] || 0;
-        // _____^ content-length is a string when it's in the req header
 
         aggr[owner] = aggr[owner] || {
                 owner: owner,
@@ -133,30 +133,36 @@ function count(record, aggr) {
                         DELETE: 0
                 },
                 bandwidth: {
-                        in: 0,
-                        out: 0,
-                        headerIn: 0,
-                        headerOut: 0
+                        in: new Big(0),
+                        out: new Big(0),
+                        headerIn: new Big(0),
+                        headerOut: new Big(0)
                 }
         };
 
         aggr[owner].requests[method]++;
-        aggr[owner].bandwidth.headerIn += reqHeaderLength;
-        aggr[owner].bandwidth.headerOut += resHeaderLength;
+        var bw = aggr[owner].bandwidth;
+        bw.headerIn = bw.headerIn.plus(reqHeaderLength);
+        bw.headerOut = bw.headerOut.plus(resHeaderLength);
 
         // only count bandwidth for successful GET & PUT
         if (method === 'GET' && okStatus(statusCode)) {
-                aggr[owner].bandwidth.out += contentLength;
+                bw.out = bw.out.plus(contentLength);
         }
 
         if (method === 'PUT' && okStatus(statusCode)) {
-                aggr[owner].bandwidth.in += contentLength;
+                bw.in = bw.in.plus(contentLength);
         }
 }
 
 function printResults(aggr) {
         Object.keys(aggr).forEach(function (owner) {
-                console.log(JSON.stringify(aggr[owner]));
+                console.log(JSON.stringify(aggr[owner], function (key, value) {
+                        if (value instanceof Big) {
+                                return (value.toString());
+                        }
+                        return (value);
+                }));
         });
 }
 

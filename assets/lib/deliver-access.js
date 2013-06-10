@@ -1,8 +1,10 @@
-#!/usr/bin/env node
+#!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-var lookup = require('../etc/lookup.json'); // maps uuid->login
-var mantaFileSave = require('marlin/lib/util.js').mantaFileSave;
+var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
+var lookup = require(lookupPath); // maps uuid->login
+var mantaFileSave = require('manta-compute-bin').mantaFileSave;
+var mod_ipaddr = require('ipaddr.js');
 var mod_bunyan = require('bunyan');
 var mod_carrier = require('carrier');
 var mod_fs = require('fs');
@@ -12,6 +14,7 @@ var mod_vasync = require('vasync');
 
 var files = {}; // keeps track of all the files we create
 var ERROR = false;
+var tmpdir = '/var/tmp';
 
 /*
  * Allow all headers, then auth and x-forwarded-for headers will be removed
@@ -45,10 +48,17 @@ function shouldProcess(record) {
 function sanitize(record) {
         var output = mod_screen.screen(record, whitelist);
         if (output.req && output.req.headers) {
-                output['remoteAddress'] = output.req.headers['x-forwarded-for'];
-                output.req.headers['request-uri'] = output.req['url'];
+                var ip = output.req.headers['x-forwarded-for'] || '169.254.0.1';
+                var ipaddr = mod_ipaddr.parse(ip);
+                if (ipaddr.kind() === 'ipv4') {
+                        output['remoteAddress'] =
+                                ipaddr.toIPv4MappedAddress().toString();
+                } else {
+                        output['remoteAddress'] = ipaddr.toString();
+                }
+                output.req['request-uri'] = output.req['url'];
                 delete output.req.headers['x-forwarded-for'];
-                delete output.req.headers['url'];
+                delete output.req['url'];
                 delete output.req.headers['authorization'];
         }
         return (output);
@@ -56,14 +66,28 @@ function sanitize(record) {
 
 
 function write(owner, record, cb) {
-        files[owner] = true;
-        mod_fs.appendFile(owner, JSON.stringify(record) + '\n', function (err) {
-                if (err) {
-                        cb(err);
-                        return;
-                }
-                cb();
-        });
+        var path = tmpdir + '/' + owner;
+        var output = JSON.stringify(record) + '\n';
+
+        if (!files[owner]) {
+                files[owner] = true;
+                mod_fs.writeFile(path, output, function (err) {
+                        if (err) {
+                                cb(err);
+                                return;
+                        }
+                        cb();
+                });
+        } else {
+                mod_fs.appendFile(path, output, function (err) {
+                        if (err) {
+                                cb(err);
+                                return;
+                        }
+                        cb();
+                });
+        }
+
 }
 
 
@@ -71,6 +95,9 @@ function saveAll(cb) {
         function save(owner, callback) {
                 var login = lookup[owner];
                 var key = '/' + login + process.env['ACCESS_DEST'];
+                var headers = {
+                        'content-type': process.env['HEADER_CONTENT_TYPE']
+                };
 
                 if (!login) {
                         console.warn('No login found for UUID ' + owner);
@@ -79,17 +106,16 @@ function saveAll(cb) {
 
                 mantaFileSave({
                         client: client,
-                        filename: owner,
+                        filename: tmpdir + '/' + owner,
                         key: key,
-                        headers: {type: process.env['HEADER_CONTENT_TYPE']},
+                        headers: headers,
                         log: log,
-                        iostream: 'stdout'
+                        iostream: 'stderr'
                 }, function saveCB(err) {
                         if (err) {
                                 callback(err);
                                 return;
                         }
-                        console.log(key);
                         callback(null, key);
                 });
         }
@@ -109,6 +135,7 @@ function saveAll(cb) {
                 func: save,
                 inputs: Object.keys(files)
         }, function (err, results) {
+                client.close();
                 if (err) {
                         cb(err);
                         return;
@@ -162,7 +189,7 @@ function main() {
                 });
         }
 
-        carry.once('end', barrier.done.bind(null, 'lines'));
+        carry.once('end', barrier.done.bind(barrier, 'lines'));
         barrier.once('drain', onDrain);
 
         barrier.start('lines');

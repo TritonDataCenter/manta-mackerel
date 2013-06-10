@@ -20,6 +20,8 @@ var before = helper.before;
 var test = helper.test;
 var config = process.env.CONFIG ? require(process.env.CONFIG) :
         require('../etc/test-config.js');
+var jobs = require('../etc/jobs.json');
+var lookupFile = mod_path.resolve(__dirname, '..', jobs.lookupFile);
 
 function upload(path, stream, cb) {
         var self = this;
@@ -49,8 +51,7 @@ var processLookups = once(function (user) {
         Object.keys(lookup).forEach(function (k) {
                 lookup[k] = user + '/stor/mackerel-test/userdirs/' + lookup[k];
         });
-        var localPath = config.assets[config.mantaLookupPath];
-        fs.writeFileSync(localPath, JSON.stringify(lookup));
+        fs.writeFileSync(lookupFile, JSON.stringify(lookup));
 });
 
 
@@ -65,6 +66,7 @@ test('generate lookup', function (t) {
                 t.ok(result);
                 t.end();
         });
+        t.done();
 });
 
 
@@ -97,7 +99,7 @@ before(function (cb) {
 after(function (cb) {
         var self = this;
         this.client.rmr(this.dir, function (err) {
-                self.client.rmr(config.mantaBaseDir, function (err2) {
+                self.client.rmr(jobs.mantaBaseDirectory, function (err2) {
                         self.client.close();
                         cb();
                 });
@@ -105,12 +107,10 @@ after(function (cb) {
 });
 
 
-
-
 test('storage hourly', function (t) {
         console.warn('This next one takes a while...');
         var self = this;
-        var job = config.jobs.storage.hourly;
+        var job = jobs.jobs.storage.hourly;
 
         // source paths for records are hardcoded, so change them here
         job.keygenArgs.source = this.dir + '/storage-hourly';
@@ -128,6 +128,7 @@ test('storage hourly', function (t) {
                         category: 'storage',
                         period: 'hourly',
                         config: config,
+                        jobs: jobs,
                         log: self.log
                 }, function (err2, res) {
                         t.ifError(err2);
@@ -143,7 +144,7 @@ test('storage hourly', function (t) {
 
 test('storage daily', function (t) {
         var self = this;
-        var job = config.jobs.storage.daily;
+        var job = jobs.jobs.storage.daily;
 
         // source paths for records are hardcoded, so change them here
         job.keygenArgs.source = this.dir + '/storage-daily/$year/$month/$day';
@@ -166,6 +167,7 @@ test('storage daily', function (t) {
                                 category: 'storage',
                                 period: 'daily',
                                 config: config,
+                                jobs: jobs,
                                 log: self.log
                         }, function (err3, res) {
                                 t.ifError(err3);
@@ -183,7 +185,7 @@ test('storage daily', function (t) {
 
 test('storage monthly', function (t) {
         var self = this;
-        var job = config.jobs.storage.monthly;
+        var job = jobs.jobs.storage.monthly;
 
         // source paths for records are hardcoded, so change them here
         job.keygenArgs.source = this.dir + '/storage-monthly/$year/$month';
@@ -206,6 +208,7 @@ test('storage monthly', function (t) {
                                 category: 'storage',
                                 period: 'monthly',
                                 config: config,
+                                jobs: jobs,
                                 log: self.log
                         }, function (err3, res) {
                                 t.ifError(err3);
@@ -221,7 +224,7 @@ test('storage monthly', function (t) {
 
 test('request hourly', function (t) {
         var self = this;
-        var job = config.jobs.request.hourly;
+        var job = jobs.jobs.request.hourly;
 
         // source paths for records are hardcoded, so change them here
         job.keygenArgs.source = this.dir +
@@ -239,6 +242,7 @@ test('request hourly', function (t) {
                         category: 'request',
                         period: 'hourly',
                         config: config,
+                        jobs: jobs,
                         log: self.log
                 }, function (err3, res) {
                         t.ifError(err3);
@@ -253,7 +257,7 @@ test('request hourly', function (t) {
 
 test('request daily', function (t) {
         var self = this;
-        var job = config.jobs.request.daily;
+        var job = jobs.jobs.request.daily;
 
         // source paths for records are hardcoded, so change them here
         job.keygenArgs.source = this.dir + '/request-daily/$year/$month/$day';
@@ -276,6 +280,7 @@ test('request daily', function (t) {
                                 category: 'request',
                                 period: 'daily',
                                 config: config,
+                                jobs: jobs,
                                 log: self.log
                         }, function (err3, res) {
                                 t.ifError(err3);
@@ -291,7 +296,7 @@ test('request daily', function (t) {
 
 test('request monthly', function (t) {
         var self = this;
-        var job = config.jobs.request.monthly;
+        var job = jobs.jobs.request.monthly;
 
         // source paths for records are hardcoded, so change them here
         job.keygenArgs.source = this.dir + '/request-monthly/$year/$month';
@@ -314,6 +319,7 @@ test('request monthly', function (t) {
                                 category: 'request',
                                 period: 'monthly',
                                 config: config,
+                                jobs: jobs,
                                 log: self.log
                         }, function (err3, res) {
                                 t.ifError(err3);
@@ -332,7 +338,7 @@ test('compute hourly', function (t) {
         t.end();
         /*
         var self = this;
-        var job = config.jobs.compute.hourly;
+        var job = jobs.jobs.compute.hourly;
 
         // source paths for records are hardcoded, so change them here
         job.keygenArgs.source = this.dir +

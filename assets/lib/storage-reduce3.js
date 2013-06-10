@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 
@@ -20,28 +20,24 @@
  * {
  *      "owner": owner,
  *      "stor": {
- *              "namespace": "stor",
  *              "directories": directories,
  *              "keys": keys,
  *              "objects": objects,
  *              "bytes": bytes
  *      },
  *      "public": {
- *              "namespace": "public",
  *              "directories": directories,
  *              "keys": keys,
  *              "objects": objects,
  *              "bytes": bytes
  *      },
  *      "reports": {
- *              "namespace": "reports",
  *              "directories": directories,
  *              "keys": keys,
  *              "objects": objects,
  *              "bytes": bytes
  *      },
  *      "jobs": {
- *              "namespace": "jobs",
  *              "directories": directories,
  *              "keys": keys,
  *              "objects": objects,
@@ -74,11 +70,10 @@ var mod_carrier = require('carrier');
 
 function emptyUsage(namespace) {
         return ({
-                namespace: namespace,
                 directories: 0,
                 keys: 0,
                 objects: 0,
-                bytes: 0
+                bytes: '0'
         });
 }
 
