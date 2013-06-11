@@ -1,4 +1,0 @@
-{"name":"manta","keys":["_id","_txn_snap","_key","_value","_etag","_mtime","dirname","owner","objectid"]}
-{"entry":["1771218","\\N","1027-undefined","{}","A3A6BF43","1361977203113","\\N","\\N","\\N","\\N","\\N"]}
-{"entry":["3","\\N","/436f36b9-84d1-4ac1-99ff-d26d37b34cb6/stor/public","{\"dirname\":\"/436f36b9-84d1-4ac1-99ff-d26d37b34cb6/stor\",\"key\":\"/436f36b9-84d1-4ac1-99ff-d26d37b34cb6/stor/public\",\"headers\":{},\"mtime\":1354923950997,\"name\":\"public\",\"owner\":\"436f36b9-84d1-4ac1-99ff-d26d37b34cb6\",\"type\":\"directory\"}","F4866AB7","1354923951000","/436f36b9-84d1-4ac1-99ff-d26d37b34cb6/stor","public","436f36b9-84d1-4ac1-99ff-d26d37b34cb6","\\N","directory"]}
-{"entry":["12345","\\N","/path/to/key","{\"foo\":\"bar\",\"baz\":\"quux\"}"]}

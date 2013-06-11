@@ -172,7 +172,7 @@ test('numbers to strings', function (t) {
         }, function (result) {
                 var lines = result.stdout.split('\n');
                 var actual = JSON.parse(lines[0]);
-                t.equal(result.stderr, '');
+                t.equal(result.code, 0);
                 t.equal(lines.length, 26);
                 t.deepEqual(STORAGE_RECORD, actual);
 
@@ -193,7 +193,7 @@ test('empty record creation (storage)', function (t) {
         }, function (result) {
                 var lines = result.stdout.split('\n');
                 var actual = JSON.parse(lines[0]);
-                t.equal(result.stderr, '');
+                t.equal(result.code, 0);
                 t.equal(lines.length, 26);
                 t.deepEqual(STORAGE_RECORD, actual);
 
@@ -215,7 +215,7 @@ test('empty record creation (request)', function (t) {
         }, function (result) {
                 var lines = result.stdout.split('\n');
                 var actual = JSON.parse(lines[0]);
-                t.equal(result.stderr, '');
+                t.equal(result.code, 0);
                 t.equal(lines.length, 26);
                 t.deepEqual(REQUEST_RECORD, actual);
 
@@ -238,7 +238,7 @@ test('empty record creation (compute)', function (t) {
         }, function (result) {
                 var lines = result.stdout.split('\n');
                 var actual = JSON.parse(lines[0]);
-                t.equal(result.stderr, '');
+                t.equal(result.code, 0);
                 t.equal(lines.length, 26);
                 t.deepEqual(COMPUTE_RECORD, actual);
 
@@ -262,7 +262,7 @@ test('write to user directories', function (t) {
         runTest({
                 stdin: JSON.stringify(STORAGE_RECORD)
         }, function (result) {
-                t.equal(result.stderr, '');
+                t.equal(result.code, 0);
                 SERVER.requests.forEach(function (r) {
                         var login = r.url.split('/')[1];
                         t.equal(r.method, 'PUT');

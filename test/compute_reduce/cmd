@@ -1,9 +1,0 @@
-#!/bin/bash
-REDUCE=../../assets/bin/sum-columns
-function msplit-json () { cat; }; export -f msplit-json;
-function msplit () { cat; }; export -f msplit;
-function mpipe () { cat; }; export -f mpipe;
-function mmkdir () { :; }; export -f mmkdir;
-function mput () { :; }; export -f mput;
-
-cat input | MANTA_OUTPUT_BASE="/asdf" $REDUCE

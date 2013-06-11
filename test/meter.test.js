@@ -64,9 +64,8 @@ test('generate lookup', function (t) {
         }, function (err, result) {
                 t.ifError(err);
                 t.ok(result);
-                t.end();
+                t.done();
         });
-        t.done();
 });
 
 

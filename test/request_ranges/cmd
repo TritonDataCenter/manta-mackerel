@@ -1,9 +1,0 @@
-#!/bin/bash
-MAP=../../assets/bin/request-map
-REDUCE=../../assets/bin/sum-columns
-function msplit () { cat; }; export -f msplit;
-function mpipe () { cat; }; export -f mpipe;
-function mmkdir () { :; }; export -f mmkdir;
-function mput() { :; }; export -f mput;
-export MANTA_OUTPUT_BASE="/var/tmp/asdf"
-cat input | $MAP | $REDUCE
