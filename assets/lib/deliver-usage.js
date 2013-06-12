@@ -1,14 +1,14 @@
 #!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
+var Big = require('big.js');
+var mod_MemoryStream = require('readable-stream/passthrough.js');
 var mod_carrier = require('carrier');
 var mod_child_process = require('child_process');
 var mod_events = require('events');
-var mod_path = require('path');
+var mod_libmanta = require('libmanta');
 var mod_manta = require('manta');
-var mod_MemoryStream = require('readable-stream/passthrough.js');
-var Big = require('big.js');
-var mod_vasync = require('vasync');
+var mod_path = require('path');
 
 var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
 var lookup = require(lookupPath); // maps uuid->login
@@ -86,12 +86,18 @@ function writeToUserDir(opts, cb) {
 
 function main() {
         var emptyRecord;
-        var queue = mod_vasync.queue(writeToUserDir, 50);
 
         var client = mod_manta.createClient({
                 sign: null,
                 url: process.env['MANTA_URL']
         });
+
+        var queue = mod_libmanta.createQueue({
+                limit: 50,
+                worker: writeToUserDir
+        });
+
+        queue.on('end', client.close.bind(client));
 
         var carry = mod_carrier.carry(process.stdin);
 
@@ -146,11 +152,10 @@ function main() {
         });
 
         carry.once('end', function onEnd() {
+                queue.close();
                 // lookup should only contain users with no usage now
                 var uuids = Object.keys(lookup);
                 uuids.forEach(function (k) {
-                        var login = lookup[k];
-
                         if (!emptyRecord) {
                                 console.warn('Error: an empty record template' +
                                         ' was never created. Perhaps no input' +
@@ -160,15 +165,7 @@ function main() {
 
                         emptyRecord.owner = k;
                         console.log(JSON.stringify(emptyRecord, filter));
-                        delete emptyRecord.owner;
-
-                        queue.push({
-                                record: emptyRecord,
-                                login: login,
-                                client: client
-                        });
                 });
-                queue.drain = client.close.bind(client);
         });
         process.stdin.resume();
 }

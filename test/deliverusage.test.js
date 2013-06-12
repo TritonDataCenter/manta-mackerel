@@ -253,41 +253,28 @@ test('empty record creation (compute)', function (t) {
 });
 
 test('write to user directories', function (t) {
-        var logins = {};
-        var seen = {};
-        Object.keys(LOOKUP).forEach(function (k) {
-                logins[LOOKUP[k]] = k;
-        });
-
+        t.expect(17);
         runTest({
                 stdin: JSON.stringify(STORAGE_RECORD)
         }, function (result) {
+                var dirs = 0;
                 t.equal(result.code, 0);
+                t.equal(SERVER.requests.length, 6);
                 SERVER.requests.forEach(function (r) {
                         var login = r.url.split('/')[1];
+                        var type = r.headers['content-type'];
                         t.equal(r.method, 'PUT');
-                        t.ok(r.headers['content-type'] === 'application/json' ||
-                                r.headers['content-type'] ===
-                                'application/json; type=directory');
-                        seen[login] = true;
-                        if (login === 'gkevinykchan_work' && r.body) {
+                        t.equal(login, 'gkevinykchan_work');
+                        if (type === 'application/json; type=directory') {
+                                dirs++;
+                        } else {
                                 var body = JSON.parse(r.body);
                                 t.ok(typeof(body.owner) === 'undefined');
-                                body.owner = logins[login];
+                                body.owner = STORAGE_RECORD.owner;
                                 t.deepEqual(STORAGE_RECORD, body);
-                        } else if (r.body) {
-                                var body = JSON.parse(r.body);
-                                t.ok(typeof(body.owner) === 'undefined');
-                                body.owner = logins[login];
-                                NAMESPACES.forEach(function (n) {
-                                        COUNTERS.forEach(function (c) {
-                                               t.strictEqual(body[n][c], '0');
-                                        });
-                                });
                         }
                 });
-                t.deepEqual(Object.keys(logins).sort(),
-                            Object.keys(seen).sort());
+                t.equal(dirs, 5);
                 t.done();
         });
 });
