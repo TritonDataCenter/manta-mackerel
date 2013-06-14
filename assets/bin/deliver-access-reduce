@@ -6,5 +6,4 @@ set -o pipefail
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $dir/.. && tar -xf node_modules.tar
 
-$dir/../lib/request-map.js \
-| msplit -j -n $NUM_REDUCERS -f owner
+$dir/../lib/deliver-access.js

@@ -1,9 +1,5 @@
 {
-  "mantaBaseDirectory": "/poseidon/stor/usage",
-  "lookupFile": "assets/etc/lookup.json",
   "jobs": {
-
-
     "storage": {
       "hourly": {
         "keygen": "StorageHourlyKeyGenerator",
@@ -132,6 +128,42 @@
           "HEADER_CONTENT_TYPE": "application/x-json-stream",
           "DEST": "/poseidon/stor/usage/storage/$year/$month/m$month.json"
         }
+      }
+    },
+
+
+    "accessLogs": {
+      "keygen": "FindKeyGenerator",
+      "keygenArgs": {
+        "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
+      },
+      "job": {
+        "name": "metering-deliver-access-logs-$year-$month-$dayT$hour",
+        "phases": [
+          {
+            "type": "map",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/deliver-access-map"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-access-map"
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/lib/deliver-access.js",
+              "/poseidon/stor/usage/assets/bin/deliver-access-reduce"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-access-reduce",
+            "count": 20
+          }
+        ]
+      },
+      "env": {
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json"
       }
     },
 

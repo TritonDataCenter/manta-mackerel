@@ -8,6 +8,6 @@ getDate "$@"
 
 NODE=$dir/../../build/node/bin/node
 
-$NODE $dir/../../bin/meter -p monthly -c storage -d "$date"
-$NODE $dir/../../bin/meter -p monthly -c request -d "$date"
-$NODE $dir/../../bin/meter -p monthly -c compute -d "$date"
+$NODE $dir/../../bin/meter -j 'storage.monthly' -d "$date"
+$NODE $dir/../../bin/meter -j 'request.monthly' -d "$date"
+$NODE $dir/../../bin/meter -j 'compute.monthly' -d "$date"

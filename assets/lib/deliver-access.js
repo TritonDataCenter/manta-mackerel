@@ -10,7 +10,7 @@ var mod_carrier = require('carrier');
 var mod_fs = require('fs');
 var mod_manta = require('manta');
 var mod_screen = require('screener');
-var mod_vasync = require('vasync');
+var mod_libmanta = require('libmanta');
 
 var files = {}; // keeps track of all the files we create
 var ERROR = false;
@@ -22,6 +22,7 @@ var tmpdir = '/var/tmp';
  * be used for the top-level remoteAddress IP.
  */
 var whitelist = {
+        'billable_operation': 'string',
         'req': {
                 'method': 'string',
                 'url': 'string', // renamed 'request-uri' see RFC 2616
@@ -65,7 +66,9 @@ function sanitize(record) {
 }
 
 
-function write(owner, record, cb) {
+function write(opts, cb) {
+        var owner = opts.owner;
+        var record = opts.record;
         var path = tmpdir + '/' + owner;
         var output = JSON.stringify(record) + '\n';
 
@@ -100,7 +103,7 @@ function saveAll(cb) {
                 };
 
                 if (!login) {
-                        console.warn('No login found for UUID ' + owner);
+                        callback(new Error('No login found for UUID ' + owner));
                         return;
                 }
 
@@ -119,7 +122,7 @@ function saveAll(cb) {
                         callback(null, key);
                 });
         }
-        var errors = [];
+
         var log = new mod_bunyan({
                 name: 'deliver-audit',
                 level: 'fatal',
@@ -131,30 +134,52 @@ function saveAll(cb) {
                 url: process.env['MANTA_URL']
         });
 
-        var queue = mod_vasync.queue(save, 50);
-        queue.drain = function () {
-                client.close();
-                if (errors.length) {
-                        cb(errors);
-                        return;
-                }
-                cb();
-        };
-        queue.push(Object.keys(files), function (err) {
-                if (err) {
-                        errors.push(err);
-                }
+        var queue = mod_libmanta.createQueue({
+                worker: save,
+                limit: 25
         });
+
+        queue.on('error', function (err) {
+                console.warn('error saving: ' + err.message);
+                ERROR = true;
+        });
+
+        queue.once('end', function () {
+                client.close();
+                cb();
+        });
+
+        Object.keys(files).forEach(function (k) {
+                queue.push(k);
+        });
+        queue.close();
 }
 
 
 function main() {
         var carry = mod_carrier.carry(process.openStdin());
-        var barrier = mod_vasync.barrier();
+
+        var queue = mod_libmanta.createQueue({
+                worker: write,
+                limit: 15
+        });
+
+        queue.on('error', function (err) {
+                console.warn('write error: ' + err.message);
+        });
+
+        queue.once('end', function () {
+                saveAll(function (err) {
+                        if (err) {
+                                console.warn('saveAll error:' + err.message);
+                                process.exit(1);
+                        }
+                });
+        });
 
         function onLine(line) {
                 var record;
-                console.log(line); // re-emit each line for aggregation
+                //console.log(line); // re-emit each line for aggregation
 
                 // since bunyan logs may contain lines such as
                 // [ Nov 28 21:35:27 Enabled. ]
@@ -174,28 +199,14 @@ function main() {
                 }
 
                 var output = sanitize(record);
-                barrier.start(line);
-                write(record.req.owner, output, function (err) {
-                        if (err) {
-                                console.warn(err.message);
-                        }
-                        barrier.done(line);
+
+                queue.push({
+                        owner: record.req.owner,
+                        record: output
                 });
         }
 
-        function onDrain() {
-                saveAll(function (err) {
-                        if (err) {
-                                console.warn(err);
-                                process.exit(1);
-                        }
-                });
-        }
-
-        carry.once('end', barrier.done.bind(barrier, 'lines'));
-        barrier.once('drain', onDrain);
-
-        barrier.start('lines');
+        carry.once('end', queue.close.bind(queue));
         carry.on('line', onLine);
 }
 

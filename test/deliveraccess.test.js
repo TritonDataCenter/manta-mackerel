@@ -201,15 +201,6 @@ after(function (cb) {
         });
 });
 
-test('echoes input', function (t) {
-        runTest({
-                stdin: JSON.stringify(RECORD)
-        }, function (result) {
-                t.equal(JSON.stringify(RECORD), result.stdout.trim());
-                t.done();
-        });
-});
-
 test('whitelist', function (t) {
         runTest({
                 stdin: JSON.stringify(RECORD)

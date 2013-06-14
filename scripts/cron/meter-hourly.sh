@@ -8,6 +8,6 @@ getDate "$@"
 
 NODE=$dir/../../build/node/bin/node
 
-$NODE $dir/../../bin/meter -p hourly -c storage -d "$date"
-$NODE $dir/../../bin/meter -p hourly -c request -d "$date"
-$NODE $dir/../../bin/meter -p hourly -c compute -d "$date"
+$NODE $dir/../../bin/meter -j 'storage.hourly' -d "$date"
+$NODE $dir/../../bin/meter -j 'request.hourly' -d "$date"
+$NODE $dir/../../bin/meter -j 'compute.hourly' -d "$date"

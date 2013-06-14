@@ -25,5 +25,8 @@
         },
         "connectTimeout": 1000,
         "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
-    }
+    },
+    "jobsFile": "etc/jobs.json",
+    "mantaBaseDirectory": "/poseidon/stor/usage",
+    "lookupFile": "assets/etc/lookup.json"
 }

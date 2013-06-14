@@ -7,7 +7,6 @@ var once = require('once');
 var fs = require('fs');
 var mod_path = require('path');
 var exec = require('child_process').exec;
-var vasync = require('vasync');
 
 if (require.cache[__dirname + '/helper.js'])
         delete require.cache[__dirname + '/helper.js'];
@@ -21,7 +20,7 @@ var test = helper.test;
 var config = process.env.CONFIG ? require(process.env.CONFIG) :
         require('../etc/test-config.js');
 var jobs = require('../etc/jobs.json');
-var lookupFile = mod_path.resolve(__dirname, '..', jobs.lookupFile);
+var lookupFile = mod_path.resolve(__dirname, '..', config.lookupFile);
 
 function upload(path, stream, cb) {
         var self = this;

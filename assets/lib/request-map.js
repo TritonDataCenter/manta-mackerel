@@ -130,7 +130,6 @@ function count(record, aggr) {
                         GET: 0,
                         HEAD: 0,
                         LIST: 0,
-                        LIST: 0,
                         OPTIONS: 0,
                         POST: 0,
                         PUT: 0

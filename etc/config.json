@@ -25,5 +25,7 @@
         },
         "connectTimeout": 1000
     },
-    "jobsFile": "etc/jobs.json"
+    "jobsFile": "etc/jobs.json",
+    "mantaBaseDirectory": "/poseidon/stor/usage",
+    "lookupFile": "assets/etc/lookup.json"
 }
