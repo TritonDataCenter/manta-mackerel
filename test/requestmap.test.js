@@ -16,6 +16,7 @@ var test = helper.test;
 
 var RECORD = {
         'name': 'muskie',
+        'billable_operation': 'PUT',
         'req': {
                 'method': 'PUT',
                 'url': '/poseidon/stor/manatee_backups',
@@ -71,12 +72,14 @@ var RECORD = {
 var EXPECTED = {
         'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0',
         'requests': {
-                'OPTION': 0,
-                'GET': 0,
-                'HEAD': 0,
-                'POST': 0,
                 'PUT': 1,
-                'DELETE': 0
+                'LIST': 0,
+                'GET': 0,
+                'DELETE': 0,
+                'POST': 0,
+                'LIST': 0,
+                'HEAD': 0,
+                'OPTIONS': 0
         },
         'bandwidth': {
                 'in': '0',

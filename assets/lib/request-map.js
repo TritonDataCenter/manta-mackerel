@@ -113,6 +113,7 @@ function okStatus(code) {
 
 function count(record, aggr) {
         var owner = record.req.owner;
+        var operation = record.billable_operation;
         var method = record.req.method;
         var resHeaderLength = record.resHeaderLength;
         var reqHeaderLength = record.reqHeaderLength;
@@ -125,12 +126,14 @@ function count(record, aggr) {
         aggr[owner] = aggr[owner] || {
                 owner: owner,
                 requests: {
-                        OPTION: 0,
+                        DELETE: 0,
                         GET: 0,
                         HEAD: 0,
+                        LIST: 0,
+                        LIST: 0,
+                        OPTIONS: 0,
                         POST: 0,
-                        PUT: 0,
-                        DELETE: 0
+                        PUT: 0
                 },
                 bandwidth: {
                         in: new Big(0),
@@ -140,7 +143,10 @@ function count(record, aggr) {
                 }
         };
 
-        aggr[owner].requests[method]++;
+        if (operation) {
+                aggr[owner].requests[operation]++;
+        }
+
         var bw = aggr[owner].bandwidth;
         bw.headerIn = bw.headerIn.plus(reqHeaderLength);
         bw.headerOut = bw.headerOut.plus(resHeaderLength);
