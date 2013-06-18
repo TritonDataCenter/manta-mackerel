@@ -174,7 +174,7 @@ test('numbers to strings', function (t) {
                 var lines = result.stdout.split('\n');
                 var actual = JSON.parse(lines[0]);
                 t.equal(result.code, 0);
-                t.equal(lines.length, 26);
+                t.equal(lines.length, 2);
                 t.deepEqual(STORAGE_RECORD, actual);
 
                 // deepEqual does not use strict equality, so check to make sure
@@ -184,71 +184,6 @@ test('numbers to strings', function (t) {
                                 t.ok(typeof(actual[n][c]) === 'string');
                         });
                 });
-                t.done();
-        });
-});
-
-test('empty record creation (storage)', function (t) {
-        runTest({
-                stdin: JSON.stringify(STORAGE_RECORD)
-        }, function (result) {
-                var lines = result.stdout.split('\n');
-                var actual = JSON.parse(lines[0]);
-                t.equal(result.code, 0);
-                t.equal(lines.length, 26);
-                t.deepEqual(STORAGE_RECORD, actual);
-
-                for (var i = 1; i < 25; i++) {
-                        actual = JSON.parse(lines[i]);
-                        NAMESPACES.forEach(function (n) {
-                                COUNTERS.forEach(function (c) {
-                                       t.strictEqual(actual[n][c], '0');
-                                });
-                        });
-                }
-                t.done();
-        });
-});
-
-test('empty record creation (request)', function (t) {
-        runTest({
-                stdin: JSON.stringify(REQUEST_RECORD)
-        }, function (result) {
-                var lines = result.stdout.split('\n');
-                var actual = JSON.parse(lines[0]);
-                t.equal(result.code, 0);
-                t.equal(lines.length, 26);
-                t.deepEqual(REQUEST_RECORD, actual);
-
-                for (var i = 1; i < 25; i++) {
-                        actual = JSON.parse(lines[i]);
-                        METHODS.forEach(function (m) {
-                                t.strictEqual(actual.requests[m], '0');
-                        });
-                        BANDWIDTH.forEach(function (b) {
-                                t.strictEqual(actual.bandwidth[b], '0');
-                        });
-                }
-                t.done();
-        });
-});
-
-test('empty record creation (compute)', function (t) {
-        runTest({
-                stdin: JSON.stringify(COMPUTE_RECORD)
-        }, function (result) {
-                var lines = result.stdout.split('\n');
-                var actual = JSON.parse(lines[0]);
-                t.equal(result.code, 0);
-                t.equal(lines.length, 26);
-                t.deepEqual(COMPUTE_RECORD, actual);
-
-                for (var i = 1; i < 25; i++) {
-                        actual = JSON.parse(lines[i]);
-                        t.strictEqual(actual.bandwidth.in, '0');
-                        t.strictEqual(actual.bandwidth.out, '0');
-                        t.deepEqual(actual.time, {});
-                }
                 t.done();
         });
 });
@@ -288,9 +223,8 @@ test('missing lookup entry', function (t) {
         }, function (result) {
                 var lines = result.stdout.split('\n');
                 var actual = JSON.parse(lines[0]);
-                t.equal(result.stderr, 'No login found for UUID ' +
-                        '478c085c-cd66-11e2-844f-7b7007fa0470\n');
-                t.equal(lines.length, 27);
+                t.equal(result.code, 1);
+                t.equal(lines.length, 2);
                 t.deepEqual(record, actual);
 
                 t.done();

@@ -14,26 +14,6 @@ var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
 var lookup = require(lookupPath); // maps uuid->login
 var ERROR = false;
 
-function zero(obj) {
-        Object.keys(obj).forEach(function (k) {
-                if (typeof (obj[k]) === 'object') {
-                        zero(obj[k]);
-                } else if (typeof (obj[k]) === 'number') {
-                        obj[k] = 0;
-                } else if (typeof (obj[k]) === 'string') {
-                        // if the string represents an integer, set it to '0'
-                        // otherwise leave it alone
-                        try {
-                                obj[k] = new Big(obj[k]);
-                                obj[k] = '0';
-                        } catch (e) {
-                                // leave it as is
-                        }
-                }
-        });
-        return (obj);
-}
-
 function filter(key, value) {
         if (typeof (value) === 'number') {
                 return (value.toString());
@@ -85,8 +65,6 @@ function writeToUserDir(opts, cb) {
 }
 
 function main() {
-        var emptyRecord;
-
         var client = mod_manta.createClient({
                 sign: null,
                 url: process.env['MANTA_URL']
@@ -115,11 +93,6 @@ function main() {
                         return;
                 }
 
-                // we shouldn't encounter this user again; remove his entry
-                // in the lookup table so that we will only have users with
-                // no usage left at the end
-                delete lookup[record.owner];
-
                 // remove owner field from the user's personal report
                 delete record.owner;
 
@@ -136,37 +109,8 @@ function main() {
                 });
         }
 
-        carry.once('line', function firstLine(line) {
-                // generate a record with all number fields set to 0 based on
-                // the format of the first real record, to be used for users
-                // with no usage
-                emptyRecord = zero(JSON.parse(line));
-
-                // XXX special case for compute: empty the time section
-                if (emptyRecord.time) {
-                        emptyRecord.time = {};
-                }
-
-                carry.on('line', onLine);
-                onLine(line);
-        });
-
-        carry.once('end', function onEnd() {
-                queue.close();
-                // lookup should only contain users with no usage now
-                var uuids = Object.keys(lookup);
-                uuids.forEach(function (k) {
-                        if (!emptyRecord) {
-                                console.warn('Error: an empty record template' +
-                                        ' was never created. Perhaps no input' +
-                                        ' was read?');
-                                process.exit(1);
-                        }
-
-                        emptyRecord.owner = k;
-                        console.log(JSON.stringify(emptyRecord, filter));
-                });
-        });
+        carry.on('line', onLine);
+        carry.once('end', queue.close.bind(queue));
         process.stdin.resume();
 }
 
