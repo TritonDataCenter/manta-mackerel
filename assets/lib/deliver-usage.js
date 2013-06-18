@@ -25,6 +25,7 @@ function writeToUserDir(opts, cb) {
         var record = opts.record;
         var login = opts.login;
         var client = opts.client;
+        var linkPath = '/' + login + process.env['USER_LINK'];
         var path = '/' + login + process.env['USER_DEST'];
         var line = JSON.stringify(record, filter) + '\n';
         var size = Buffer.byteLength(line);
@@ -53,7 +54,21 @@ function writeToUserDir(opts, cb) {
                                 cb();
                                 return;
                         }
-                        cb();
+                        if (!process.env['USER_LINK']) {
+                                cb();
+                                return;
+                        }
+                        client.ln(path, linkPath, function (err3) {
+                                if (err3) {
+                                        console.warn('Error ln ' + linkPath);
+                                        console.warn(err3);
+                                        ERROR = true;
+                                        cb();
+                                        return;
+                                }
+                                cb();
+                                return;
+                        });
                 });
 
                 process.nextTick(function () {
@@ -61,7 +76,6 @@ function writeToUserDir(opts, cb) {
                         mstream.end();
                 });
         });
-
 }
 
 function main() {

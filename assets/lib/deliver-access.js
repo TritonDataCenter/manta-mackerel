@@ -98,6 +98,7 @@ function saveAll(cb) {
         function save(owner, callback) {
                 var login = lookup[owner];
                 var key = '/' + login + process.env['ACCESS_DEST'];
+                var linkPath = '/' + login + process.env['ACCESS_LINK'];
                 var headers = {
                         'content-type': process.env['HEADER_CONTENT_TYPE']
                 };
@@ -119,7 +120,21 @@ function saveAll(cb) {
                                 callback(err);
                                 return;
                         }
-                        callback(null, key);
+                        if (!process.env['ACCESS_LINK']) {
+                                callback();
+                                return;
+                        }
+                        client.ln(key, linkPath, function (err3) {
+                                if (err3) {
+                                        console.warn('Error ln ' + linkPath);
+                                        console.warn(err3);
+                                        ERROR = true;
+                                        callback();
+                                        return;
+                                }
+                                callback();
+                                return;
+                        });
                 });
         }
 

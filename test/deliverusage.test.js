@@ -94,6 +94,7 @@ function runTest(opts, cb) {
                 env: {
                         'MANTA_URL': MANTA_URL,
                         'MANTA_NO_AUTH': 'true',
+                        'USER_LINK': '/reports/usage/latest',
                         'USER_DEST': '/reports/usage/2013/06/07/12/h12.json',
                         'LOOKUP_FILE': LOOKUP_FILE
                 }
@@ -189,13 +190,14 @@ test('numbers to strings', function (t) {
 });
 
 test('write to user directories', function (t) {
-        t.expect(17);
+        t.expect(20);
         runTest({
                 stdin: JSON.stringify(STORAGE_RECORD)
         }, function (result) {
                 var dirs = 0;
+                var links = 0;
                 t.equal(result.code, 0);
-                t.equal(SERVER.requests.length, 6);
+                t.equal(SERVER.requests.length, 7);
                 SERVER.requests.forEach(function (r) {
                         var login = r.url.split('/')[1];
                         var type = r.headers['content-type'];
@@ -203,6 +205,8 @@ test('write to user directories', function (t) {
                         t.equal(login, 'gkevinykchan_work');
                         if (type === 'application/json; type=directory') {
                                 dirs++;
+                        } else if (type === 'application/json; type=link') {
+                                links++;
                         } else {
                                 var body = JSON.parse(r.body);
                                 t.ok(typeof(body.owner) === 'undefined');
@@ -211,6 +215,7 @@ test('write to user directories', function (t) {
                         }
                 });
                 t.equal(dirs, 5);
+                t.equal(links, 1);
                 t.done();
         });
 });

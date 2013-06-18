@@ -121,7 +121,9 @@ function runTest(opts, cb) {
                 env: {
                         'MANTA_URL': MANTA_URL,
                         'MANTA_NO_AUTH': 'true',
-                        'HEADER_CONTENT_TYPE': 'application/x-json-stream'
+                        'HEADER_CONTENT_TYPE': 'application/x-json-stream',
+                        'ACCESS_LINK': '/reports/access-logs/latest',
+                        'ACCESS_DEST': '/reports/access-logs/y/m/d/h/hhour.json'
                 }
         };
 
@@ -244,16 +246,20 @@ test('empty remoteAddress', function (t) {
         });
 });
 
-test('file uploaded', function (t) {
+test('file uploaded and link created', function (t) {
         runTest({
                 stdin: JSON.stringify(RECORD)
         }, function (result) {
                 t.equal(result.code, 0);
-                t.equal(SERVER.requests.length, 1);
+                t.equal(SERVER.requests.length, 2);
                 var req = SERVER.requests[0];
                 t.equal(req.headers['content-type'],
                         'application/x-json-stream');
                 t.deepEqual(JSON.parse(req.body), EXPECTED);
+
+                req = SERVER.requests[1];
+                t.equal(req.headers['content-type'],
+                        'application/json; type=link');
                 t.done();
         });
 });
