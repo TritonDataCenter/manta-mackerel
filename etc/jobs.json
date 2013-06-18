@@ -1,133 +1,174 @@
 {
   "jobs": {
     "storage": {
-      "hourly": {
-        "keygen": "StorageHourlyKeyGenerator",
-        "keygenArgs": {
-          "source": "/poseidon/stor/manatee_backups"
-        },
-        "linkPath": "/poseidon/stor/usage/storage/latest-hourly",
-        "job": {
-          "name": "metering-storage-hourly-$year-$month-$dayT$hour",
-          "phases": [
-            {
-              "type": "map",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/storage-map",
-                "/poseidon/stor/usage/assets/lib/storage-map.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/storage-map"
-            },
-            {
-              "type": "reduce",
-              "memory": 2048,
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/storage-reduce1",
-                "/poseidon/stor/usage/assets/lib/storage-reduce1.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce1",
-              "count": 1
-            },
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
-            },
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/storage-reduce3",
-                "/poseidon/stor/usage/assets/lib/storage-reduce3.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce3",
-              "count": 1
-            },
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/deliver-usage",
-                "/poseidon/stor/usage/assets/etc/lookup.json",
-                "/poseidon/stor/usage/assets/lib/deliver-usage.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
-              "count": 1
-            }
-          ]
-        },
-        "env": {
-          "NAMESPACES": "stor public jobs reports",
-          "ZCAT": "gzcat",
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/storage/$year/$month/$day/$hour/h$hour.json",
-          "USER_DEST": "/reports/usage/storage/$year/$month/$day/$hour/h$hour.json"
-        }
+      "keygen": "StorageHourlyKeyGenerator",
+      "keygenArgs": {
+        "source": "/poseidon/stor/manatee_backups"
       },
-
-
-      "daily": {
-        "keygen": "FindKeyGenerator",
-        "keygenArgs": {
-          "source": "/poseidon/stor/usage/storage/$year/$month/$day",
-          "regex": "h[0-9][0-9]"
-        },
-        "linkPath": "/poseidon/stor/usage/storage/latest-daily",
-        "job": {
-          "name": "metering-storage-daily-$year-$month-$day",
-          "phases": [
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
-            }
-          ]
-        },
-        "env": {
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/storage/$year/$month/$day/d$day.json"
-        }
+      "linkPath": "/poseidon/stor/usage/storage/latest-hourly",
+      "job": {
+        "name": "metering-storage-hourly-$year-$month-$dayT$hour",
+        "phases": [
+          {
+            "type": "map",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/storage-map",
+              "/poseidon/stor/usage/assets/lib/storage-map.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/storage-map"
+          },
+          {
+            "type": "reduce",
+            "memory": 2048,
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/storage-reduce1",
+              "/poseidon/stor/usage/assets/lib/storage-reduce1.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce1",
+            "count": 10
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/sum-columns",
+              "/poseidon/stor/usage/assets/lib/sum-columns.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
+            "count": 10
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/storage-reduce3",
+              "/poseidon/stor/usage/assets/lib/storage-reduce3.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce3",
+            "count": 10
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/deliver-usage",
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
+            "count": 1
+          }
+        ]
       },
+      "env": {
+        "NAMESPACES": "stor public jobs reports",
+        "ZCAT": "gzcat",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "DEST": "/poseidon/stor/usage/storage/$year/$month/$day/$hour/h$hour.json",
+        "USER_DEST": "/reports/usage/storage/$year/$month/$day/$hour/h$hour.json"
+      }
+    },
 
 
-      "monthly": {
-        "keygen": "FindKeyGenerator",
-        "keygenArgs": {
-          "source": "/poseidon/stor/usage/storage/$year/$month",
-          "regex": "d[0-9][0-9]"
-        },
-        "linkPath": "/poseidon/stor/usage/storage/latest-monthly",
-        "job": {
-          "name": "metering-storage-monthly-$year-$month",
-          "phases": [
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
-            }
-          ]
-        },
-        "env": {
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/storage/$year/$month/m$month.json"
-        }
+    "request": {
+      "keygen": "FindKeyGenerator",
+      "keygenArgs": {
+        "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
+      },
+      "linkPath": "/poseidon/stor/usage/request/latest-hourly",
+      "job": {
+        "name": "metering-request-hourly-$year-$month-$dayT$hour",
+        "phases": [
+          {
+            "type": "map",
+            "assets": [
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/request-map",
+              "/poseidon/stor/usage/assets/lib/deliver-access.js",
+              "/poseidon/stor/usage/assets/lib/request-map.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/request-map"
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/sum-columns",
+              "/poseidon/stor/usage/assets/lib/sum-columns.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
+            "count": 10
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/deliver-usage",
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
+            "count": 1
+          }
+        ]
+      },
+      "env": {
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "DEST": "/poseidon/stor/usage/request/$year/$month/$day/$hour/h$hour.json",
+        "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
+        "USER_DEST": "/reports/usage/request/$year/$month/$day/$hour/h$hour.json"
+      }
+    },
+
+
+    "compute": {
+      "keygen": "FindKeyGenerator",
+      "keygenArgs": {
+        "source": "/poseidon/stor/logs/marlin-agent/$year/$month/$day/$hour"
+      },
+      "linkPath": "/poseidon/stor/usage/compute/latest-hourly",
+      "job": {
+        "name": "metering-compute-hourly-$year-$month-$dayT$hour",
+        "phases": [
+          {
+            "type": "map",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/compute-map",
+              "/poseidon/stor/usage/assets/lib/compute-map.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/compute-map"
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/compute-reduce",
+              "/poseidon/stor/usage/assets/lib/compute-reduce.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/compute-reduce",
+            "count": 10
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/bin/deliver-usage",
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
+            "count": 1
+          }
+        ]
+      },
+      "env": {
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "DEST": "/poseidon/stor/usage/compute/$year/$month/$day/$hour/h$hour.json",
+        "USER_DEST": "/reports/usage/compute/$year/$month/$day/$hour/h$hour.json"
       }
     },
 
@@ -157,7 +198,7 @@
               "/poseidon/stor/usage/assets/bin/deliver-access-reduce"
             ],
             "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-access-reduce",
-            "count": 20
+            "count": 10
           }
         ]
       },
@@ -168,36 +209,39 @@
     },
 
 
-    "request": {
-      "hourly": {
+    "summarize": {
+      "daily": {
         "keygen": "FindKeyGenerator",
         "keygenArgs": {
-          "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
+          "source": [
+            "/poseidon/stor/usage/storage/$year/$month/$day",
+            "/poseidon/stor/usage/request/$year/$month/$day",
+            "/poseidon/stor/usage/compute/$year/$month/$day"
+          ],
+          "regex": "h[0-9[0-9].json"
         },
-        "linkPath": "/poseidon/stor/usage/request/latest-hourly",
         "job": {
-          "name": "metering-request-hourly-$year-$month-$dayT$hour",
+          "name": "metering-summarize-daily-$year-$month-$dayT$hour",
           "phases": [
             {
               "type": "map",
               "assets": [
-                "/poseidon/stor/usage/assets/etc/lookup.json",
                 "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/request-map",
-                "/poseidon/stor/usage/assets/lib/deliver-access.js",
-                "/poseidon/stor/usage/assets/lib/request-map.js"
+                "/poseidon/stor/usage/assets/lib/summarize-map.js",
+                "/poseidon/stor/usage/assets/bin/summarize-map"
               ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/request-map"
+              "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-map"
             },
             {
               "type": "reduce",
               "assets": [
                 "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
+                "/poseidon/stor/usage/assets/lib/sum-columns.js",
+                "/poseidon/stor/usage/assets/lib/summarize-reduce.js",
+                "/poseidon/stor/usage/assets/bin/summarize-reduce"
               ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
+              "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-reduce",
+              "count": 10
             },
             {
               "type": "reduce",
@@ -207,186 +251,19 @@
                 "/poseidon/stor/usage/assets/etc/lookup.json",
                 "/poseidon/stor/usage/assets/lib/deliver-usage.js"
               ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
-              "count": 1
+              "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage"
             }
           ]
         },
         "env": {
           "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/request/$year/$month/$day/$hour/h$hour.json",
-          "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
-          "USER_DEST": "/reports/usage/request/$year/$month/$day/$hour/h$hour.json"
-        }
-      },
-
-
-      "daily": {
-        "keygen": "FindKeyGenerator",
-        "keygenArgs": {
-          "source": "/poseidon/stor/usage/request/$year/$month/$day",
-          "regex": "h[0-9][0-9]"
-        },
-        "linkPath": "/poseidon/stor/usage/request/latest-daily",
-        "job": {
-          "name": "metering-request-daily-$year-$month-$day",
-          "phases": [
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
-            }
-          ]
-        },
-        "env": {
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/request/$year/$month/$day/d$day.json"
-        }
-      },
-
-
-      "monthly": {
-        "keygen": "FindKeyGenerator",
-        "keygenArgs": {
-          "source": "/poseidon/stor/usage/request/$year/$month",
-          "regex": "d[0-9][0-9]"
-        },
-        "linkPath": "/poseidon/stor/usage/request/latest-monthly",
-        "job": {
-          "name": "metering-request-monthly-$year-$month",
-          "phases": [
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
-            }
-          ]
-        },
-        "env": {
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/request/$year/$month/m$month.json"
+          "DEST": "/poseidon/stor/usage/summary/$year/$month/$day/d$day.json",
+          "USER_DEST": "/reports/usage/summary/$year/$month/$day/d$day.json",
+          "DATE": "$year-$month-$dayT00:00:00.000Z"
         }
       }
-    },
-
-
-    "compute": {
-      "hourly": {
-        "keygen": "FindKeyGenerator",
-        "keygenArgs": {
-          "source": "/poseidon/stor/logs/marlin-agent/$year/$month/$day/$hour"
-        },
-        "linkPath": "/poseidon/stor/usage/compute/latest-hourly",
-        "job": {
-          "name": "metering-compute-hourly-$year-$month-$dayT$hour",
-          "phases": [
-            {
-              "type": "map",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/compute-map",
-                "/poseidon/stor/usage/assets/lib/compute-map.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/compute-map"
-            },
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
-            },
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/deliver-usage",
-                "/poseidon/stor/usage/assets/etc/lookup.json",
-                "/poseidon/stor/usage/assets/lib/deliver-usage.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
-              "count": 1
-            }
-          ]
-        },
-        "env": {
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/compute/$year/$month/$day/$hour/h$hour.json",
-          "USER_DEST": "/reports/usage/compute/$year/$month/$day/$hour/h$hour.json"
-        }
-      },
-
-
-      "daily": {
-        "keygen": "FindKeyGenerator",
-        "keygenArgs": {
-          "source": "/poseidon/stor/usage/compute/$year/$month/$day",
-          "regex": "h[0-9][0-9]"
-        },
-        "linkPath": "/poseidon/stor/usage/compute/latest-daily",
-        "job": {
-          "name": "metering-compute-daily-$year-$month-$day",
-          "phases": [
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
-            }
-          ]
-        },
-        "env": {
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/compute/$year/$month/$day/d$day.json"
-        }
-      },
-
-
-      "monthly": {
-        "keygen": "FindKeyGenerator",
-        "keygenArgs": {
-          "source": "/poseidon/stor/usage/compute/$year/$month",
-          "regex": "d[0-9][0-9]"
-        },
-        "linkPath": "/poseidon/stor/usage/compute/latest-monthly",
-        "job": {
-          "name": "metering-compute-monthly-$year-$month",
-          "phases": [
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/sum-columns",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
-              "count": 1
-            }
-          ]
-        }
-      },
-        "env": {
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/compute/$year/$month/m$month.json"
-        }
     }
+
 
   }
 }

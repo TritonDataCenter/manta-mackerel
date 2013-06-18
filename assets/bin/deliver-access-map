@@ -6,5 +6,7 @@ set -o pipefail
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $dir/.. && tar -xf node_modules.tar
 
-bunyan -c "this.audit && this.req.url !== '/ping' && typeof(this.req.owner) !== 'undefined'" -o json-0 \
+bunyan -c "this.audit &&
+           this.req.url !== '/ping' &&
+           typeof(this.req.owner) !== 'undefined'" -o json-0 \
 | msplit -j -n $NUM_REDUCERS -f record.req.owner

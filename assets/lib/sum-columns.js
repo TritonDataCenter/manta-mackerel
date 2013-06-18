@@ -28,6 +28,7 @@ function copyProperties(from, to) {
                         } else if (from[k] instanceof Big) {
                                 to[k] = new Big(0);
                         } else if (typeof (from[k]) === 'object') {
+                                to[k] = to[k] || {};
                                 copyProperties(from[k], to[k]);
                         } else if (typeof (from[k]) === 'number') {
                                 to[k] = 0;

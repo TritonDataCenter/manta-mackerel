@@ -1,3 +1,4 @@
+// Copyright (c) 2013, Joyent, Inc. All rights reserved.
 var mod_fs = require('fs');
 var mod_child_process = require('child_process');
 var mod_path = require('path');
@@ -102,29 +103,31 @@ var RECORD4 = {
 
 var EXPECTED = {
         "owner": 'fred',
-        "stor": {
-              "directories": 5,
-              "keys": 6,
-              "objects": 6,
-              "bytes": "123"
-        },
-        "public": {
-              "directories": 3142,
-              "keys": 138957,
-              "objects": 139807,
-              "bytes": "123408435"
-        },
-        "reports": {
-              "directories": 0,
-              "keys": 0,
-              "objects": 0,
-              "bytes": "0"
-        },
-        "jobs": {
-              "directories": 58457,
-              "keys": 39584698,
-              "objects": 345789427646,
-              "bytes": "215474598758118347783434"
+        "storage": {
+                "stor": {
+                      "directories": 5,
+                      "keys": 6,
+                      "objects": 6,
+                      "bytes": "123"
+                },
+                "public": {
+                      "directories": 3142,
+                      "keys": 138957,
+                      "objects": 139807,
+                      "bytes": "123408435"
+                },
+                "reports": {
+                      "directories": 0,
+                      "keys": 0,
+                      "objects": 0,
+                      "bytes": "0"
+                },
+                "jobs": {
+                      "directories": 58457,
+                      "keys": 39584698,
+                      "objects": 345789427646,
+                      "bytes": "215474598758118347783434"
+                }
         }
 };
 

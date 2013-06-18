@@ -1,30 +1,6 @@
 #!/usr/bin/env node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-/*
- *    {
- *        "owner": "59159a6e-51b5-4e27-bca4-6cd9c8626eb2",
- *        "time": {
- *            "268435456": [
- *                1316,
- *                463384821
- *            ],
- *            "536870912": [
- *                60,
- *                110549076
- *            ],
- *            "2147483648": [
- *                6,
- *                237815959
- *            ]
- *        },
- *        "bandwidth": {
- *            "in": 223248,
- *            "out": 17610
- *        }
- *    }
- */
-
 var mod_marlin = require('marlin/lib/meter.js');
 var Big = require('big.js');
 
@@ -53,20 +29,23 @@ function stringify(key, value) {
                 value.in = value.in.toString();
                 value.out = value.out.toString();
         }
+        if (key === 'seconds') {
+                value = Math.max(roundhrtime(value), 1);
+        }
         return (value);
 }
-
 
 function main() {
         var aggr = {};
         var reader = new mod_marlin.MarlinMeterReader({
                 summaryType: 'deltas',
-                aggrKey: [ 'owner', 'taskid'],
+                aggrKey: [ 'owner', 'jobid', 'taskid', 'phase'],
                 resources: [
                         'time',
                         'vnic0.rbytes64',
                         'vnic0.obytes64',
-                        'memory.physcap'
+                        'memory.physcap',
+                        'config_disk'
                 ],
                 stream: process.stdin
         });
@@ -77,36 +56,45 @@ function main() {
                 var report = reader.reportFlattened();
                 for (var i = 0; i < report.length; i++) {
                         var owner = report[i][0];
-                        var res = report[i][2];
+                        var jobid = report[i][1];
+
+                        var phase = report[i][3];
+                        var res = report[i][4];
+
+                        var seconds = res['time'];
+                        var bwin = res['vnic0.rbytes64'];
+                        var bwout = res['vnic0.obytes64'];
+                        var memory = res['memory.physcap'] / 1048576; // to MiB
+                        var disk = res['config_disk'];
 
                         aggr[owner] = aggr[owner] || {
                                 owner: owner,
-                                time: {},
+                                jobs: {}
+                        };
+
+                        aggr[owner].jobs[jobid] = aggr[owner].jobs[jobid] || {};
+                        var phases = aggr[owner].jobs[jobid];
+                        phases[phase] = phases[phase] || {
+                                memory: memory,
+                                disk: disk,
+                                seconds: [0, 0],
+                                ntasks: 0,
                                 bandwidth: {
                                         in: new Big(0),
                                         out: new Big(0)
                                 }
                         };
 
-                        var stats = aggr[owner];
-
-                        stats.time[res['memory.physcap']] =
-                                stats.time[res['memory.physcap']] || [0, 0];
-
-                        hrtimePlusEquals(
-                                stats.time[res['memory.physcap']],
-                                res.time);
-
-                        stats.bandwidth.in =
-                                stats.bandwidth.in.plus(res['vnic0.rbytes64']);
-                        stats.bandwidth.out =
-                                stats.bandwidth.out.plus(res['vnic0.obytes64']);
+                        hrtimePlusEquals(phases[phase]['seconds'], seconds);
+                        phases[phase]['ntasks']++;
+                        phases[phase].bandwidth['in'] =
+                                phases[phase].bandwidth['in'].plus(bwin);
+                        phases[phase].bandwidth['out'] =
+                                phases[phase].bandwidth['out'].plus(bwout);
                 }
-                Object.keys(aggr).forEach(function (k) {
-                        Object.keys(aggr[k].time).forEach(function (j) {
-                                aggr[k].time[j] = roundhrtime(aggr[k].time[j]);
-                        });
-                        console.log(JSON.stringify(aggr[k], stringify));
+
+                Object.keys(aggr).forEach(function (o) {
+                        console.log(JSON.stringify(aggr[o], stringify));
                 });
         });
 }

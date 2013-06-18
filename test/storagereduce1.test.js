@@ -1,3 +1,4 @@
+// Copyright (c) 2013, Joyent, Inc. All rights reserved.
 var mod_fs = require('fs');
 var mod_child_process = require('child_process');
 var mod_path = require('path');

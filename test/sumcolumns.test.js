@@ -1,3 +1,4 @@
+// Copyright (c) 2013, Joyent, Inc. All rights reserved.
 var mod_fs = require('fs');
 var mod_child_process = require('child_process');
 var mod_path = require('path');
@@ -202,6 +203,70 @@ test('aggregation key', function (t) {
                         t.deepEqual(actual1, expected2);
                         t.deepEqual(actual2, expected1);
                 }
+                t.done();
+        });
+});
+
+test('add fields', function (t) {
+        var record1 = {
+                "owner": "a792e2b4-ccde-4b9f-99ed-8e824643c07e",
+                "computeGBSeconds": 96,
+                "bandwidth":  {
+                        "in": "98223",
+                        "out": "19446"
+                }
+        };
+
+        var record2 = {
+                "owner": "a792e2b4-ccde-4b9f-99ed-8e824643c07e",
+                "byteHrs": "230286312"
+        };
+
+        var record3 = {
+                "owner": "a792e2b4-ccde-4b9f-99ed-8e824643c07e",
+                "requests": {
+                        "DELETE": 1,
+                        "GET": 2,
+                        "HEAD": 3,
+                        "LIST": 4,
+                        "OPTIONS": 5,
+                        "POST": 6,
+                        "PUT": 7
+                },
+                "bandwidth": {
+                        "in": "6880413",
+                        "out": "23"
+                }
+        };
+
+        var expected = {
+                "owner": "a792e2b4-ccde-4b9f-99ed-8e824643c07e",
+                "requests": {
+                        "DELETE": 1,
+                        "GET": 2,
+                        "HEAD": 3,
+                        "LIST": 4,
+                        "OPTIONS": 5,
+                        "POST": 6,
+                        "PUT": 7
+                },
+                "bandwidth": {
+                        "in": "6978636",
+                        "out": "19469"
+                },
+                "computeGBSeconds": 96,
+                "byteHrs": "230286312"
+        };
+
+        var input = JSON.stringify(record1) + '\n' +
+                    JSON.stringify(record2) + '\n' +
+                    JSON.stringify(record3);
+
+        runTest({
+                stdin: input
+        }, function (result) {
+                var actual = JSON.parse(result.stdout);
+                t.deepEqual(actual, expected);
                 t.done();
         });
 });

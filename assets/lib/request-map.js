@@ -126,27 +126,29 @@ function count(record, aggr) {
         aggr[owner] = aggr[owner] || {
                 owner: owner,
                 requests: {
-                        DELETE: 0,
-                        GET: 0,
-                        HEAD: 0,
-                        LIST: 0,
-                        OPTIONS: 0,
-                        POST: 0,
-                        PUT: 0
-                },
-                bandwidth: {
-                        in: new Big(0),
-                        out: new Big(0),
-                        headerIn: new Big(0),
-                        headerOut: new Big(0)
+                        type: {
+                                DELETE: 0,
+                                GET: 0,
+                                HEAD: 0,
+                                LIST: 0,
+                                OPTIONS: 0,
+                                POST: 0,
+                                PUT: 0
+                        },
+                        bandwidth: {
+                                in: new Big(0),
+                                out: new Big(0),
+                                headerIn: new Big(0),
+                                headerOut: new Big(0)
+                        }
                 }
         };
 
         if (operation) {
-                aggr[owner].requests[operation]++;
+                aggr[owner].requests.type[operation]++;
         }
 
-        var bw = aggr[owner].bandwidth;
+        var bw = aggr[owner].requests.bandwidth;
         bw.headerIn = bw.headerIn.plus(reqHeaderLength);
         bw.headerOut = bw.headerOut.plus(resHeaderLength);
 

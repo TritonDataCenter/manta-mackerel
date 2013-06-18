@@ -1,0 +1,28 @@
+{
+  "billingTable": [
+    {
+        "disk": 32,
+        "memory": 1024
+    },
+    {
+        "disk": 64,
+        "memory": 2048
+    },
+    {
+        "disk": 128,
+        "memory": 4096
+    },
+    {
+        "disk": 256,
+        "memory": 8192
+    },
+    {
+        "disk": 512,
+        "memory": 16384
+    },
+    {
+        "disk": 1024,
+        "memory": 32768
+    }
+  ]
+}

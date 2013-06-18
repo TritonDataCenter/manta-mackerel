@@ -93,7 +93,7 @@ function main() {
         });
 
         var queue = mod_libmanta.createQueue({
-                limit: 50,
+                limit: 10,
                 worker: writeToUserDir
         });
 

@@ -94,15 +94,18 @@ function main() {
                 }
                 delete record.owner;
                 delete record.namespace;
-                aggr[owner] = aggr[owner] || {owner: owner};
-                aggr[owner][namespace] = record;
+                aggr[owner] = aggr[owner] || {
+                        owner: owner,
+                        storage: {}
+                };
+                aggr[owner].storage[namespace] = record;
         });
 
         carry.once('end', function onEnd(line) {
                 Object.keys(aggr).forEach(function (o) {
                         for (var n = 0; n < namespaces.length; ++n) {
-                                aggr[o][namespaces[n]] =
-                                        aggr[o][namespaces[n]] ||
+                                aggr[o].storage[namespaces[n]] =
+                                        aggr[o].storage[namespaces[n]] ||
                                         emptyUsage(namespaces[n]);
                         }
                         console.log(JSON.stringify(aggr[o]));

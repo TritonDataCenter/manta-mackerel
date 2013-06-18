@@ -1,3 +1,5 @@
+// Copyright (c) 2013, Joyent, Inc. All rights reserved.
+
 var mod_fs = require('fs');
 var mod_child_process = require('child_process');
 var mod_path = require('path');
@@ -72,21 +74,23 @@ var RECORD = {
 var EXPECTED = {
         'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0',
         'requests': {
-                'PUT': 1,
-                'LIST': 0,
-                'GET': 0,
-                'DELETE': 0,
-                'POST': 0,
-                'LIST': 0,
-                'HEAD': 0,
-                'OPTIONS': 0
+                'type': {
+                        'PUT': 1,
+                        'LIST': 0,
+                        'GET': 0,
+                        'DELETE': 0,
+                        'POST': 0,
+                        'LIST': 0,
+                        'HEAD': 0,
+                        'OPTIONS': 0
+                },
+                'bandwidth': {
+                        'in': '0',
+                        'out': '0',
+                        'headerIn': '806',
+                        'headerOut': '200'
+                }
         },
-        'bandwidth': {
-                'in': '0',
-                'out': '0',
-                'headerIn': '806',
-                'headerOut': '200'
-        }
 };
 
 function runTest(opts, cb) {
@@ -153,9 +157,9 @@ test('404', function (t) {
         var record = clone(RECORD);
         var expected = clone(EXPECTED);
         record.res.statusCode = 404;
-        expected.requests['PUT']++;
-        expected.bandwidth.headerIn *= 2;
-        expected.bandwidth.headerOut *= 2;
+        expected.requests.type['PUT']++;
+        expected.requests.bandwidth.headerIn *= 2;
+        expected.requests.bandwidth.headerOut *= 2;
         runTest({
                 stdin: JSON.stringify(record) + '\n' + JSON.stringify(RECORD)
         }, function (result) {
