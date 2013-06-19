@@ -16,6 +16,12 @@ var files = {}; // keeps track of all the files we create
 var ERROR = false;
 var tmpdir = '/var/tmp';
 
+var LOG = require('bunyan').createLogger({
+        name: 'deliver-access.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
+
 /*
  * Allow all headers, then auth and x-forwarded-for headers will be removed
  * after applying this whitelist. The IP in the x-forwarded-for header will
@@ -62,11 +68,13 @@ function sanitize(record) {
                 delete output.req['url'];
                 delete output.req.headers['authorization'];
         }
+        LOG.debug({record: record, output: output}, 'record sanitized');
         return (output);
 }
 
 
 function write(opts, cb) {
+        LOG.debug(opts, 'write start');
         var owner = opts.owner;
         var record = opts.record;
         var path = tmpdir + '/' + owner;
@@ -96,12 +104,14 @@ function write(opts, cb) {
 
 function saveAll(cb) {
         function save(owner, callback) {
+                LOG.debug(owner, 'save start');
                 var login = lookup[owner];
                 var key = '/' + login + process.env['ACCESS_DEST'];
                 var linkPath = '/' + login + process.env['ACCESS_LINK'];
                 var headers = {
                         'content-type': process.env['HEADER_CONTENT_TYPE']
                 };
+                var filename = tmpdir + '/' + owner;
 
                 if (!login) {
                         callback(new Error('No login found for UUID ' + owner));
@@ -110,89 +120,102 @@ function saveAll(cb) {
 
                 mantaFileSave({
                         client: client,
-                        filename: tmpdir + '/' + owner,
+                        filename: filename,
                         key: key,
                         headers: headers,
-                        log: log,
+                        log: LOG,
                         iostream: 'stderr'
                 }, function saveCB(err) {
                         if (err) {
                                 callback(err);
                                 return;
                         }
+
+                        LOG.info({
+                                filename: filename,
+                                key: key,
+                                headers: headers
+                        }, 'upload successful');
+
                         if (!process.env['ACCESS_LINK']) {
                                 callback();
                                 return;
                         }
-                        client.ln(key, linkPath, function (err3) {
-                                if (err3) {
-                                        console.warn('Error ln ' + linkPath);
-                                        console.warn(err3);
-                                        ERROR = true;
-                                        callback();
+
+                        LOG.debug({
+                                key: key,
+                                linkPath: linkPath
+                        }, 'creating link');
+
+                        client.ln(key, linkPath, function (err2) {
+                                if (err2) {
+                                        LOG.warn(err2, 'error ln ' + linkPath);
                                         return;
                                 }
+
+                                LOG.info({
+                                        key: key,
+                                        linkPath: linkPath
+                                }, 'link created');
+
                                 callback();
                                 return;
                         });
                 });
         }
 
-        var log = new mod_bunyan({
-                name: 'deliver-audit',
-                level: 'fatal',
-                stream: 'stderr'
-        });
-
         var client = mod_manta.createClient({
                 sign: null,
                 url: process.env['MANTA_URL']
         });
 
-        var queue = mod_libmanta.createQueue({
+        var uploadQueue = mod_libmanta.createQueue({
                 worker: save,
                 limit: 25
         });
 
-        queue.on('error', function (err) {
-                console.warn('error saving: ' + err.message);
+        uploadQueue.on('error', function (err) {
+                LOG.error(err, 'error saving');
                 ERROR = true;
         });
 
-        queue.once('end', function () {
+        uploadQueue.once('end', function () {
                 client.close();
                 cb();
         });
 
+        LOG.info(Object.keys(files), 'files to upload');
         Object.keys(files).forEach(function (k) {
-                queue.push(k);
+                uploadQueue.push(k);
         });
-        queue.close();
+        uploadQueue.close();
 }
 
 
 function main() {
         var carry = mod_carrier.carry(process.openStdin());
+        var lineCount = 0;
 
-        var queue = mod_libmanta.createQueue({
+        var writeQueue = mod_libmanta.createQueue({
                 worker: write,
                 limit: 15
         });
 
-        queue.on('error', function (err) {
-                console.warn('write error: ' + err.message);
+        writeQueue.on('error', function (err) {
+                LOG.error(err, 'write error');
         });
 
-        queue.once('end', function () {
+        writeQueue.once('end', function () {
                 saveAll(function (err) {
                         if (err) {
-                                console.warn('saveAll error:' + err.message);
-                                process.exit(1);
+                                LOG.error(err, 'Error saving access logs');
+                                ERROR = true;
                         }
                 });
         });
 
         function onLine(line) {
+                lineCount++;
                 var record;
                 //console.log(line); // re-emit each line for aggregation
 
@@ -206,6 +229,8 @@ function main() {
                 try {
                         record = JSON.parse(line);
                 } catch (e) {
+                        LOG.error(e, line, 'Error on line ' + lineCount);
+                        ERROR = true;
                         return;
                 }
 
@@ -215,14 +240,20 @@ function main() {
 
                 var output = sanitize(record);
 
-                queue.push({
+                writeQueue.push({
                         owner: record.req.owner,
                         record: output
                 });
         }
 
-        carry.once('end', queue.close.bind(queue));
+        carry.once('end', writeQueue.close.bind(writeQueue));
         carry.on('line', onLine);
 }
 
-main();
+if (require.main === module) {
+        process.on('exit', function onExit() {
+                process.exit(ERROR);
+        });
+
+        main();
+}

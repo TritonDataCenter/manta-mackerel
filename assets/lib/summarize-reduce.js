@@ -1,9 +1,14 @@
-#!/usr/bin/env node
+#!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 var mod_carrier = require('carrier');
 var Big = require('big.js');
 var ERROR = false;
+var LOG = require('bunyan').createLogger({
+        name: 'summarize-reduce.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
 
 function ceil(x) {
         return (x.round(0, 0).equal(x) ? x : x.plus(1).round(0, 0));
@@ -29,7 +34,7 @@ function main() {
                                 return (value);
                         });
                 } catch (e) {
-                        console.warn('Error on line ' + lineCount + ': ' + e);
+                        LOG.error(e, 'Error on line ' + lineCount);
                         ERROR = true;
                         return;
                 }

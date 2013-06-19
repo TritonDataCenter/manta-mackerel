@@ -67,6 +67,13 @@
 
 /* END JSSTYLED */
 var mod_carrier = require('carrier');
+var ERROR = false;
+
+var LOG = require('bunyan').createLogger({
+        name: 'storage-reduce3.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
 
 function emptyUsage(namespace) {
         return ({
@@ -89,7 +96,8 @@ function main() {
                         var owner = record.owner;
                         var namespace = record.namespace;
                 } catch (e) {
-                        console.warn('Error on line ' + lineCount + ':' + e);
+                        LOG.error(e, 'Error on line ' + lineCount);
+                        ERROR = true;
                         return;
                 }
                 delete record.owner;
@@ -114,5 +122,9 @@ function main() {
 }
 
 if (require.main === module) {
+        process.on('exit', function onExit() {
+                process.exit(ERROR);
+        });
+
         main();
 }

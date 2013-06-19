@@ -1,9 +1,15 @@
-#!/usr/bin/env node
+#!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 var mod_carrier = require('carrier');
 var Big = require('big.js');
 var lineCount = 0;
+var ERROR = false;
+var LOG = require('bunyan').createLogger({
+        name: 'sum-columns.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
 
 function getAggKey(obj) {
         var key = '';
@@ -77,7 +83,8 @@ function onLine(aggr, line) {
                         return (value);
                 });
         } catch (e) {
-                console.warn('Error on line ' + lineCount + ': ' + e.message);
+                LOG.error(e, 'Error on line ' + lineCount);
+                ERROR = true;
                 return;
         }
 
@@ -115,5 +122,9 @@ function main() {
 
 
 if (require.main === module) {
+        process.on('exit', function onExit() {
+                process.exit(ERROR);
+        });
+
         main();
 }

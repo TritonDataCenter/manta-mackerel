@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 /* BEGIN JSSTYLED */
@@ -99,6 +99,13 @@
 
 var mod_carrier = require('carrier');
 var Big = require('big.js');
+var ERROR = false;
+
+var LOG = require('bunyan').createLogger({
+        name: 'request-map.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
 
 function shouldProcess(record) {
         return (record.audit &&
@@ -176,7 +183,9 @@ function printResults(aggr) {
 function main() {
         var carry = mod_carrier.carry(process.openStdin());
         var aggr = {};
+        var lineCount = 0;
         carry.on('line', function onLine(line) {
+                lineCount++;
                 var record;
 
                 // since bunyan logs may contain lines such as
@@ -189,6 +198,8 @@ function main() {
                 try {
                         record = JSON.parse(line);
                 } catch (e) {
+                        LOG.error(e, 'Error on line ' + lineCount);
+                        ERROR = true;
                         return;
                 }
 

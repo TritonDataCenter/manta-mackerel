@@ -21,7 +21,14 @@ function filter(key, value) {
         return (value);
 }
 
+var LOG = require('bunyan').createLogger({
+        name: 'deliver-usage.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
+
 function writeToUserDir(opts, cb) {
+        LOG.debug(opts, 'writeToUserDir start');
         var record = opts.record;
         var login = opts.login;
         var client = opts.client;
@@ -30,15 +37,18 @@ function writeToUserDir(opts, cb) {
         var line = JSON.stringify(record, filter) + '\n';
         var size = Buffer.byteLength(line);
         var mstream = new mod_MemoryStream();
+        var dir = mod_path.dirname(path);
 
-        client.mkdirp(mod_path.dirname(path), function (err) {
+        LOG.debug(dir, 'creating directory');
+        client.mkdirp(dir, function (err) {
                 if (err) {
-                        console.warn('Error mkdirp ' + mod_path.dirname(path));
-                        console.warn(err);
+                        LOG.error(err, 'error mkdirp ' + dir);
                         ERROR = true;
-                        cb();
+                        cb(err);
                         return;
                 }
+
+                LOG.info(dir, 'directory created');
 
                 var options = {
                         size: size,
@@ -46,26 +56,34 @@ function writeToUserDir(opts, cb) {
                         'x-marlin-stream': 'stderr'
                 };
 
+                LOG.debug({path: path, options: options}, 'putting ' + path);
                 client.put(path, mstream, options, function (err2) {
                         if (err2) {
-                                console.warn('Error put ' + path);
-                                console.warn(err2);
+                                LOG.error(err2, 'error put ' + path);
                                 ERROR = true;
-                                cb();
+                                cb(err2);
                                 return;
                         }
+                        LOG.info(path, 'put successful');
                         if (!process.env['USER_LINK']) {
                                 cb();
                                 return;
                         }
+                        LOG.debug({
+                                path: path,
+                                linkPath: linkPath
+                        }, 'creating link');
                         client.ln(path, linkPath, function (err3) {
                                 if (err3) {
-                                        console.warn('Error ln ' + linkPath);
-                                        console.warn(err3);
+                                        LOG.warn(err3, 'error ln ' + linkPath);
                                         ERROR = true;
-                                        cb();
+                                        cb(err3);
                                         return;
                                 }
+                                LOG.info({
+                                        path: path,
+                                        linkPath: linkPath
+                                }, 'link created');
                                 cb();
                                 return;
                         });
@@ -102,7 +120,8 @@ function main() {
                 var login = lookup[record.owner];
 
                 if (!login) {
-                        console.warn('No login found for UUID ' + record.owner);
+                        LOG.error(record,
+                                'No login found for UUID ' + record.owner);
                         ERROR = true;
                         return;
                 }

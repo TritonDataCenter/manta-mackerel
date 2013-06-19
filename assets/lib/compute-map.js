@@ -1,8 +1,14 @@
-#!/usr/bin/env node
+#!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 var mod_marlin = require('marlin/lib/meter.js');
 var Big = require('big.js');
+
+var LOG = require('bunyan').createLogger({
+        name: 'compute-map.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
 
 function hrtimePlusEquals(oldvalue, newvalue) {
         oldvalue[0] += newvalue[0];
@@ -50,9 +56,12 @@ function main() {
                 stream: process.stdin
         });
 
-        reader.on('warn', console.warn.bind(null));
+        reader.on('warn', function (err) {
+                LOG.warn(err, 'marlin meter reader');
+        });
 
         reader.once('end', function onEnd() {
+                LOG.info('reader end');
                 var report = reader.reportFlattened();
                 for (var i = 0; i < report.length; i++) {
                         var owner = report[i][0];

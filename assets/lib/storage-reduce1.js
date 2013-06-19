@@ -89,6 +89,12 @@ var mod_carrier = require('carrier');
 var Big = require('big.js');
 var ERROR = false;
 
+var LOG = require('bunyan').createLogger({
+        name: 'storage-reduce1.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
+
 var NAMESPACES = (process.env.NAMESPACES).split(' ');
 
 function count(record, aggr) {
@@ -98,7 +104,8 @@ function count(record, aggr) {
         try {
                 namespace = record.key.split('/')[2]; // /:uuid/:namespace/...
         } catch (e) {
-                console.warn(e);
+                LOG.error(e, 'error getting namespace: ' + record.key);
+                ERROR = true;
                 return;
         }
 
@@ -133,7 +140,8 @@ function count(record, aggr) {
                 index[objectId][namespace]++;
                 index[objectId]._size = size;
         } else {
-                console.warn('Unrecognized object type: ' + record);
+                LOG.error(record, 'unrecognized object type: ' + type);
+                ERROR = true;
         }
 }
 
@@ -190,13 +198,15 @@ function main() {
                 try {
                         var record = JSON.parse(line);
                 } catch (e) {
-                        console.warn('Error on line ' + lineCount + ': ' + e);
+                        LOG.error(e, 'Error on line ' + lineCount);
                         ERROR = true;
                         return;
                 }
 
                 if (!record.owner || !record.type) {
-                        console.warn('Missing owner or type field: ' + line);
+                        LOG.error(line, 'Missing owner or type field on line ' +
+                                lineCount);
+                        ERROR = true;
                         return;
                 }
 
@@ -209,7 +219,6 @@ function main() {
 }
 
 if (require.main === module) {
-
         process.on('exit', function onExit() {
                 process.exit(ERROR);
         });

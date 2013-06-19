@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
 /* BEGIN JSSTYLED */
@@ -71,6 +71,12 @@
 var mod_carrier = require('carrier');
 var ERROR = false;
 
+var LOG = require('bunyan').createLogger({
+        name: 'storage-map.js',
+        stream: process.stderr,
+        level: process.env['LOG_LEVEL'] || 'info'
+});
+
 function validSchema(obj) {
         var fields =
                 ['key', 'owner', 'type'];
@@ -93,7 +99,7 @@ function main() {
                 try {
                         var record = JSON.parse(line);
                 } catch (e) {
-                        console.warn('Error on line ' + lineCount + ': ' + e);
+                        LOG.error(e, 'Error on line ' + lineCount);
                         ERROR = true;
                         return;
                 }
@@ -101,7 +107,7 @@ function main() {
                 if (!record.entry || !record.entry[index] ||
                         !validSchema(JSON.parse(record.entry[index]))) {
 
-                        console.warn('Unrecognized line: ' + line);
+                        LOG.error(line, 'unrecognized line ' + lineCount);
                         ERROR = true;
                         return;
                 }
@@ -114,7 +120,7 @@ function main() {
                 try {
                         index = JSON.parse(line).keys.indexOf('_value');
                 } catch (e) {
-                        console.warn('Error parsing schema ' + e);
+                        LOG.fatal(e, line, 'error parsing schema');
                         ERROR = true;
                         return;
                 }
