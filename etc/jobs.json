@@ -5,7 +5,7 @@
       "keygenArgs": {
         "source": "/poseidon/stor/manatee_backups"
       },
-      "linkPath": "/poseidon/stor/usage/storage/latest-hourly",
+      "linkPath": "/poseidon/stor/usage/storage/latest",
       "job": {
         "name": "metering-storage-hourly-$year-$month-$dayT$hour",
         "phases": [
@@ -78,7 +78,7 @@
       "keygenArgs": {
         "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
       },
-      "linkPath": "/poseidon/stor/usage/request/latest-hourly",
+      "linkPath": "/poseidon/stor/usage/request/latest",
       "job": {
         "name": "metering-request-hourly-$year-$month-$dayT$hour",
         "phases": [
@@ -131,7 +131,7 @@
       "keygenArgs": {
         "source": "/poseidon/stor/logs/marlin-agent/$year/$month/$day/$hour"
       },
-      "linkPath": "/poseidon/stor/usage/compute/latest-hourly",
+      "linkPath": "/poseidon/stor/usage/compute/latest",
       "job": {
         "name": "metering-compute-hourly-$year-$month-$dayT$hour",
         "phases": [
@@ -224,6 +224,7 @@
           ],
           "regex": "h[0-9[0-9]"
         },
+        "linkPath": "/poseidon/stor/usage/summary/latest",
         "job": {
           "name": "metering-summarize-daily-$year-$month-$dayT$hour",
           "phases": [
