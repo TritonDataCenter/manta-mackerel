@@ -33,10 +33,10 @@
             "type": "reduce",
             "assets": [
               "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/sum-columns",
+              "/poseidon/stor/usage/assets/bin/storage-reduce2",
               "/poseidon/stor/usage/assets/lib/sum-columns.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
+            "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce2",
             "count": 10
           },
           {
@@ -222,7 +222,7 @@
             "/poseidon/stor/usage/request/$year/$month/$day",
             "/poseidon/stor/usage/compute/$year/$month/$day"
           ],
-          "regex": "h[0-9[0-9].json"
+          "regex": "h[0-9[0-9]"
         },
         "job": {
           "name": "metering-summarize-daily-$year-$month-$dayT$hour",
@@ -232,6 +232,7 @@
               "assets": [
                 "/poseidon/stor/usage/assets/node_modules.tar",
                 "/poseidon/stor/usage/assets/lib/summarize-map.js",
+                "/poseidon/stor/usage/assets/etc/billingComputeTable.json",
                 "/poseidon/stor/usage/assets/bin/summarize-map"
               ],
               "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-map"

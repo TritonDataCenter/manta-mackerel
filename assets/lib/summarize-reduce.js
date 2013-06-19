@@ -11,7 +11,7 @@ var LOG = require('bunyan').createLogger({
 });
 
 function ceil(x) {
-        return (x.round(0, 0).equal(x) ? x : x.plus(1).round(0, 0));
+        return (x.round(0, 0).eq(x) ? x : x.plus(1).round(0, 0));
 }
 
 function main() {
