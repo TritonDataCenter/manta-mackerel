@@ -221,14 +221,14 @@ test('summarize compute', function (t) {
                 var expected = {
                         owner: COMPUTE.owner,
                         computeGBSeconds: "9",
-                        bandwidth: {
+                        computeBandwidth: {
                                 in: "66498",
                                 out: "3192",
                         }
                 };
                 t.deepEqual(actual, expected);
-                t.equal(typeof (actual.bandwidth['in']), 'string');
-                t.equal(typeof (actual.bandwidth['out']), 'string');
+                t.equal(typeof (actual.computeBandwidth['in']), 'string');
+                t.equal(typeof (actual.computeBandwidth['out']), 'string');
                 t.done();
         });
 });
@@ -245,14 +245,14 @@ test('compute billing table', function (t) {
                 var expected = {
                         owner: COMPUTE.owner,
                         computeGBSeconds: "25",
-                        bandwidth: {
+                        computeBandwidth: {
                                 in: "66498",
                                 out: "3192",
                         }
                 };
                 t.deepEqual(actual, expected);
-                t.equal(typeof (actual.bandwidth['in']), 'string');
-                t.equal(typeof (actual.bandwidth['out']), 'string');
+                t.equal(typeof (actual.computeBandwidth['in']), 'string');
+                t.equal(typeof (actual.computeBandwidth['out']), 'string');
                 t.done();
         });
 });

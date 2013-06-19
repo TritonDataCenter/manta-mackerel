@@ -67,7 +67,7 @@ function summarizeCompute(record) {
         return ({
                 owner: record.owner,
                 computeGBSeconds: gbSeconds,
-                bandwidth: {
+                computeBandwidth: {
                         in: bwin,
                         out: bwout
                 }

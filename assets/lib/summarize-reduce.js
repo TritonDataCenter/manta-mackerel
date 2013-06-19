@@ -10,6 +10,8 @@ var LOG = require('bunyan').createLogger({
         level: process.env['LOG_LEVEL'] || 'info'
 });
 
+var BPERGB = 1073741824;
+
 function ceil(x) {
         return (x.round(0, 0).eq(x) ? x : x.plus(1).round(0, 0));
 }
@@ -18,7 +20,7 @@ function main() {
         var carry = mod_carrier.carry(process.openStdin());
         var lineCount = 0;
 
-         carry.on('line', function onLine(line) {
+        carry.on('line', function onLine(line) {
                 lineCount++;
                 try {
                         var record = JSON.parse(line, function (key, value) {
@@ -38,11 +40,15 @@ function main() {
                         ERROR = true;
                         return;
                 }
-                var storageGBHours = ceil(record['byteHrs'].div(1073741824));
+                var storageGBHours = ceil(record['byteHrs'].div(BPERGB));
                 var bandwidthGB = {
-                        in: ceil(record['bandwidth']['in'].div(1073741824)),
-                        out: ceil(record['bandwidth']['out'].div(1073741824))
+                        in: ceil(record['bandwidth']['in'].div(BPERGB)),
+                        out: ceil(record['bandwidth']['out'].div(BPERGB))
                 };
+                var computeBandwidthGB = {
+                        in: ceil(record['computeBandwidth']['in'].div(BPERGB)),
+                        out: ceil(record['computeBandwidth']['out'].div(BPERGB))
+                }
 
                 var output = {
                         owner: record.owner,
@@ -50,7 +56,8 @@ function main() {
                         storageGBHours: storageGBHours,
                         bandwidthGB: bandwidthGB,
                         requests: record.requests,
-                        computeGBSeconds: record.computeGBSeconds
+                        computeGBSeconds: record.computeGBSeconds,
+                        computeBandwidthGB: computeBandwidthGB
                 };
 
                 console.log(JSON.stringify(output, function (key, value) {
