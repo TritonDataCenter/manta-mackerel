@@ -11,6 +11,7 @@
         "phases": [
           {
             "type": "map",
+            "memory": 2048,
             "assets": [
               "/poseidon/stor/usage/assets/node_modules.tar",
               "/poseidon/stor/usage/assets/bin/storage-map",

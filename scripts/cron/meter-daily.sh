@@ -8,4 +8,4 @@ getDate "$@"
 
 NODE=$dir/../../build/node/bin/node
 
-$NODE $dir/../../bin/meter -j 'summarize.daily' -d "$date"
+$NODE $dir/../../bin/meter -j 'summarizeDaily' -d "$date"
