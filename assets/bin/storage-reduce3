@@ -6,4 +6,4 @@ set -o pipefail
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $dir/.. && tar -xf node_modules.tar
 
-$dir/../lib/storage-reduce3.js
+$dir/../lib/storage-reduce3.js | $dir/../lib/deliver-usage.js

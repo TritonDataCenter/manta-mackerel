@@ -44,7 +44,9 @@
             "assets": [
               "/poseidon/stor/usage/assets/node_modules.tar",
               "/poseidon/stor/usage/assets/bin/storage-reduce3",
-              "/poseidon/stor/usage/assets/lib/storage-reduce3.js"
+              "/poseidon/stor/usage/assets/lib/storage-reduce3.js",
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
             ],
             "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce3",
             "count": 10
@@ -52,12 +54,9 @@
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/deliver-usage",
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+              "/poseidon/stor/usage/assets/bin/concat"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
+            "exec": "/assets/poseidon/stor/usage/assets/bin/concat",
             "count": 1
           }
         ]
@@ -97,21 +96,20 @@
             "type": "reduce",
             "assets": [
               "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/sum-columns",
-              "/poseidon/stor/usage/assets/lib/sum-columns.js"
+              "/poseidon/stor/usage/assets/bin/request-reduce",
+              "/poseidon/stor/usage/assets/lib/sum-columns.js",
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/sum-columns",
+            "exec": "/assets/poseidon/stor/usage/assets/bin/request-reduce",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/deliver-usage",
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+              "/poseidon/stor/usage/assets/bin/concat"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
+            "exec": "/assets/poseidon/stor/usage/assets/bin/concat",
             "count": 1
           }
         ]
@@ -149,7 +147,9 @@
             "assets": [
               "/poseidon/stor/usage/assets/node_modules.tar",
               "/poseidon/stor/usage/assets/bin/compute-reduce",
-              "/poseidon/stor/usage/assets/lib/compute-reduce.js"
+              "/poseidon/stor/usage/assets/lib/compute-reduce.js",
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
             ],
             "exec": "/assets/poseidon/stor/usage/assets/bin/compute-reduce",
             "count": 10
@@ -157,12 +157,9 @@
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/deliver-usage",
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+              "/poseidon/stor/usage/assets/bin/concat"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage",
+            "exec": "/assets/poseidon/stor/usage/assets/bin/concat",
             "count": 1
           }
         ]
@@ -213,64 +210,61 @@
     },
 
 
-    "summarize": {
-      "daily": {
-        "keygen": "FindKeyGenerator",
-        "keygenArgs": {
-          "source": [
-            "/poseidon/stor/usage/storage/$year/$month/$day",
-            "/poseidon/stor/usage/request/$year/$month/$day",
-            "/poseidon/stor/usage/compute/$year/$month/$day"
-          ],
-          "regex": "h[0-9[0-9]"
-        },
-        "linkPath": "/poseidon/stor/usage/summary/latest",
-        "job": {
-          "name": "metering-summarize-daily-$year-$month-$dayT$hour",
-          "phases": [
-            {
-              "type": "map",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/lib/summarize-map.js",
-                "/poseidon/stor/usage/assets/etc/billingComputeTable.json",
-                "/poseidon/stor/usage/assets/bin/summarize-map"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-map"
-            },
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/lib/sum-columns.js",
-                "/poseidon/stor/usage/assets/lib/summarize-reduce.js",
-                "/poseidon/stor/usage/assets/bin/summarize-reduce"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-reduce",
-              "count": 10
-            },
-            {
-              "type": "reduce",
-              "assets": [
-                "/poseidon/stor/usage/assets/node_modules.tar",
-                "/poseidon/stor/usage/assets/bin/deliver-usage",
-                "/poseidon/stor/usage/assets/etc/lookup.json",
-                "/poseidon/stor/usage/assets/lib/deliver-usage.js"
-              ],
-              "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-usage"
-            }
-          ]
-        },
-        "env": {
-          "HEADER_CONTENT_TYPE": "application/x-json-stream",
-          "DEST": "/poseidon/stor/usage/summary/$year/$month/$day/d$day.json",
-          "USER_DEST": "/reports/usage/summary/$year/$month/$day/d$day.json",
-          "USER_LINK": "/reports/usage/summary/latest",
-          "DATE": "$year-$month-$dayT00:00:00.000Z"
-        }
+    "summarizeDaily": {
+      "keygen": "FindKeyGenerator",
+      "keygenArgs": {
+        "source": [
+          "/poseidon/stor/usage/storage/$year/$month/$day",
+          "/poseidon/stor/usage/request/$year/$month/$day",
+          "/poseidon/stor/usage/compute/$year/$month/$day"
+        ],
+        "regex": "h[0-9[0-9]"
+      },
+      "linkPath": "/poseidon/stor/usage/summary/latest",
+      "job": {
+        "name": "metering-summarize-daily-$year-$month-$dayT$hour",
+        "phases": [
+          {
+            "type": "map",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/lib/summarize-map.js",
+              "/poseidon/stor/usage/assets/etc/billingComputeTable.json",
+              "/poseidon/stor/usage/assets/bin/summarize-map"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-map"
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/node_modules.tar",
+              "/poseidon/stor/usage/assets/lib/sum-columns.js",
+              "/poseidon/stor/usage/assets/lib/summarize-reduce.js",
+              "/poseidon/stor/usage/assets/etc/lookup.json",
+              "/poseidon/stor/usage/assets/lib/deliver-usage.js",
+              "/poseidon/stor/usage/assets/bin/summarize-reduce"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-reduce",
+            "count": 10
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "/poseidon/stor/usage/assets/bin/concat"
+            ],
+            "exec": "/assets/poseidon/stor/usage/assets/bin/concat",
+            "count": 1
+          }
+        ]
+      },
+      "env": {
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "DEST": "/poseidon/stor/usage/summary/$year/$month/$day/d$day.json",
+        "USER_DEST": "/reports/usage/summary/$year/$month/$day/d$day.json",
+        "USER_LINK": "/reports/usage/summary/latest",
+        "DATE": "$year-$month-$dayT00:00:00.000Z"
       }
     }
-
 
   }
 }

@@ -48,7 +48,7 @@ function main() {
                 var computeBandwidthGB = {
                         in: ceil(record['computeBandwidth']['in'].div(BPERGB)),
                         out: ceil(record['computeBandwidth']['out'].div(BPERGB))
-                }
+                };
 
                 var output = {
                         owner: record.owner,

@@ -3,9 +3,5 @@
 
 set -o pipefail
 
-dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $dir/.. && tar -xf node_modules.tar
-
 mmkdir -p $(dirname $DEST) && \
-$dir/../lib/deliver-usage.js | \
 mpipe -H "content-type: $HEADER_CONTENT_TYPE" $DEST
