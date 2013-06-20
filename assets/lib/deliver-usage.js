@@ -30,6 +30,9 @@ var LOG = require('bunyan').createLogger({
 function writeToUserDir(opts, cb) {
         LOG.debug(opts, 'writeToUserDir start');
         var record = opts.record;
+        if (process.env['DATE']) {
+                record.date = process.env['DATE'];
+        }
         var login = opts.login;
         var client = opts.client;
         var linkPath = '/' + login + process.env['USER_LINK'];

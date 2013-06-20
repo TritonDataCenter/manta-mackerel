@@ -67,7 +67,8 @@
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "DEST": "/poseidon/stor/usage/storage/$year/$month/$day/$hour/h$hour.json",
         "USER_DEST": "/reports/usage/storage/$year/$month/$day/$hour/h$hour.json",
-        "USER_LINK": "/reports/usage/storage/latest"
+        "USER_LINK": "/reports/usage/storage/latest",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z"
       }
     },
 
@@ -119,7 +120,8 @@
         "DEST": "/poseidon/stor/usage/request/$year/$month/$day/$hour/h$hour.json",
         "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
         "USER_DEST": "/reports/usage/request/$year/$month/$day/$hour/h$hour.json",
-        "USER_LINK": "/reports/usage/request/latest"
+        "USER_LINK": "/reports/usage/request/latest",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z"
       }
     },
 
@@ -168,7 +170,8 @@
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "DEST": "/poseidon/stor/usage/compute/$year/$month/$day/$hour/h$hour.json",
         "USER_DEST": "/reports/usage/compute/$year/$month/$day/$hour/h$hour.json",
-        "USER_LINK": "/reports/usage/compute/latest"
+        "USER_LINK": "/reports/usage/compute/latest",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z"
       }
     },
 

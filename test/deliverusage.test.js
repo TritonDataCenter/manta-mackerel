@@ -31,6 +31,7 @@ var BANDWIDTH = ['in', 'out', 'headerIn', 'headerOut'];
 
 var STORAGE_RECORD = {
         'owner': 'ed5fa8da-fd61-42bb-a24a-515b56c6d581',
+        'date': '2013-06-20T18:00:00.000Z',
         'stor': {
                 'directories': 301,
                 'keys': 1523,
@@ -59,6 +60,7 @@ var STORAGE_RECORD = {
 
 var REQUEST_RECORD = {
         'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0',
+        'date': '2013-06-20T18:00:00.000Z',
         'requests': {
                 'OPTION': 0,
                 'GET': 2,
@@ -77,6 +79,7 @@ var REQUEST_RECORD = {
 
 var COMPUTE_RECORD = {
         'owner': '639aa18f-7aff-4d70-9718-ac75d7cad68f',
+        'date': '2013-06-20T18:00:00.000Z',
         'time': {
                 '268435456': 1104,
                 '536870912': 60,
@@ -96,7 +99,8 @@ function runTest(opts, cb) {
                         'MANTA_NO_AUTH': 'true',
                         'USER_LINK': '/reports/usage/latest',
                         'USER_DEST': '/reports/usage/2013/06/07/12/h12.json',
-                        'LOOKUP_FILE': LOOKUP_FILE
+                        'LOOKUP_FILE': LOOKUP_FILE,
+                        'DATE': '2013-06-20T18:00:00.000Z'
                 }
         };
 
