@@ -127,8 +127,12 @@ function count(record, aggr) {
         var statusCode = record.res.statusCode;
 
         // get the content-length if it exists
-        var contentLength = +record.res.headers['content-length'] ||
-                +record.req.headers['content-length'] || 0;
+        var contentLength = 0;
+        if (record.res.headers && record.res.headers['content-length']) {
+                contentLength = +record.res.headers['content-length'];
+        } else if (record.req.headers && record.req.headers['content-length']) {
+                contentLength = +record.req.headers['content-length'];
+        }
 
         aggr[owner] = aggr[owner] || {
                 owner: owner,
