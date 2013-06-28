@@ -56,6 +56,7 @@ function sanitize(record) {
         var output = mod_screen.screen(record, whitelist);
         if (output.req && output.req.headers) {
                 var ip = output.req.headers['x-forwarded-for'] || '169.254.0.1';
+                ip = ip.split(',')[0].trim();
                 var ipaddr = mod_ipaddr.parse(ip);
                 if (ipaddr.kind() === 'ipv4') {
                         output['remoteAddress'] =
@@ -98,7 +99,6 @@ function write(opts, cb) {
                         cb();
                 });
         }
-
 }
 
 

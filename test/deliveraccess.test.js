@@ -263,3 +263,19 @@ test('file uploaded and link created', function (t) {
                 t.done();
         });
 });
+
+test('multiple x-forwarded-for', function (t) {
+        var input = JSON.parse(JSON.stringify(RECORD));
+        input.req.headers['x-forwarded-for'] = '76.121.137.102, ' +
+                '::ffff:66.249.85.112';
+        var expected = JSON.parse(JSON.stringify(EXPECTED));
+        expected.remoteAddress = '::ffff:4c79:8966';
+        runTest({
+                stdin: JSON.stringify(input)
+        }, function (result) {
+                t.equal(result.code, 0);
+                var actual = JSON.parse(mod_fs.readFileSync(PATH, 'utf8'));
+                t.deepEqual(actual, expected);
+                t.done();
+        });
+});
