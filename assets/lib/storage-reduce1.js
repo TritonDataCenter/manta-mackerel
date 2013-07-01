@@ -88,6 +88,7 @@
 var mod_carrier = require('carrier');
 var Big = require('big.js');
 var ERROR = false;
+var MIN_SIZE = process.env['MIN_SIZE'] || 131072;
 
 var LOG = require('bunyan').createLogger({
         name: 'storage-reduce1.js',
@@ -123,7 +124,7 @@ function count(record, aggr) {
                 var n;
                 try {
                         var objectId = record.objectId;
-                        var size = Math.max(record.contentLength, 4096) *
+                        var size = Math.max(record.contentLength, MIN_SIZE) *
                             record.sharks.length;
                 } catch (e) {
                         console.warn(e);
