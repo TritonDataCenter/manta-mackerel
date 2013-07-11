@@ -65,7 +65,7 @@
       "env": {
         "NAMESPACES": "stor public jobs reports",
         "ZCAT": "gzcat",
-        "MIN_SIZE": 131072,
+        "MIN_SIZE": "131072",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "DEST": "/poseidon/stor/usage/storage/$year/$month/$day/$hour/h$hour.json",
         "USER_DEST": "/reports/usage/storage/$year/$month/$day/$hour/h$hour.json",

@@ -88,7 +88,7 @@
 var mod_carrier = require('carrier');
 var Big = require('big.js');
 var ERROR = false;
-var MIN_SIZE = process.env['MIN_SIZE'] || 131072;
+var MIN_SIZE = +process.env['MIN_SIZE'] || 131072;
 
 var LOG = require('bunyan').createLogger({
         name: 'storage-reduce1.js',
