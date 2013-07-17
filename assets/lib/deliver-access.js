@@ -13,6 +13,7 @@ var mod_screen = require('screener');
 var mod_libmanta = require('libmanta');
 
 var files = {}; // keeps track of all the files we create
+var waitingForDrain = {};
 var ERROR = false;
 var tmpdir = '/var/tmp';
 var DELIVER_UNAPPROVED_REPORTS =
@@ -86,24 +87,33 @@ function write(opts, cb) {
         var record = opts.record;
         var path = tmpdir + '/' + owner;
         var output = JSON.stringify(record) + '\n';
+        var flushed;
 
         if (!files[owner]) {
-                files[owner] = true;
-                mod_fs.writeFile(path, output, function (err) {
-                        if (err) {
-                                cb(err);
-                                return;
+                process.stdin.pause();
+                files[owner] = mod_fs.createWriteStream(path);
+
+                files[owner].on('drain', function (o) {
+                        delete waitingForDrain[o];
+                        if (Object.keys(waitingForDrain).length === 0) {
+                                process.stdin.resume();
                         }
-                        cb();
-                });
+                }.bind(files[owner], owner));
+
+                files[owner].once('open', function (o) {
+                        var initialFlush = this.write(output, cb);
+                        if (!initialFlush) {
+                                waitingForDrain[o] = true;
+                        } else {
+                                process.stdin.resume();
+                        }
+                }.bind(files[owner], owner));
         } else {
-                mod_fs.appendFile(path, output, function (err) {
-                        if (err) {
-                                cb(err);
-                                return;
-                        }
-                        cb();
-                });
+                flushed = files[owner].write(output, cb);
+                if (!flushed) {
+                        waitingForDrain[owner] = true;
+                        process.stdin.pause();
+                }
         }
 }
 
@@ -212,6 +222,9 @@ function main() {
         });
 
         writeQueue.once('end', function () {
+                Object.keys(files).forEach(function (owner) {
+                        files[owner].end();
+                });
                 saveAll(function (err) {
                         if (err) {
                                 LOG.error(err, 'Error saving access logs');
