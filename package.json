@@ -14,7 +14,7 @@
                 "ipaddr.js": "0.1.1",
                 "jsprim": "0.5.0",
                 "libmanta": "git+ssh://git@git.joyent.com:node-libmanta.git#9e51fb1df1dadb215e7e91e6e5bdddea968dd554",
-                "marlin": "git+ssh://git@github.com:joyent/marlin.git#49ff7ab28f4eacd8fc61a62e4251d139917787a7",
+                "marlin": "git+ssh://git@git.joyent.com:marlin.git#49ff7ab28f4eacd8fc61a62e4251d139917787a7",
                 "manta": "git+ssh://git@github.com:joyent/node-manta.git#10053410cda6730565523e2af24ee1e932d21f9c",
                 "manta-compute-bin": "git+ssh://git@github.com:joyent/manta-compute-bin.git#35142a0c846eb5cff729bf645dbdaf49f80448cf",
                 "readable-stream": "0.3.1",
