@@ -19,7 +19,8 @@ var test = helper.test;
 function runTest(opts, cb) {
         var env = {
                 env: {
-                        "NAMESPACES": "stor public jobs reports"
+                        "NAMESPACES": "stor public jobs reports",
+                        "MIN_SIZE": 4096
                 }
         };
 

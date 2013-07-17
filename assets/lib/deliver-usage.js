@@ -13,6 +13,8 @@ var mod_path = require('path');
 var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
 var lookup = require(lookupPath); // maps uuid->login
 var ERROR = false;
+var DELIVER_UNAPPROVED_REPORTS =
+        process.env['DELIVER_UNAPPROVED_REPORTS'] === 'true';
 
 function filter(key, value) {
         if (typeof (value) === 'number') {
@@ -129,6 +131,12 @@ function main() {
                         return;
                 }
 
+                if (!DELIVER_UNAPPROVED_REPORTS && !login.approved) {
+                        LOG.warn(record, record.owner +
+                                ' not approved for provisioning. Skipping...');
+                        return;
+                }
+
                 // remove owner field from the user's personal report
                 delete record.owner;
 
@@ -140,7 +148,7 @@ function main() {
 
                 queue.push({
                         record: record,
-                        login: login,
+                        login: login.login,
                         client: client
                 });
         }

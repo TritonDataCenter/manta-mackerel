@@ -25,8 +25,6 @@ var MANTA_URL = 'http://localhost:' + PORT;
 var LOOKUP_FILE = '../../test/test_data/lookup.json';
 var LOOKUP = require('./test_data/lookup.json');
 
-var PATH = '/var/tmp/83081c10-1b9c-44b3-9c5c-36fc2a5218a0';
-
 var EXPECTED = {
         'remoteAddress': '::ffff:a03:5bec',
         'req': {
@@ -116,18 +114,18 @@ var RECORD = {
         'v': 0
 };
 
-function runTest(opts, cb) {
-        var env = {
-                env: {
-                        'MANTA_URL': MANTA_URL,
-                        'MANTA_NO_AUTH': 'true',
-                        'HEADER_CONTENT_TYPE': 'application/x-json-stream',
-                        'ACCESS_LINK': '/reports/access-logs/latest',
-                        'ACCESS_DEST': '/reports/access-logs/y/m/d/h/hhour.json'
-                }
-        };
+var PATH = '/var/tmp/' + RECORD.req.owner;
 
-        var spawn = mod_child_process.spawn(deliverusage, opts.opts, env);
+function runTest(opts, cb) {
+        opts.env = opts.env || {};
+        opts.env['MANTA_URL'] = MANTA_URL;
+        opts.env['MANTA_NO_AUTH'] = 'true';
+        opts.env['HEADER_CONTENT_TYPE'] = 'application/x-json-stream';
+        opts.env['ACCESS_LINK'] = '/reports/access-logs/latest';
+        opts.env['ACCESS_DEST'] = '/reports/access-logs/y/m/d/h/hhour.json';
+        opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
+
+        var spawn = mod_child_process.spawn(deliverusage, opts.opts, opts);
 
         var stdout = '';
         var stderr = '';
@@ -276,6 +274,54 @@ test('multiple x-forwarded-for', function (t) {
                 t.equal(result.code, 0);
                 var actual = JSON.parse(mod_fs.readFileSync(PATH, 'utf8'));
                 t.deepEqual(actual, expected);
+                t.done();
+        });
+});
+
+test('drop poseidon requests', function (t) {
+        runTest({
+                stdin: JSON.stringify(RECORD),
+                env: {
+                        'DROP_POSEIDON_REQUESTS': 'true'
+                }
+        }, function (result) {
+                t.equal(result.code, 0);
+                t.equal(SERVER.requests.length, 0);
+                t.done();
+        });
+});
+
+test('do not deliver unapproved reports', function (t) {
+        var input = JSON.parse(JSON.stringify(RECORD));
+        input.req.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        t.equal(LOOKUP[input.req.owner].approved, false);
+        runTest({
+                stdin: JSON.stringify(input),
+                env: {
+                        'DELIVER_UNAPPROVED_REPORTS': 'false'
+                }
+        }, function (result) {
+                t.equal(result.code, 0);
+                t.equal(SERVER.requests.length, 0);
+                t.done();
+        });
+});
+
+test('deliver unapproved reports', function (t) {
+        var input = JSON.parse(JSON.stringify(RECORD));
+        input.req.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        t.equal(LOOKUP[input.req.owner].approved, false);
+        var path = '/var/tmp/' + input.req.owner;
+        runTest({
+                stdin: JSON.stringify(input),
+                env: {
+                        'DELIVER_UNAPPROVED_REPORTS': 'true'
+                }
+        }, function (result) {
+                t.equal(result.code, 0);
+                t.equal(SERVER.requests.length, 2);
+                var actual = JSON.parse(mod_fs.readFileSync(path, 'utf8'));
+                t.deepEqual(actual, EXPECTED);
                 t.done();
         });
 });

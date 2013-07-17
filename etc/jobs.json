@@ -63,14 +63,16 @@
         ]
       },
       "env": {
-        "NAMESPACES": "stor public jobs reports",
-        "ZCAT": "gzcat",
-        "MIN_SIZE": "131072",
-        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "COUNT_UNAPPROVED_USERS": "true",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z",
         "DEST": "/poseidon/stor/usage/storage/$year/$month/$day/$hour/h$hour.json",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "MIN_SIZE": "131072",
+        "NAMESPACES": "stor public jobs reports",
         "USER_DEST": "/reports/usage/storage/$year/$month/$day/$hour/h$hour.json",
         "USER_LINK": "/reports/usage/storage/latest",
-        "DATE": "$year-$month-$dayT$hour:00:00.000Z"
+        "ZCAT": "gzcat"
       }
     },
 
@@ -118,6 +120,9 @@
         ]
       },
       "env": {
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "COUNT_UNAPPROVED_USERS": "true",
+        "DROP_POSEIDON_REQUESTS": "true",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "DEST": "/poseidon/stor/usage/request/$year/$month/$day/$hour/h$hour.json",
         "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
@@ -169,6 +174,8 @@
         ]
       },
       "env": {
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "COUNT_UNAPPROVED_USERS": "true",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "DEST": "/poseidon/stor/usage/compute/$year/$month/$day/$hour/h$hour.json",
         "USER_DEST": "/reports/usage/compute/$year/$month/$day/$hour/h$hour.json",
@@ -208,6 +215,8 @@
         ]
       },
       "env": {
+        "DROP_POSEIDON_REQUESTS": "true",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
         "ACCESS_LINK": "/reports/access-logs/latest"
@@ -263,6 +272,8 @@
         ]
       },
       "env": {
+        "COUNT_UNAPPROVED_USERS": "true",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "DEST": "/poseidon/stor/usage/summary/$year/$month/$day/d$day.json",
         "USER_DEST": "/reports/usage/summary/$year/$month/$day/d$day.json",

@@ -15,8 +15,13 @@ var log = new mod_bunyan({
 
 var test = helper.test;
 
+var LOOKUP_FILE = '../../test/test_data/lookup.json';
+var LOOKUP = require('./test_data/lookup.json');
+
 function runTest(opts, cb) {
-        var spawn = mod_child_process.spawn(storagemap, opts.opts);
+        opts.env = opts.env || {};
+        opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
+        var spawn = mod_child_process.spawn(storagemap, opts.opts, opts);
 
         var stdout = '';
         var stderr = '';
@@ -78,7 +83,7 @@ test('basic', function (t) {
                 'dirname': '/fred/stor/test1',
                 'key': '/fred/stor/test1/filea',
                 'mtime': 1347493502898,
-                'owner': 'fred',
+                'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0',
                 'type': 'object',
                 'contentLength': 14,
                 'contentMD5': 'RWJGkh2n/L4XhjDn2a5rgA==',
@@ -139,7 +144,7 @@ test('value index change', function (t) {
 
         var _value = {
                 'key': '/path/to/obj',
-                'owner': 'fred',
+                'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0',
                 'type': 'object'
         };
 
@@ -172,7 +177,7 @@ test('missing schema', function (t) {
                 'dirname': '/fred/stor/test1',
                 'key': '/fred/stor/test1/filea',
                 'mtime': 1347493502898,
-                'owner': 'fred',
+                'owner': 'ed5fa8da-fd61-42bb-a24a-515b56c6d581',
                 'type': 'object',
                 'contentLength': 14,
                 'contentMD5': 'RWJGkh2n/L4XhjDn2a5rgA==',
@@ -210,6 +215,134 @@ test('missing schema', function (t) {
                 stdin: JSON.stringify(record)
         }, function (result) {
                 t.equal(1, result.code);
+                t.done();
+        });
+});
+
+test('do not count unapproved users', function (t) {
+        var schema = {
+                'name': 'manta',
+                'keys': [
+                        '_id',
+                        '_key',
+                        '_value',
+                        '_etag',
+                        '_mtime',
+                        'dirname',
+                        'owner',
+                        'objectid'
+                ]
+        };
+
+        var _value = {
+                'dirname': '/fred/stor/test1',
+                'key': '/fred/stor/test1/filea',
+                'mtime': 1347493502898,
+                'owner': 'ed5fa8da-fd61-42bb-a24a-515b56c6d581',
+                'type': 'object',
+                'contentLength': 14,
+                'contentMD5': 'RWJGkh2n/L4XhjDn2a5rgA==',
+                'contentType': 'application/x-www-form-urlencoded',
+                'etag': '456246921da7fcbe178630e7d9ae6b80',
+                'objectId': 'bd83468a-ae70-4d96-80cc-8fc49068caca',
+                'sharks': [
+                        {
+                                'url': 'url1',
+                                'server_uuid': 'server1',
+                                'zone_uuid': 'zone1'
+                        },
+                        {
+                                'url': 'url2',
+                                'server_uuid': 'server2',
+                                'zone_uuid': 'zone2'
+                        }
+                ]
+        };
+
+        var record = {
+                'entry': [
+                        '1',
+                        '/fred/stor/test1/filea',
+                        JSON.stringify(_value),
+                        '456246921da7fcbe178630e7d9ae6b80',
+                        '1347493502898',
+                        '/fred/stor/test1',
+                        'fred',
+                        'bd83468a-ae70-4d96-80cc-8fc49068caca'
+                ]
+        };
+        runTest({
+                stdin: JSON.stringify(schema) + '\n' + JSON.stringify(record),
+                env: {
+                        'COUNT_UNAPPROVED_USERS': 'false'
+                }
+        }, function (result) {
+                t.equal(0, result.code);
+                t.equal(result.stdout, '');
+                t.done();
+        });
+});
+
+test('count unapproved users', function (t) {
+        var schema = {
+                'name': 'manta',
+                'keys': [
+                        '_id',
+                        '_key',
+                        '_value',
+                        '_etag',
+                        '_mtime',
+                        'dirname',
+                        'owner',
+                        'objectid'
+                ]
+        };
+
+        var _value = {
+                'dirname': '/fred/stor/test1',
+                'key': '/fred/stor/test1/filea',
+                'mtime': 1347493502898,
+                'owner': 'ed5fa8da-fd61-42bb-a24a-515b56c6d581',
+                'type': 'object',
+                'contentLength': 14,
+                'contentMD5': 'RWJGkh2n/L4XhjDn2a5rgA==',
+                'contentType': 'application/x-www-form-urlencoded',
+                'etag': '456246921da7fcbe178630e7d9ae6b80',
+                'objectId': 'bd83468a-ae70-4d96-80cc-8fc49068caca',
+                'sharks': [
+                        {
+                                'url': 'url1',
+                                'server_uuid': 'server1',
+                                'zone_uuid': 'zone1'
+                        },
+                        {
+                                'url': 'url2',
+                                'server_uuid': 'server2',
+                                'zone_uuid': 'zone2'
+                        }
+                ]
+        };
+
+        var record = {
+                'entry': [
+                        '1',
+                        '/fred/stor/test1/filea',
+                        JSON.stringify(_value),
+                        '456246921da7fcbe178630e7d9ae6b80',
+                        '1347493502898',
+                        '/fred/stor/test1',
+                        'fred',
+                        'bd83468a-ae70-4d96-80cc-8fc49068caca'
+                ]
+        };
+        runTest({
+                stdin: JSON.stringify(schema) + '\n' + JSON.stringify(record),
+                env: {
+                        'COUNT_UNAPPROVED_USERS': 'true'
+                }
+        }, function (result) {
+                t.equal(0, result.code);
+                t.deepEqual(JSON.parse(result.stdout), _value);
                 t.done();
         });
 });

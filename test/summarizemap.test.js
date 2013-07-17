@@ -17,8 +17,13 @@ var log = new mod_bunyan({
 
 var test = helper.test;
 
+var LOOKUP_FILE = '../../test/test_data/lookup.json';
+var LOOKUP = require('./test_data/lookup.json');
+
 function runTest(opts, cb) {
-        var spawn = mod_child_process.spawn(summarizemap, opts.opts);
+        opts.env = opts.env || {};
+        opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
+        var spawn = mod_child_process.spawn(summarizemap, opts.opts, opts);
 
         var stdout = '';
         var stderr = '';
@@ -61,7 +66,7 @@ function runTest(opts, cb) {
 }
 
 var STORAGE = {
-        "owner": "cc56f978-00a7-4908-8d20-9580a3f60a6e",
+        "owner": "83081c10-1b9c-44b3-9c5c-36fc2a5218a0",
         "storage": {
                 "stor": {
                         "directories": "301",
@@ -113,7 +118,7 @@ var REQUEST = {
 };
 
 var COMPUTE = {
-        "owner": "a792e2b4-ccde-4b9f-99ed-8e824643c07e",
+        "owner": "83081c10-1b9c-44b3-9c5c-36fc2a5218a0",
         "jobs": {
                 "c29fb939-c19e-4439-9692-6a0f14bd9728": {
                         "0": {
@@ -253,6 +258,21 @@ test('compute billing table', function (t) {
                 t.deepEqual(actual, expected);
                 t.equal(typeof (actual.computeBandwidth['in']), 'string');
                 t.equal(typeof (actual.computeBandwidth['out']), 'string');
+                t.done();
+        });
+});
+
+test('do not count unapproved users', function (t) {
+        var input = JSON.parse(JSON.stringify(STORAGE));
+        input.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        runTest({
+                stdin: JSON.stringify(input),
+                env: {
+                        'COUNT_UNAPPROVED_USERES': 'false'
+                }
+        }, function (result) {
+                t.equal(result.code, 0);
+                t.equal(result.stdout, '');
                 t.done();
         });
 });

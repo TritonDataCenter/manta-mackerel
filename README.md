@@ -30,21 +30,21 @@ Compute data comes from marlin agent audit logs.
 
 Run metering jobs using
 
-    bin/meter [-f configPath] [-w] -d date -p period -c category
+    bin/meter [-f configPath] [-w] -d date -j jobName
 
-where date is in some format readable by `Date.parse()`, period is one of
-`hourly`, `daily`, or `monthly` and category is one of `storage`, `request`, or
-`compute`.  Set the -w to use workflow to manage the metering job.
+where date is in some format readable by `Date.parse()` and jobNAme is one of
+`storage`, `compute`, `request`, `accessLogs`, or `summarizeDaily`. Set the -w
+to use workflow to manage the metering job.
 
 Examples:
 
-    bin/meter -p hourly -c storage -d "$(date)"
-    bin/meter -p monthly -c request -d "$(date -d '1 month ago')" -w
-    bin/meter -p daily -c compute -d "$(date -d '2 days ago')" -f path/to/config
+    bin/meter -j "storage" -d "$(date)"
+    bin/meter -j "accessLogs" -d "$(date -d '1 month ago')" -w
+    bin/meter -j "summarizeDaily" "$(date -d '2 days ago')" -f path/to/config
 
 # Configuration file
 
-The configuration file config.js should be in a format compatible with require
+The configuration file config.json should be in a format compatible with require
 (i.e.  JSON or a module that exports a JS object).
 
 Configuration settings include:

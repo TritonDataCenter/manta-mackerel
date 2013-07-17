@@ -15,6 +15,9 @@ var mod_libmanta = require('libmanta');
 var files = {}; // keeps track of all the files we create
 var ERROR = false;
 var tmpdir = '/var/tmp';
+var DELIVER_UNAPPROVED_REPORTS =
+        process.env['DELIVER_UNAPPROVED_REPORTS'] === 'true';
+var DROP_POSEIDON_REQUESTS = process.env['DROP_POSEIDON_REQUESTS'] === 'true';
 
 var LOG = require('bunyan').createLogger({
         name: 'deliver-access.js',
@@ -48,7 +51,10 @@ var whitelist = {
 function shouldProcess(record) {
         return (record.audit &&
                 record.req.url !== '/ping' &&
-                typeof (record.req.owner) !== 'undefined');
+                typeof (record.req.owner) !== 'undefined' &&
+                (!record.req.caller ||
+                        !DROP_POSEIDON_REQUESTS ||
+                        record.req.caller.login !== 'poseidon'));
 }
 
 
@@ -105,7 +111,7 @@ function write(opts, cb) {
 function saveAll(cb) {
         function save(owner, callback) {
                 LOG.debug(owner, 'save start');
-                var login = lookup[owner];
+                var login = lookup[owner].login;
                 var key = '/' + login + process.env['ACCESS_DEST'];
                 var linkPath = '/' + login + process.env['ACCESS_LINK'];
                 var headers = {
@@ -235,6 +241,21 @@ function main() {
                 }
 
                 if (!shouldProcess(record)) {
+                        return;
+                }
+
+                var login = lookup[record.req.owner];
+
+                if (!login) {
+                        LOG.error(record,
+                                'No login found for UUID ' + record.req.owner);
+                        ERROR = true;
+                        return;
+                }
+
+                if (!DELIVER_UNAPPROVED_REPORTS && !login.approved) {
+                        LOG.warn(record, record.req.owner +
+                                ' not approved for provisioning. Skipping...');
                         return;
                 }
 

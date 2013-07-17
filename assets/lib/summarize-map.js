@@ -3,8 +3,11 @@
 
 var mod_carrier = require('carrier');
 var computeTable = require('../etc/billingComputeTable.json').billingTable;
+var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
+var lookup = require(lookupPath); // maps uuid->approved_for_provisioning
 var Big = require('big.js');
 var ERROR = false;
+var COUNT_UNAPPROVED_USERS = process.env['COUNT_UNAPPROVED_USERS'] === 'true';
 var LOG = require('bunyan').createLogger({
         name: 'summarize-map.js',
         stream: process.stderr,
@@ -98,6 +101,22 @@ function main() {
                         LOG.error(e, 'Error on line ' + lineCount);
                         ERROR = true;
                         return;
+                }
+
+                if (!COUNT_UNAPPROVED_USERS) {
+                        if (!lookup[record.owner]) {
+                                LOG.error(record, 'No login found for UUID ' +
+                                        record.owner);
+                                ERROR = true;
+                                return;
+                        }
+
+                        if (!lookup[record.owner].approved) {
+                                LOG.warn(record, record.owner +
+                                        ' not approved for provisioning. ' +
+                                        'Skipping...');
+                                return;
+                        }
                 }
 
                 var summary;

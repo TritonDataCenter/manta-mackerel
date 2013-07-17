@@ -16,6 +16,9 @@ var log = new mod_bunyan({
 
 var test = helper.test;
 
+var LOOKUP_FILE = '../../test/test_data/lookup.json';
+var LOOKUP = require('./test_data/lookup.json');
+
 var RECORD = {
         'name': 'muskie',
         'billable_operation': 'PUT',
@@ -94,7 +97,9 @@ var EXPECTED = {
 };
 
 function runTest(opts, cb) {
-        var spawn = mod_child_process.spawn(requestmap, opts.opts);
+        opts.env = opts.env || {};
+        opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
+        var spawn = mod_child_process.spawn(requestmap, opts.opts, opts);
 
         var stdout = '';
         var stderr = '';
@@ -165,6 +170,60 @@ test('404', function (t) {
         }, function (result) {
                 t.equal(0, result.code);
                 t.deepEqual(JSON.parse(result.stdout), expected);
+                t.done();
+        });
+});
+
+test('drop poseidon', function (t) {
+        var record = clone(RECORD);
+        var expected = clone(EXPECTED);
+        expected.requests.type['PUT'] = 0;
+        expected.requests.bandwidth.headerIn = 0;
+        expected.requests.bandwidth.headerOut = 0;
+        runTest({
+                stdin: JSON.stringify(record),
+                env: {
+                        'DROP_POSEIDON_REQUESTS': 'true'
+                }
+        }, function (result) {
+                t.equal(0, result.code);
+                t.equal('', result.stdout);
+                t.done();
+        });
+});
+
+test('count unapproved users', function (t) {
+        var record = clone(RECORD);
+        var expected = clone(EXPECTED);
+        expected.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        record.req.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        t.equal(LOOKUP[record.req.owner].approved, false);
+
+        runTest({
+                stdin: JSON.stringify(record),
+                env: {
+                        'COUNT_UNAPPROVED_USERS': 'true'
+                }
+        }, function (result) {
+                t.equal(0, result.code);
+                t.deepEqual(JSON.parse(result.stdout), expected);
+                t.done();
+        });
+});
+
+test('do not count unapproved users', function (t) {
+        var record = clone(RECORD);
+        record.req.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        t.equal(LOOKUP[record.req.owner].approved, false);
+
+        runTest({
+                stdin: JSON.stringify(record),
+                env: {
+                        'COUNT_UNAPPROVED_USERS': 'false'
+                }
+        }, function (result) {
+                t.equal(0, result.code);
+                t.equal('', result.stdout);
                 t.done();
         });
 });

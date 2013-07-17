@@ -30,7 +30,7 @@ var METHODS = ['OPTION', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE'];
 var BANDWIDTH = ['in', 'out', 'headerIn', 'headerOut'];
 
 var STORAGE_RECORD = {
-        'owner': 'ed5fa8da-fd61-42bb-a24a-515b56c6d581',
+        'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0',
         'date': '2013-06-20T18:00:00.000Z',
         'stor': {
                 'directories': 301,
@@ -93,18 +93,17 @@ var COMPUTE_RECORD = {
 
 
 function runTest(opts, cb) {
-        var env = {
-                env: {
-                        'MANTA_URL': MANTA_URL,
-                        'MANTA_NO_AUTH': 'true',
-                        'USER_LINK': '/reports/usage/latest',
-                        'USER_DEST': '/reports/usage/2013/06/07/12/h12.json',
-                        'LOOKUP_FILE': LOOKUP_FILE,
-                        'DATE': '2013-06-20T18:00:00.000Z'
-                }
-        };
 
-        var spawn = mod_child_process.spawn(deliverusage, opts.opts, env);
+        opts.env = opts.env || {};
+        opts.env['MANTA_URL'] = MANTA_URL;
+        opts.env['MANTA_NO_AUTH'] = 'true';
+        opts.env['HEADER_CONTENT_TYPE'] = 'application/x-json-stream';
+        opts.env['USER_LINK'] = '/reports/usage/latest';
+        opts.env['USER_DEST'] = '/reports/usage/2013/06/07/12/h12.json';
+        opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
+        opts.env['DATE'] = '2013-06-20T18:00:00.000Z';
+
+        var spawn = mod_child_process.spawn(deliverusage, opts.opts, opts);
 
         var stdout = '';
         var stderr = '';
@@ -206,7 +205,7 @@ test('write to user directories', function (t) {
                         var login = r.url.split('/')[1];
                         var type = r.headers['content-type'];
                         t.equal(r.method, 'PUT');
-                        t.equal(login, 'gkevinykchan_work');
+                        t.equal(login, 'pborensteinjoyent');
                         if (type === 'application/json; type=directory') {
                                 dirs++;
                         } else if (type === 'application/json; type=link') {
@@ -236,6 +235,38 @@ test('missing lookup entry', function (t) {
                 t.equal(lines.length, 2);
                 t.deepEqual(record, actual);
 
+                t.done();
+        });
+});
+
+test('do not deliver unapproved reports', function (t) {
+        var record = JSON.parse(JSON.stringify(STORAGE_RECORD));
+        record.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        t.equal(LOOKUP[record.owner].approved, false);
+        runTest({
+                stdin: JSON.stringify(record),
+                env: {
+                        'DELIVER_UNAPPROVED_REPORTS': 'false'
+                }
+        }, function (result) {
+                t.equal(result.code, 0);
+                t.equal(SERVER.requests.length, 0);
+                t.done();
+        });
+});
+
+test('deliver unapproved reports', function (t) {
+        var record = JSON.parse(JSON.stringify(STORAGE_RECORD));
+        record.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        t.equal(LOOKUP[record.owner].approved, false);
+        runTest({
+                stdin: JSON.stringify(record),
+                env: {
+                        'DELIVER_UNAPPROVED_REPORTS': 'true'
+                }
+        }, function (result) {
+                t.equal(result.code, 0);
+                t.equal(SERVER.requests.length, 7);
                 t.done();
         });
 });

@@ -40,6 +40,26 @@ function main() {
                         ERROR = true;
                         return;
                 }
+                record['byteHrs'] = record['byteHrs'] || new Big(0);
+                record['bandwidth'] = record['bandwidth'] || {
+                        'in': new Big(0),
+                        'out': new Big(0)
+                };
+                record['requests'] = record['requests'] || {
+                        // if these change, update request-map.js
+                        'DELETE': '0',
+                        'GET': '0',
+                        'HEAD': '0',
+                        'LIST': '0',
+                        'OPTIONS': '0',
+                        'POST': '0',
+                        'PUT': '0'
+                };
+                record['computeBandwidth'] = record['computeBandwidth'] || {
+                        'in': new Big(0),
+                        'out': new Big(0)
+                };
+                record['computeGBSeconds'] = record['computeGBSeconds'] || '0';
                 var storageGBHours = ceil(record['byteHrs'].div(BPERGB));
                 var bandwidthGB = {
                         in: ceil(record['bandwidth']['in'].div(BPERGB)),

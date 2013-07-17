@@ -3,6 +3,10 @@
 
 var mod_marlin = require('marlin/lib/meter.js');
 var Big = require('big.js');
+var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
+var lookup = require(lookupPath); // maps uuid->approved_for_provisioning
+var COUNT_UNAPPROVED_USERS = process.env['COUNT_UNAPPROVED_USERS'] === 'true';
+var ERROR = false;
 
 var LOG = require('bunyan').createLogger({
         name: 'compute-map.js',
@@ -76,6 +80,21 @@ function main() {
                         var memory = res['memory.physcap'] / 1048576; // to MiB
                         var disk = res['config_disk'];
 
+                        if (!COUNT_UNAPPROVED_USERS) {
+                                if (!lookup[owner]) {
+                                        LOG.error('No login found for UUID ' +
+                                                owner);
+                                        ERROR = true;
+                                        continue;
+                                }
+
+                                if (!lookup[owner].approved) {
+                                        LOG.warn(owner + ' not approved for ' +
+                                                'provisioning. Skipping...');
+                                        continue;
+                                }
+                        }
+
                         aggr[owner] = aggr[owner] || {
                                 owner: owner,
                                 jobs: {}
@@ -105,6 +124,10 @@ function main() {
                 Object.keys(aggr).forEach(function (o) {
                         console.log(JSON.stringify(aggr[o], stringify));
                 });
+
+                if (ERROR) {
+                        process.exit(1);
+                }
         });
 }
 
