@@ -61,23 +61,23 @@ function main() {
                 };
                 record['computeGBSeconds'] = record['computeGBSeconds'] || '0';
                 var storageGBHours = ceil(record['byteHrs'].div(BPERGB));
-                var bandwidthGB = {
-                        in: ceil(record['bandwidth']['in'].div(BPERGB)),
-                        out: ceil(record['bandwidth']['out'].div(BPERGB))
+                var bandwidthBytes = {
+                        in: record['bandwidth']['in'],
+                        out: record['bandwidth']['out']
                 };
-                var computeBandwidthGB = {
-                        in: ceil(record['computeBandwidth']['in'].div(BPERGB)),
-                        out: ceil(record['computeBandwidth']['out'].div(BPERGB))
+                var computeBandwidthBytes = {
+                        in: record['computeBandwidth']['in'],
+                        out: record['computeBandwidth']['out']
                 };
 
                 var output = {
                         owner: record.owner,
                         date: process.env['DATE'],
                         storageGBHours: storageGBHours,
-                        bandwidthGB: bandwidthGB,
+                        bandwidthBytes: bandwidthBytes,
                         requests: record.requests,
                         computeGBSeconds: record.computeGBSeconds,
-                        computeBandwidthGB: computeBandwidthGB
+                        computeBandwidthBytes: computeBandwidthBytes
                 };
 
                 console.log(JSON.stringify(output, function (key, value) {
