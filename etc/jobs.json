@@ -13,6 +13,7 @@
             "type": "map",
             "memory": 2048,
             "assets": [
+              "/poseidon/stor/usage/assets/etc/lookup.json",
               "/poseidon/stor/usage/assets/node_modules.tar",
               "/poseidon/stor/usage/assets/bin/storage-map",
               "/poseidon/stor/usage/assets/lib/storage-map.js"
@@ -145,6 +146,7 @@
           {
             "type": "map",
             "assets": [
+              "/poseidon/stor/usage/assets/etc/lookup.json",
               "/poseidon/stor/usage/assets/node_modules.tar",
               "/poseidon/stor/usage/assets/bin/compute-map",
               "/poseidon/stor/usage/assets/lib/compute-map.js"
@@ -196,6 +198,7 @@
           {
             "type": "map",
             "assets": [
+              "/poseidon/stor/usage/assets/etc/lookup.json",
               "/poseidon/stor/usage/assets/node_modules.tar",
               "/poseidon/stor/usage/assets/bin/deliver-access-map"
             ],
@@ -241,6 +244,7 @@
           {
             "type": "map",
             "assets": [
+              "/poseidon/stor/usage/assets/etc/lookup.json",
               "/poseidon/stor/usage/assets/node_modules.tar",
               "/poseidon/stor/usage/assets/lib/summarize-map.js",
               "/poseidon/stor/usage/assets/etc/billingComputeTable.json",
