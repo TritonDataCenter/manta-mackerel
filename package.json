@@ -17,6 +17,7 @@
                 "marlin": "git+ssh://git@git.joyent.com:marlin.git#b35df85fda25500a30158a9745ac074d9e79e5f7",
                 "manta": "git+ssh://git@github.com:joyent/node-manta.git#10053410cda6730565523e2af24ee1e932d21f9c",
                 "manta-compute-bin": "git+ssh://git@github.com:joyent/manta-compute-bin.git#35142a0c846eb5cff729bf645dbdaf49f80448cf",
+                "once": "1.1.1",
                 "readable-stream": "0.3.1",
                 "posix-getopt": "1.0.0",
                 "screener": "0.0.5",
@@ -24,7 +25,6 @@
                 "wf-client": "git+ssh://git@git.joyent.com:wf-client.git#master"
         },
         "devDependencies": {
-                "once": "1.1.1",
                 "nodeunit" : "0.7.4",
                 "ansidiff": "1.0.0"
         },
