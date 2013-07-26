@@ -3,7 +3,8 @@
     "storage": {
       "keygen": "StorageHourlyKeyGenerator",
       "keygenArgs": {
-        "source": "/poseidon/stor/manatee_backups"
+        "source": "/poseidon/stor/manatee_backups",
+        "shardBlacklist": ['1']
       },
       "linkPath": "/poseidon/stor/usage/storage/latest",
       "job": {

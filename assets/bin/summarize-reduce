@@ -8,4 +8,4 @@ cd $dir/.. && tar -xf node_modules.tar
 
 $dir/../lib/sum-columns.js \
 | $dir/../lib/summarize-reduce.js \
-| $dir/../deliver-usage.js
+| $dir/../lib/deliver-usage.js
