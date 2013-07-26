@@ -15,6 +15,7 @@ var lookup = require(lookupPath); // maps uuid->login
 var ERROR = false;
 var DELIVER_UNAPPROVED_REPORTS =
         process.env['DELIVER_UNAPPROVED_REPORTS'] === 'true';
+var DRY_RUN = process.env['DRY_RUN'] === 'true';
 
 function filter(key, value) {
         if (typeof (value) === 'number') {
@@ -102,6 +103,11 @@ function writeToUserDir(opts, cb) {
 }
 
 function main() {
+        // don't deliver anything if this is set
+        if (DRY_RUN) {
+                return;
+        }
+
         var client = mod_manta.createClient({
                 sign: null,
                 url: process.env['MANTA_URL']

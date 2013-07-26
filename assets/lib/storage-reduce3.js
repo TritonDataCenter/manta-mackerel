@@ -75,14 +75,12 @@ var LOG = require('bunyan').createLogger({
         level: process.env['LOG_LEVEL'] || 'info'
 });
 
-function emptyUsage(namespace) {
-        return ({
-                directories: 0,
-                keys: 0,
-                objects: 0,
-                bytes: '0'
-        });
-}
+var EMPTY_USAGE = {
+        directories: '0',
+        keys: '0',
+        objects: '0',
+        bytes: '0'
+};
 
 function main() {
         var carry = mod_carrier.carry(process.openStdin());
@@ -114,7 +112,7 @@ function main() {
                         for (var n = 0; n < namespaces.length; ++n) {
                                 aggr[o].storage[namespaces[n]] =
                                         aggr[o].storage[namespaces[n]] ||
-                                        emptyUsage(namespaces[n]);
+                                        EMPTY_USAGE;
                         }
                         console.log(JSON.stringify(aggr[o]));
                 });

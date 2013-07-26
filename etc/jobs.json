@@ -4,7 +4,7 @@
       "keygen": "StorageHourlyKeyGenerator",
       "keygenArgs": {
         "source": "/poseidon/stor/manatee_backups",
-        "shardBlacklist": ['1']
+        "shardBlacklist": ["1"]
       },
       "linkPath": "/poseidon/stor/usage/storage/latest",
       "job": {

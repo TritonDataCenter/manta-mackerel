@@ -270,3 +270,20 @@ test('deliver unapproved reports', function (t) {
                 t.done();
         });
 });
+
+test('dry run', function (t) {
+        var record = JSON.parse(JSON.stringify(STORAGE_RECORD));
+        record.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
+        t.equal(LOOKUP[record.owner].approved, false);
+        runTest({
+                stdin: JSON.stringify(record),
+                env: {
+                        'DRY_RUN': 'true',
+                        'DELIVER_UNAPPROVED_REPORTS': 'true'
+                }
+        }, function (result) {
+                t.equal(result.code, 0);
+                t.equal(SERVER.requests.length, 0);
+                t.done();
+        });
+});

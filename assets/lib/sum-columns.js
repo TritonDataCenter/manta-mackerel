@@ -102,7 +102,9 @@ function onLine(aggr, line) {
 function onEnd(aggr) {
         Object.keys(aggr).forEach(function (k) {
                 console.log(JSON.stringify(aggr[k], function (key, value) {
-                        if (value instanceof Big) {
+                        if (value instanceof Big ||
+                                typeof (value) === 'number') {
+
                                 return (value.toString());
                         }
                         return (value);
