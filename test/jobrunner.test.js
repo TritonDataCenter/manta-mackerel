@@ -343,7 +343,7 @@ test('addInputKeys', function (t) {
 test('addInputKeys: malformed key', function (t) {
         t.expect(5);
         var self = this;
-        var asset1 =  '/asset1';
+        var asset1 =  'asset1';
         var asset2 = this.testdir + '/asset2';
 
         var job = {
@@ -379,6 +379,7 @@ test('addInputKeys: malformed key', function (t) {
                                 client: self.client
                         }, function (err2, jobPath2, count) {
                                 t.ok(false);
+                                t.end();
                         });
                 } catch (e) {
                         t.ok(e);

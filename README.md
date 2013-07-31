@@ -30,11 +30,13 @@ Compute data comes from marlin agent audit logs.
 
 Run metering jobs using
 
-    bin/meter [-f configPath] [-w] -d date -j jobName
+    bin/meter [-f configPath] [-w] [-c] [-r] -d date -j jobName
 
 where date is in some format readable by `Date.parse()` and jobNAme is one of
 `storage`, `compute`, `request`, `accessLogs`, or `summarizeDaily`. Set the -w
-to use workflow to manage the metering job.
+to use workflow to manage the metering job. Setting the -c flag will print the
+job manifest without creating a job. Setting the -r flag will automatically
+retry the job in the event of failures.
 
 Examples:
 

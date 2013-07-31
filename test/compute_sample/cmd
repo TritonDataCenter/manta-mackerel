@@ -2,4 +2,6 @@
 MAP=../../assets/bin/compute-map
 REDUCE=../../assets/bin/compute-reduce
 function msplit () { cat; }; export -f msplit;
-cat input | $MAP | $REDUCE
+export COUNT_UNAPPROVED_USERS=true
+export DRY_RUN=true
+cat ../test_data/compute-raw.json | $MAP | $REDUCE

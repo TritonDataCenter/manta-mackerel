@@ -6,7 +6,7 @@
         "source": "/poseidon/stor/manatee_backups",
         "shardBlacklist": ["1"]
       },
-      "linkPath": "/poseidon/stor/usage/storage/latest",
+      "linkPath": "storage/latest",
       "job": {
         "name": "metering-storage-hourly-$year-$month-$dayT$hour",
         "phases": [
@@ -14,52 +14,52 @@
             "type": "map",
             "memory": 2048,
             "assets": [
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/storage-map",
-              "/poseidon/stor/usage/assets/lib/storage-map.js"
+              "assets/etc/lookup.json",
+              "assets/node_modules.tar",
+              "assets/bin/storage-map",
+              "assets/lib/storage-map.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/storage-map"
+            "exec": "assets/bin/storage-map"
           },
           {
             "type": "reduce",
             "memory": 2048,
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/storage-reduce1",
-              "/poseidon/stor/usage/assets/lib/storage-reduce1.js"
+              "assets/node_modules.tar",
+              "assets/bin/storage-reduce1",
+              "assets/lib/storage-reduce1.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce1",
+            "exec": "assets/bin/storage-reduce1",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/storage-reduce2",
-              "/poseidon/stor/usage/assets/lib/sum-columns.js"
+              "assets/node_modules.tar",
+              "assets/bin/storage-reduce2",
+              "assets/lib/sum-columns.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce2",
+            "exec": "assets/bin/storage-reduce2",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/storage-reduce3",
-              "/poseidon/stor/usage/assets/lib/storage-reduce3.js",
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+              "assets/node_modules.tar",
+              "assets/bin/storage-reduce3",
+              "assets/lib/storage-reduce3.js",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-usage.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/storage-reduce3",
+            "exec": "assets/bin/storage-reduce3",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/bin/concat"
+              "assets/bin/concat"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/concat",
+            "exec": "assets/bin/concat",
             "count": 1
           }
         ]
@@ -68,7 +68,7 @@
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "COUNT_UNAPPROVED_USERS": "true",
         "DATE": "$year-$month-$dayT$hour:00:00.000Z",
-        "DEST": "/poseidon/stor/usage/storage/$year/$month/$day/$hour/h$hour.json",
+        "DEST": "$base/storage/$year/$month/$day/$hour/h$hour.json",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "MIN_SIZE": "131072",
         "NAMESPACES": "stor public jobs reports",
@@ -84,39 +84,38 @@
       "keygenArgs": {
         "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
       },
-      "linkPath": "/poseidon/stor/usage/request/latest",
+      "linkPath": "request/latest",
       "job": {
         "name": "metering-request-hourly-$year-$month-$dayT$hour",
         "phases": [
           {
             "type": "map",
             "assets": [
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/request-map",
-              "/poseidon/stor/usage/assets/lib/deliver-access.js",
-              "/poseidon/stor/usage/assets/lib/request-map.js"
+              "assets/etc/lookup.json",
+              "assets/node_modules.tar",
+              "assets/bin/request-map",
+              "assets/lib/request-map.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/request-map"
+            "exec": "assets/bin/request-map"
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/request-reduce",
-              "/poseidon/stor/usage/assets/lib/sum-columns.js",
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+              "assets/node_modules.tar",
+              "assets/bin/request-reduce",
+              "assets/lib/sum-columns.js",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-usage.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/request-reduce",
+            "exec": "assets/bin/request-reduce",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/bin/concat"
+              "assets/bin/concat"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/concat",
+            "exec": "assets/bin/concat",
             "count": 1
           }
         ]
@@ -126,7 +125,7 @@
         "COUNT_UNAPPROVED_USERS": "true",
         "DROP_POSEIDON_REQUESTS": "true",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
-        "DEST": "/poseidon/stor/usage/request/$year/$month/$day/$hour/h$hour.json",
+        "DEST": "$base/request/$year/$month/$day/$hour/h$hour.json",
         "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
         "USER_DEST": "/reports/usage/request/$year/$month/$day/$hour/h$hour.json",
         "USER_LINK": "/reports/usage/request/latest",
@@ -140,38 +139,38 @@
       "keygenArgs": {
         "source": "/poseidon/stor/logs/marlin-agent/$year/$month/$day/$hour"
       },
-      "linkPath": "/poseidon/stor/usage/compute/latest",
+      "linkPath": "compute/latest",
       "job": {
         "name": "metering-compute-hourly-$year-$month-$dayT$hour",
         "phases": [
           {
             "type": "map",
             "assets": [
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/compute-map",
-              "/poseidon/stor/usage/assets/lib/compute-map.js"
+              "assets/etc/lookup.json",
+              "assets/node_modules.tar",
+              "assets/bin/compute-map",
+              "assets/lib/compute-map.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/compute-map"
+            "exec": "assets/bin/compute-map"
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/compute-reduce",
-              "/poseidon/stor/usage/assets/lib/compute-reduce.js",
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/lib/deliver-usage.js"
+              "assets/node_modules.tar",
+              "assets/bin/compute-reduce",
+              "assets/lib/compute-reduce.js",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-usage.js"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/compute-reduce",
+            "exec": "assets/bin/compute-reduce",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/bin/concat"
+              "assets/bin/concat"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/concat",
+            "exec": "assets/bin/concat",
             "count": 1
           }
         ]
@@ -180,7 +179,7 @@
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "COUNT_UNAPPROVED_USERS": "true",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
-        "DEST": "/poseidon/stor/usage/compute/$year/$month/$day/$hour/h$hour.json",
+        "DEST": "$base/compute/$year/$month/$day/$hour/h$hour.json",
         "USER_DEST": "/reports/usage/compute/$year/$month/$day/$hour/h$hour.json",
         "USER_LINK": "/reports/usage/compute/latest",
         "DATE": "$year-$month-$dayT$hour:00:00.000Z"
@@ -199,21 +198,21 @@
           {
             "type": "map",
             "assets": [
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/bin/deliver-access-map"
+              "assets/etc/lookup.json",
+              "assets/node_modules.tar",
+              "assets/bin/deliver-access-map"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-access-map"
+            "exec": "assets/bin/deliver-access-map"
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/lib/deliver-access.js",
-              "/poseidon/stor/usage/assets/bin/deliver-access-reduce"
+              "assets/node_modules.tar",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-access.js",
+              "assets/bin/deliver-access-reduce"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/deliver-access-reduce",
+            "exec": "assets/bin/deliver-access-reduce",
             "count": 10
           }
         ]
@@ -232,46 +231,46 @@
       "keygen": "FindKeyGenerator",
       "keygenArgs": {
         "source": [
-          "/poseidon/stor/usage/storage/$year/$month/$day",
-          "/poseidon/stor/usage/request/$year/$month/$day",
-          "/poseidon/stor/usage/compute/$year/$month/$day"
+          "storage/$year/$month/$day",
+          "request/$year/$month/$day",
+          "compute/$year/$month/$day"
         ],
         "regex": "h[0-9[0-9]"
       },
-      "linkPath": "/poseidon/stor/usage/summary/latest",
+      "linkPath": "summary/latest",
       "job": {
         "name": "metering-summarize-daily-$year-$month-$dayT$hour",
         "phases": [
           {
             "type": "map",
             "assets": [
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/lib/summarize-map.js",
-              "/poseidon/stor/usage/assets/etc/billingComputeTable.json",
-              "/poseidon/stor/usage/assets/bin/summarize-map"
+              "assets/etc/lookup.json",
+              "assets/node_modules.tar",
+              "assets/lib/summarize-map.js",
+              "assets/etc/billingComputeTable.json",
+              "assets/bin/summarize-map"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-map"
+            "exec": "assets/bin/summarize-map"
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/node_modules.tar",
-              "/poseidon/stor/usage/assets/lib/sum-columns.js",
-              "/poseidon/stor/usage/assets/lib/summarize-reduce.js",
-              "/poseidon/stor/usage/assets/etc/lookup.json",
-              "/poseidon/stor/usage/assets/lib/deliver-usage.js",
-              "/poseidon/stor/usage/assets/bin/summarize-reduce"
+              "assets/node_modules.tar",
+              "assets/lib/sum-columns.js",
+              "assets/lib/summarize-reduce.js",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-usage.js",
+              "assets/bin/summarize-reduce"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/summarize-reduce",
+            "exec": "assets/bin/summarize-reduce",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "/poseidon/stor/usage/assets/bin/concat"
+              "assets/bin/concat"
             ],
-            "exec": "/assets/poseidon/stor/usage/assets/bin/concat",
+            "exec": "assets/bin/concat",
             "count": 1
           }
         ]
@@ -280,7 +279,7 @@
         "COUNT_UNAPPROVED_USERS": "true",
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
-        "DEST": "/poseidon/stor/usage/summary/$year/$month/$day/d$day.json",
+        "DEST": "$base/summary/$year/$month/$day/d$day.json",
         "USER_DEST": "/reports/usage/summary/$year/$month/$day/d$day.json",
         "USER_LINK": "/reports/usage/summary/latest",
         "DATE": "$year-$month-$dayT00:00:00.000Z"
