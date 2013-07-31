@@ -227,3 +227,33 @@ test('do not count unapproved users', function (t) {
                 t.done();
         });
 });
+
+test('malformed line', function (t) {
+        var record = clone(RECORD);
+
+        runTest({
+                stdin: JSON.stringify(record) + '\n{"incomplete":{"record":',
+                env: {
+                        'COUNT_UNAPPROVED_USERS': 'true'
+                }
+        }, function (result) {
+                t.equal(1, result.code);
+                t.done();
+        });
+});
+
+test('malformed line limit', function (t) {
+        var record = clone(RECORD);
+
+        runTest({
+                stdin: JSON.stringify(record) + '\n{"incomplete":{"record":',
+                env: {
+                        "MALFORMED_LIMIT": "1",
+                        'COUNT_UNAPPROVED_USERS': 'true'
+                }
+        }, function (result) {
+                t.equal(0, result.code);
+                t.deepEqual(JSON.parse(result.stdout), EXPECTED);
+                t.done();
+        });
+});

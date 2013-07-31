@@ -6,6 +6,7 @@ var Big = require('big.js');
 var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
 var lookup = require(lookupPath); // maps uuid->approved_for_provisioning
 var COUNT_UNAPPROVED_USERS = process.env['COUNT_UNAPPROVED_USERS'] === 'true';
+var MALFORMED_LIMIT = process.env['MALFORMED_LIMIT'] || '0';
 var ERROR = false;
 
 var LOG = require('bunyan').createLogger({
@@ -66,6 +67,31 @@ function main() {
 
         reader.once('end', function onEnd() {
                 LOG.info('reader end');
+                var len = MALFORMED_LIMIT.length;
+                var stats = reader.stats();
+                var malformed = stats['malformed records'];
+
+                var threshold;
+
+                if (MALFORMED_LIMIT[len - 1] === '%') {
+                        var pct = +(MALFORMED_LIMIT.substr(0, len-1));
+                        threshold = pct * stats['log records'];
+                } else {
+                        threshold = +MALFORMED_LIMIT;
+                }
+
+                if (isNaN(threshold)) {
+                        LOG.error('MALFORMED_LIMIT not a number');
+                        ERROR = true;
+                        return;
+                }
+
+                if (malformed > threshold) {
+                        LOG.fatal('Too many malformed lines');
+                        ERROR = true;
+                        return;
+                }
+
                 var report = reader.reportFlattened();
                 for (var i = 0; i < report.length; i++) {
                         var owner = report[i][0];

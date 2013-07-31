@@ -121,6 +121,7 @@
         ]
       },
       "env": {
+        "MALFORMED_LIMIT": "10",
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "COUNT_UNAPPROVED_USERS": "true",
         "DROP_POSEIDON_REQUESTS": "true",
@@ -176,6 +177,7 @@
         ]
       },
       "env": {
+        "MALFORMED_LIMIT": "10",
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "COUNT_UNAPPROVED_USERS": "true",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",

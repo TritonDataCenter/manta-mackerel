@@ -6,8 +6,10 @@ var Big = require('big.js');
 var ERROR = false;
 var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
 var lookup = require(lookupPath); // maps uuid->approved_for_provisioning
+
 var COUNT_UNAPPROVED_USERS = process.env['COUNT_UNAPPROVED_USERS'] === 'true';
 var DROP_POSEIDON = process.env['DROP_POSEIDON_REQUESTS'] === 'true';
+var MALFORMED_LIMIT = process.env['MALFORMED_LIMIT'] || '0';
 
 var LOG = require('bunyan').createLogger({
         name: 'request-map.js',
@@ -100,6 +102,7 @@ function main() {
         var carry = mod_carrier.carry(process.openStdin());
         var aggr = {};
         var lineCount = 0;
+        var malformed = 0;
         carry.on('line', function onLine(line) {
                 lineCount++;
                 var record;
@@ -114,8 +117,8 @@ function main() {
                 try {
                         record = JSON.parse(line);
                 } catch (e) {
+                        malformed++;
                         LOG.error(e, 'Error on line ' + lineCount);
-                        ERROR = true;
                         return;
                 }
 
@@ -144,7 +147,37 @@ function main() {
         });
 
         carry.once('end', function onEnd() {
+                var len = MALFORMED_LIMIT.length;
+                var threshold;
+
+                if (MALFORMED_LIMIT[len - 1] === '%') {
+                        var pct = +(MALFORMED_LIMIT.substr(0, len-1));
+                        threshold = pct * lineCount;
+                } else {
+                        threshold = +MALFORMED_LIMIT;
+                }
+
+                if (isNaN(threshold)) {
+                        LOG.error('MALFORMED_LIMIT not a number');
+                        ERROR = true;
+                        return;
+                }
+
+                if (malformed > threshold) {
+                        LOG.fatal('Too many malformed lines');
+                        ERROR = true;
+                        return;
+                }
+
                 printResults(aggr);
         });
 }
-main();
+
+if (require.main === module) {
+
+        process.on('exit', function onExit() {
+                process.exit(ERROR);
+        });
+
+        main();
+}
