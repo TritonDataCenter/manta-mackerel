@@ -105,6 +105,8 @@ function writeToUserDir(opts, cb) {
 function main() {
         // don't deliver anything if this is set
         if (DRY_RUN) {
+                process.stdin.pipe(process.stdout);
+                process.stdin.resume();
                 return;
         }
 
