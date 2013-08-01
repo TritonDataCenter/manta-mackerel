@@ -14,43 +14,51 @@
             "type": "map",
             "memory": 2048,
             "assets": [
-              "assets/etc/lookup.json",
-              "assets/node_modules.tar",
+              "assets/bin/init",
               "assets/bin/storage-map",
-              "assets/lib/storage-map.js"
+              "assets/etc/lookup.json",
+              "assets/lib/storage-map.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/storage-map"
           },
           {
             "type": "reduce",
             "memory": 2048,
             "assets": [
-              "assets/node_modules.tar",
+              "assets/bin/init",
               "assets/bin/storage-reduce1",
-              "assets/lib/storage-reduce1.js"
+              "assets/lib/storage-reduce1.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/storage-reduce1",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "assets/node_modules.tar",
+              "assets/bin/init",
               "assets/bin/storage-reduce2",
-              "assets/lib/sum-columns.js"
+              "assets/lib/sum-columns.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/storage-reduce2",
             "count": 10
           },
           {
             "type": "reduce",
             "assets": [
-              "assets/node_modules.tar",
+              "assets/bin/init",
               "assets/bin/storage-reduce3",
-              "assets/lib/storage-reduce3.js",
               "assets/etc/lookup.json",
-              "assets/lib/deliver-usage.js"
+              "assets/lib/deliver-usage.js",
+              "assets/lib/storage-reduce3.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/storage-reduce3",
             "count": 10
           },
@@ -65,9 +73,9 @@
         ]
       },
       "env": {
-        "DELIVER_UNAPPROVED_REPORTS": "false",
         "COUNT_UNAPPROVED_USERS": "true",
         "DATE": "$year-$month-$dayT$hour:00:00.000Z",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
         "DEST": "$base/storage/$year/$month/$day/$hour/h$hour.json",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "MIN_SIZE": "131072",
@@ -91,22 +99,26 @@
           {
             "type": "map",
             "assets": [
-              "assets/etc/lookup.json",
-              "assets/node_modules.tar",
+              "assets/bin/init",
               "assets/bin/request-map",
-              "assets/lib/request-map.js"
+              "assets/etc/lookup.json",
+              "assets/lib/request-map.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/request-map"
           },
           {
             "type": "reduce",
             "assets": [
-              "assets/node_modules.tar",
+              "assets/bin/init",
               "assets/bin/request-reduce",
-              "assets/lib/sum-columns.js",
               "assets/etc/lookup.json",
-              "assets/lib/deliver-usage.js"
+              "assets/lib/deliver-usage.js",
+              "assets/lib/sum-columns.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/request-reduce",
             "count": 10
           },
@@ -121,16 +133,16 @@
         ]
       },
       "env": {
-        "MALFORMED_LIMIT": "10",
-        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
         "COUNT_UNAPPROVED_USERS": "true",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "DEST": "$base/request/$year/$month/$day/$hour/h$hour.json",
         "DROP_POSEIDON_REQUESTS": "true",
         "HEADER_CONTENT_TYPE": "application/x-json-stream",
-        "DEST": "$base/request/$year/$month/$day/$hour/h$hour.json",
-        "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
+        "MALFORMED_LIMIT": "10",
         "USER_DEST": "/reports/usage/request/$year/$month/$day/$hour/h$hour.json",
-        "USER_LINK": "/reports/usage/request/latest",
-        "DATE": "$year-$month-$dayT$hour:00:00.000Z"
+        "USER_LINK": "/reports/usage/request/latest"
       }
     },
 
@@ -147,22 +159,26 @@
           {
             "type": "map",
             "assets": [
-              "assets/etc/lookup.json",
-              "assets/node_modules.tar",
               "assets/bin/compute-map",
-              "assets/lib/compute-map.js"
+              "assets/bin/init",
+              "assets/etc/lookup.json",
+              "assets/lib/compute-map.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/compute-map"
           },
           {
             "type": "reduce",
             "assets": [
-              "assets/node_modules.tar",
               "assets/bin/compute-reduce",
-              "assets/lib/compute-reduce.js",
+              "assets/bin/init",
               "assets/etc/lookup.json",
-              "assets/lib/deliver-usage.js"
+              "assets/lib/compute-reduce.js",
+              "assets/lib/deliver-usage.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/compute-reduce",
             "count": 10
           },
@@ -177,14 +193,14 @@
         ]
       },
       "env": {
-        "MALFORMED_LIMIT": "10",
-        "DELIVER_UNAPPROVED_REPORTS": "false",
         "COUNT_UNAPPROVED_USERS": "true",
-        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
         "DEST": "$base/compute/$year/$month/$day/$hour/h$hour.json",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "MALFORMED_LIMIT": "10",
         "USER_DEST": "/reports/usage/compute/$year/$month/$day/$hour/h$hour.json",
-        "USER_LINK": "/reports/usage/compute/latest",
-        "DATE": "$year-$month-$dayT$hour:00:00.000Z"
+        "USER_LINK": "/reports/usage/compute/latest"
       }
     },
 
@@ -200,31 +216,35 @@
           {
             "type": "map",
             "assets": [
+              "assets/bin/deliver-access-map",
+              "assets/bin/init",
               "assets/etc/lookup.json",
-              "assets/node_modules.tar",
-              "assets/bin/deliver-access-map"
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/deliver-access-map"
           },
           {
             "type": "reduce",
             "assets": [
-              "assets/node_modules.tar",
+              "assets/bin/deliver-access-reduce",
+              "assets/bin/init",
               "assets/etc/lookup.json",
               "assets/lib/deliver-access.js",
-              "assets/bin/deliver-access-reduce"
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/deliver-access-reduce",
             "count": 10
           }
         ]
       },
       "env": {
-        "DROP_POSEIDON_REQUESTS": "true",
-        "DELIVER_UNAPPROVED_REPORTS": "false",
-        "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
-        "ACCESS_LINK": "/reports/access-logs/latest"
+        "ACCESS_LINK": "/reports/access-logs/latest",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "DROP_POSEIDON_REQUESTS": "true",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream"
       }
     },
 
@@ -246,24 +266,28 @@
           {
             "type": "map",
             "assets": [
-              "assets/etc/lookup.json",
-              "assets/node_modules.tar",
-              "assets/lib/summarize-map.js",
+              "assets/bin/init",
+              "assets/bin/summarize-map",
               "assets/etc/billingComputeTable.json",
-              "assets/bin/summarize-map"
+              "assets/etc/lookup.json",
+              "assets/lib/summarize-map.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/summarize-map"
           },
           {
             "type": "reduce",
             "assets": [
-              "assets/node_modules.tar",
-              "assets/lib/sum-columns.js",
-              "assets/lib/summarize-reduce.js",
+              "assets/bin/init",
+              "assets/bin/summarize-reduce",
               "assets/etc/lookup.json",
               "assets/lib/deliver-usage.js",
-              "assets/bin/summarize-reduce"
+              "assets/lib/sum-columns.js",
+              "assets/lib/summarize-reduce.js",
+              "assets/node_modules.tar"
             ],
+            "init": "assets/bin/init",
             "exec": "assets/bin/summarize-reduce",
             "count": 10
           },
@@ -279,12 +303,12 @@
       },
       "env": {
         "COUNT_UNAPPROVED_USERS": "true",
+        "DATE": "$year-$month-$dayT00:00:00.000Z",
         "DELIVER_UNAPPROVED_REPORTS": "false",
-        "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "DEST": "$base/summary/$year/$month/$day/d$day.json",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
         "USER_DEST": "/reports/usage/summary/$year/$month/$day/d$day.json",
-        "USER_LINK": "/reports/usage/summary/latest",
-        "DATE": "$year-$month-$dayT00:00:00.000Z"
+        "USER_LINK": "/reports/usage/summary/latest"
       }
     }
 

@@ -129,13 +129,15 @@ test('configureJob - relative paths', function (t) {
                         name: 'metering-$year-$month-dayT$hour',
                         phases: [ {
                                 type: 'map',
-                                exec: 'bin/map'
+                                exec: 'bin/map',
+                                init: 'bin/init'
                         }, {
                                 type: 'reduce',
                                 assets: [
                                         'bin/reduce1'
                                 ],
                                 exec: 'bin/reduce1',
+                                init: '/not/relative',
                                 count: 5
                         }, {
                                 type: 'reduce',
@@ -154,12 +156,14 @@ test('configureJob - relative paths', function (t) {
                         name: 'metering-2013-07-dayT05',
                         phases: [ {
                                 type: 'map',
+                                init: '/assets/test/bin/init',
                                 exec: 'NUM_REDUCERS=5 /assets/test/bin/map'
                         }, {
                                 type: 'reduce',
                                 assets: [
                                         '/test/bin/reduce1'
                                 ],
+                                init: '/not/relative',
                                 exec: 'NUM_REDUCERS=7 /assets/test/bin/reduce1',
                                 count: 5
                         }, {

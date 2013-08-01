@@ -1,8 +1,5 @@
 #!/bin/bash
 # Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-set -o pipefail
-
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-$dir/../lib/storage-reduce3.js | $dir/../lib/deliver-usage.js
+cd $dir/.. && tar -xf node_modules.tar

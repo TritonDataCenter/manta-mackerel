@@ -4,7 +4,6 @@
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $dir/.. && tar -xf node_modules.tar
 
 $dir/../lib/sum-columns.js \
 | $dir/../lib/deliver-usage.js
