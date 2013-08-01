@@ -5,9 +5,6 @@ Browsing: <https://mo.joyent.com/mackerel>
 Who: Fred Kuo
 Docs: <https://mo.joyent.com/docs/mackerel>
 Tickets/bugs: <https://devhub.joyent.com/jira/browse/MANTA-195>
-//TODO
-Mention bandwidth overhead in marlin compute jobs
-
 
 # Overview
 
@@ -24,7 +21,7 @@ Configuration files are in /etc
 
 Storage data comes from Postgres dumps from each Moray shard.
 Request data comes from Muskie audit logs.
-Compute data comes from marlin agent audit logs.
+Compute data comes from Marlin agent audit logs.
 
 # Running metering jobs
 
@@ -32,11 +29,12 @@ Run metering jobs using
 
     bin/meter [-f configPath] [-w] [-c] [-r] -d date -j jobName
 
-where date is in some format readable by `Date.parse()` and jobNAme is one of
-`storage`, `compute`, `request`, `accessLogs`, or `summarizeDaily`. Set the -w
-to use workflow to manage the metering job. Setting the -c flag will print the
-job manifest without creating a job. Setting the -r flag will automatically
-retry the job in the event of failures.
+where date is in some format readable by `Date.parse()` (e.g. ISO-8601 or
+output from date(1)) and jobName is one of `storage`, `compute`, `request`,
+`accessLogs`, or `summarizeDaily`. Set the -w to use workflow to manage the
+metering job. Setting the -c flag will print the job manifest without creating
+a job. Setting the -r flag will automatically retry the job in the event of
+failures.
 
 Examples:
 
@@ -76,102 +74,85 @@ Configuration settings include:
             host: 'localhost',
             port: 6379
         }
+    }
 
-        // job configuration settings
+Job details look like:
+
+    {
         'jobs': {
-            category: { // e.g. storage, request, compute
-                period: { // e.g. hourly, daily, monthly
-                    'keygen': '/local/path/to/keygen.js',
+            jobName: { // e.g. storage, request, compute
 
-                    // any arguments to pass to the keygen
-                    'keygenArgs': {
-                        'source': '/manta/source/path'
-                    },
+                'keygen': 'name of key generator', // under /lib/keygen
 
-                    // the job manifest passed to marlin
-                    'job': {
-                        'name': name,
-                        'phases': [ {
-                                'type': type,
-                                'assets': [...],
-                                'exec': execStr,
-                                ...
-                        }, {
-                        ...
-                        } ]
-                    },
-
-                    // which workflow to use
-                    'workflow': workflowname
-
-                    // where to create a link to the result
-                    'linkPath': '/path/to/latest'
-
-                    // any environment variables you need
-                    // set at job runtime
-                    env: {
-                        'DEST': '/manta/path.json',
-                        ...
-                    }
+                // any arguments to pass to the keygen
+                'keygenArgs': {
+                    'source': '/manta/source/path'
                 },
-                ...
+
+                // the job manifest passed to marlin
+                'job': {
+                    'name': name,
+                    'phases': [ {
+                            'type': type,
+                            'assets': [...],
+                            'init': initStr,
+                            'exec': execStr
+                    }, {
+                    ...
+                    } ]
+                },
+
+                // where to create a link to the result when the job finishes
+                'linkPath': '/path/to/latest'
+
+                // any environment variables you need set at job runtime
+                env: {
+                    'DEST': '/manta/path.json',
+                    ...
+                }
             },
             ...
         },
+        ...
 
     }
 
-Request metering categorizes requests and bandwidth by the network it came
-from.  Specify the ranges and networks in networks.json as an array of {name,
-ranges} tuples, where ranges is an array of IP ranges (v6 supported) in CIDR
-notation.
+Some job configuration is passed to a job via environment variables.
 
-A request is categorized for a network by looking through the array
-and checking for matches for any of the ranges in each network, and the first
-matching range is selected, so the order of the tuples is important.
+* ACCESS_DEST: the Manta path to append to "/:user" for access logs
+* COUNT_UNAPPROVED_USERS: if true, users with approved_for_provisioning set to
+false will be included in reports DATE: the date the job will meter for
+* DELIVER_UNAPPROVED_REPORTS: if true, users with approved_for_provisioning set
+to false will receive usage reports in their /reports directory DEST: the
+Manta path where usage reports should be saved to
+* DROP_POSEIDON_REQUESTS: if true, drop requests where poseidon is the caller
+from usage reports or access logs HEADER_CONTENT_TYPE: content type for usage
+reports
+* MALFORMED_LIMIT: in request and compute, how many lines of malformed json to
+allow before throwing an error. scalar ("500") or percent ("1%") MIN_SIZE:
+minimum size of objects in storage metering
+* NAMESPACES: a list of all namespaces in Manta
+* USER_DEST: the Manta path to append to "/:user" for usage reports
+* USER_LINK: the path to create a link to the latest usage report generated for
+a user
 
-    [
-        {
-            'name': 'internal',
-            'ranges': [ '10.0.0.0/8', '192.168.0.0/16' ]
-        },
-        {
-            'name': 'external',
-            'ranges': [ '0.0.0.0/0' ]
-        }
-    ]
 
 
 # Testing
 
 Mackerel needs a Manta deployment. Point to a Manta deployment by filling in
 the fields in `etc/test-config.js`, which overrides config entries in the normal
-config file at `etc/config.js`. Set `TEST_USER` in your environment to match the
-user in the manta config file. Entries to override include:
+config file at `etc/config.js`. Entries to override include:
 
-    * mantaConfigFile: path to a manta config file.
-    * mahi.host: mahi host for generating lookups
-    * workflow.url: url of a manta workflow
+    * manta url/user/sign: manta credentials
+    * mantaBaseDirectory: modify this to make the integration tests use your
+        directory instead of the default /poseidon/stor/usage
+    * lookupFile: path to the test lookup file
+    * mahi.host: mahi host (only used for generating lookups)
+    * workflow.url: url of a manta workflow (only needed if workflow is used)
 
-Sample Manta config file:
+Run tests using:
+    make test
 
-    {
-        "manta": {
-            "connectTimeout": 1000,
-            "retry": {
-                "attempts": 5,
-                "minTimeout": 1000
-            },
-            "sign": {
-                "key": "/home/dev/.ssh/id_rsa",
-                "keyId": "e3:4d:9b:26:bd:ef:a1:db:43:ae:4b:f7:bc:69:a7:24"
-            },
-            "url": "https://manta-beta.joyentcloud.com",
-            "user": "fredkuo"
-        }
-    }
-
-
-Examples:
-
-    TEST_USER=fredkuo make test
+To run a single integration test:
+    nodeunit -t storage test/integration.test.js
