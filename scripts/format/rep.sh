@@ -43,7 +43,7 @@ USERS=$(mget -q $STORAGE | json -ga -c '+storage.stor.bytes > 0' -e 'total= +sto
 
 echo "Generated $(date)" > $STORAGETMP
 echo "Storage data from the hour of $(mls -j $(dirname $STORAGE) | json -ga -c "this.name === '$(basename $STORAGE)'" mtime)" >> $STORAGETMP
-printf "%-20s  %-10s  %-10s  %-10s  %-10s\n" "LOGIN" "TOTAL" "STORAGE" "PUBLIC" "JOBS" >> $STORAGETMP
+printf "%-25s  %-7s  %-7s  %-7s  %-7s\n" "LOGIN" "TOTAL" "STORAGE" "PUBLIC" "JOBS" >> $STORAGETMP
 while read -r line; do
     UUID=$(echo $line | awk '{print $1}')
     STOR=$(echo $line | awk '{print $2}')
@@ -53,7 +53,7 @@ while read -r line; do
 
     LOGIN=$(LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL $LDAP_CREDS -b ou=users,o=smartdc uuid=$UUID login | grep -v dn | nawk  -F ': ' '{print $2}')
 
-    printf "%-20s  %-10s  %-10s  %-10s  %-10s\n" $LOGIN $(human $TOTAL) $(human $STOR) $(human $PUB) $(human $JOBS) >> $STORAGETMP
+    printf "%-25s  %-7s  %-7s  %-7s  %-7s\n" $LOGIN $(human $TOTAL) $(human $STOR) $(human $PUB) $(human $JOBS) >> $STORAGETMP
 done <<< "$USERS"
 
 mput -f $STORAGETMP $STORAGEDEST
@@ -63,7 +63,7 @@ USERS=$(mget -q $REQUEST | json -ga -c 'requests.bandwidth.in > 0 || requests.ba
 
 echo "Generated $(date)" > $REQUESTTMP
 echo "Request data from the hour of $(mls -j $(dirname $REQUEST) | json -ga -c "this.name === '$(basename $REQUEST)'" mtime)" >> $REQUESTTMP
-printf "%-20s  %-10s  %-10s  %-10s\n" "LOGIN" "TOTAL" "BWIN" "BWOUT" >> $REQUESTTMP
+printf "%-25s  %-7s  %-7s  %-7s\n" "LOGIN" "TOTAL" "BWIN" "BWOUT" >> $REQUESTTMP
 while read -r line; do
     UUID=$(echo $line | awk '{print $1}')
     TOTAL=$(echo $line | awk '{print $2}')
@@ -72,7 +72,7 @@ while read -r line; do
 
     LOGIN=$(LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL $LDAP_CREDS -b ou=users,o=smartdc uuid=$UUID login | grep -v dn | nawk  -F ': ' '{print $2}')
 
-    printf "%-20s  %-10s  %-10s  %-10s\n" $LOGIN $(human $TOTAL) $(human $BWIN) $(human $BWOUT) >> $REQUESTTMP
+    printf "%-25s  %-7s  %-7s  %-7s\n" $LOGIN $(human $TOTAL) $(human $BWIN) $(human $BWOUT) >> $REQUESTTMP
 done <<< "$USERS"
 
 mput -f $REQUESTTMP $REQUESTDEST
@@ -81,7 +81,7 @@ mput -f $REQUESTTMP $REQUESTDEST
 USERS=$(mget -q $COMPUTE| ./hourlycompute.js |  sort -nrk2)
 echo "Generated $(date)" > $COMPUTETMP
 echo "Compute data from the hour of $(mls -j $(dirname $COMPUTE) | json -ga -c "this.name === '$(basename $COMPUTE)'" mtime)" >> $COMPUTETMP
-printf "%-20s  %-8s  %-7s  %-5s  %-6s  %-5s  %-5s  %-5s\n" "LOGIN" "BILLTIME" "RAWTIME" "JOBS" "PHASES" "TASKS" "BWIN" "BWOUT"  >> $COMPUTETMP
+printf "%-25s  %-8s  %-8s  %-5s  %-6s  %-5s  %-5s  %-5s\n" "LOGIN" "BILLTIME" "RAWTIME" "JOBS" "PHASES" "TASKS" "BWIN" "BWOUT"  >> $COMPUTETMP
 while read -r line; do
     UUID=$(echo $line | awk '{print $1}')
     GBSECS=$(echo $line | awk '{print $2}')
@@ -94,7 +94,7 @@ while read -r line; do
 
     LOGIN=$(LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL $LDAP_CREDS -b ou=users,o=smartdc uuid=$UUID login | grep -v dn | nawk  -F ': ' '{print $2}')
 
-                printf "%-20s  %-8s  %-7s  %-5s  %-6s  %-5s  %-5s  %-5s\n" $LOGIN $(humanTime $GBSECS) $(humanTime $RAWSECS) $JOBS $PHASES $TASKS $(human $BWIN) $(human $BWOUT)  >> $COMPUTETMP
+                printf "%-25s  %-8s  %-8s  %-5s  %-6s  %-5s  %-5s  %-5s\n" $LOGIN $(humanTime $GBSECS) $(humanTime $RAWSECS) $JOBS $PHASES $TASKS $(human $BWIN) $(human $BWOUT)  >> $COMPUTETMP
 done <<< "$USERS"
 
 mput -f $COMPUTETMP $COMPUTEDEST
