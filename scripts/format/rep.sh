@@ -5,6 +5,7 @@ source /root/.bashrc
 LDAP_CREDS="-D cn=root -w secret"
 LDAP_URL=ldaps://ufds.us-east-2.joyent.us
 PATH=/usr/openldap/bin:$PATH
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "Generated $(date)"
 
@@ -78,7 +79,7 @@ done <<< "$USERS"
 mput -f $REQUESTTMP $REQUESTDEST
 
 
-USERS=$(mget -q $COMPUTE| ./hourlycompute.js |  sort -nrk2)
+USERS=$(mget -q $COMPUTE| $DIR/hourlycompute.js |  sort -nrk2)
 echo "Generated $(date)" > $COMPUTETMP
 echo "Compute data from the hour of $(mls -j $(dirname $COMPUTE) | json -ga -c "this.name === '$(basename $COMPUTE)'" mtime)" >> $COMPUTETMP
 printf "%-25s  %-8s  %-8s  %-5s  %-6s  %-5s  %-5s  %-5s\n" "LOGIN" "BILLTIME" "RAWTIME" "JOBS" "PHASES" "TASKS" "BWIN" "BWOUT"  >> $COMPUTETMP
