@@ -2,7 +2,7 @@
 var bunyan = require('bunyan');
 var path = require('path');
 var wfclient =  require('wf-client');
-var config = require('../etc/config.js');
+var config = require('../etc/config.json');
 
 if (process.argv.length <= 3) {
         console.warn('Usage: ' + path.basename(process.argv[1]) +
@@ -13,7 +13,8 @@ if (process.argv.length <= 3) {
 var log = bunyan.createLogger({
         level: (process.env.LOG_LEVEL || 'info'),
         name: 'checkJob',
-        stream: process.stdout
+        stream: process.stdout,
+        serializers: bunyan.stdSerializers
 });
 
 var query = {};

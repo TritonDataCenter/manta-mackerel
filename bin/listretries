@@ -12,7 +12,8 @@ if (process.argv.length <= 2) {
 var log = bunyan.createLogger({
         level: (process.env.LOG_LEVEL || 'info'),
         name: 'checkJob',
-        stream: process.stdout
+        stream: process.stdout,
+        serializers: bunyan.stdSerializers
 });
 
 var uuid = process.argv[2];
