@@ -253,9 +253,9 @@
       "keygen": "FindKeyGenerator",
       "keygenArgs": {
         "source": [
-          "storage/$year/$month/$day",
-          "request/$year/$month/$day",
-          "compute/$year/$month/$day"
+          "/poseidon/stor/usage/storage/$year/$month/$day",
+          "/poseidon/stor/usage/request/$year/$month/$day",
+          "/poseidon/stor/usage/compute/$year/$month/$day"
         ],
         "regex": "h[0-9[0-9]"
       },
