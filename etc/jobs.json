@@ -8,7 +8,7 @@
       },
       "linkPath": "storage/latest",
       "job": {
-        "name": "metering-storage-hourly-$year-$month-$dayT$hour",
+        "name": "metering-storage-hourly-$year-$month-$dayT$hour:00:00",
         "phases": [
           {
             "type": "map",
@@ -94,7 +94,7 @@
       },
       "linkPath": "request/latest",
       "job": {
-        "name": "metering-request-hourly-$year-$month-$dayT$hour",
+        "name": "metering-request-hourly-$year-$month-$dayT$hour:00:00",
         "phases": [
           {
             "type": "map",
@@ -154,7 +154,7 @@
       },
       "linkPath": "compute/latest",
       "job": {
-        "name": "metering-compute-hourly-$year-$month-$dayT$hour",
+        "name": "metering-compute-hourly-$year-$month-$dayT$hour:00:00",
         "phases": [
           {
             "type": "map",
@@ -211,7 +211,7 @@
         "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
       },
       "job": {
-        "name": "metering-deliver-access-logs-$year-$month-$dayT$hour",
+        "name": "metering-deliver-access-logs-$year-$month-$dayT$hour:00:00",
         "phases": [
           {
             "type": "map",
@@ -262,7 +262,7 @@
       },
       "linkPath": "summary/latest",
       "job": {
-        "name": "metering-summarize-daily-$year-$month-$dayT$hour",
+        "name": "metering-summarize-daily-$year-$month-$day",
         "phases": [
           {
             "type": "map",
