@@ -8,7 +8,7 @@ getDate "$@"
 
 NODE=$dir/../../build/node/bin/node
 
-$NODE $dir/../../bin/meter -j 'storage' -d "$date"
-$NODE $dir/../../bin/meter -j 'request' -d "$date"
-$NODE $dir/../../bin/meter -j 'compute' -d "$date"
-$NODE $dir/../../bin/meter -j 'accessLogs' -d "$date"
+$NODE $dir/../../bin/meter -j 'storage' -d "$date" -r
+$NODE $dir/../../bin/meter -j 'request' -d "$date" -r
+$NODE $dir/../../bin/meter -j 'compute' -d "$date" -r
+$NODE $dir/../../bin/meter -j 'accessLogs' -d "$date" -r
