@@ -325,3 +325,28 @@ test('deliver unapproved reports', function (t) {
                 t.done();
         });
 });
+
+test('malformed line', function (t) {
+        runTest({
+                stdin: JSON.stringify(RECORD) + '\n{"incomplete":{"record":',
+        }, function (result) {
+                t.equal(1, result.code);
+                t.done();
+        });
+});
+
+test('malformed line limit', function (t) {
+        runTest({
+                stdin: JSON.stringify(RECORD) + '\n{"incomplete":{"record":',
+                env: {
+                        "MALFORMED_LIMIT": "1",
+                        'COUNT_UNAPPROVED_USERS': 'true'
+                }
+        }, function (result) {
+                t.equal(0, result.code);
+                t.equal(SERVER.requests.length, 2);
+                var actual = JSON.parse(mod_fs.readFileSync(PATH, 'utf8'));
+                t.deepEqual(actual, EXPECTED);
+                t.done();
+        });
+});

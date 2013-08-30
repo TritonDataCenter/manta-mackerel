@@ -243,6 +243,7 @@
         "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
         "ACCESS_LINK": "/reports/access-logs/latest",
         "DELIVER_UNAPPROVED_REPORTS": "false",
+        "MALFORMED_LIMIT": "10",
         "DROP_POSEIDON_REQUESTS": "true",
         "HEADER_CONTENT_TYPE": "application/x-json-stream"
       }

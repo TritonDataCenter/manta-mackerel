@@ -19,6 +19,7 @@ var tmpdir = '/var/tmp';
 var DELIVER_UNAPPROVED_REPORTS =
         process.env['DELIVER_UNAPPROVED_REPORTS'] === 'true';
 var DROP_POSEIDON_REQUESTS = process.env['DROP_POSEIDON_REQUESTS'] === 'true';
+var MALFORMED_LIMIT = process.env['MALFORMED_LIMIT'] || '0';
 
 var LOG = require('bunyan').createLogger({
         name: 'deliver-access.js',
@@ -211,6 +212,7 @@ function saveAll(cb) {
 function main() {
         var carry = mod_carrier.carry(process.openStdin());
         var lineCount = 0;
+        var malformed = 0;
 
         var writeQueue = mod_libmanta.createQueue({
                 worker: write,
@@ -248,8 +250,8 @@ function main() {
                 try {
                         record = JSON.parse(line);
                 } catch (e) {
+                        malformed++;
                         LOG.error(e, line, 'Error on line ' + lineCount);
-                        ERROR = true;
                         return;
                 }
 
@@ -280,7 +282,31 @@ function main() {
                 });
         }
 
-        carry.once('end', writeQueue.close.bind(writeQueue));
+        carry.once('end', function onEnd() {
+                var len = MALFORMED_LIMIT.length;
+                var threshold;
+
+                if (MALFORMED_LIMIT[len - 1] === '%') {
+                        var pct = +(MALFORMED_LIMIT.substr(0, len-1));
+                        threshold = pct * lineCount;
+                } else {
+                        threshold = +MALFORMED_LIMIT;
+                }
+
+                if (isNaN(threshold)) {
+                        LOG.error('MALFORMED_LIMIT not a number');
+                        ERROR = true;
+                        return;
+                }
+
+                if (malformed > threshold) {
+                        LOG.fatal('Too many malformed lines');
+                        ERROR = true;
+                        return;
+                }
+                writeQueue.close();
+        });
+
         carry.on('line', onLine);
 }
 
