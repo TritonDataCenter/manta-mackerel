@@ -235,7 +235,7 @@
             ],
             "init": "assets/bin/init",
             "exec": "assets/bin/deliver-access-reduce",
-            "count": 10
+            "count": 17
           }
         ]
       },
