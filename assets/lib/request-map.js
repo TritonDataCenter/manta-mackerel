@@ -39,6 +39,11 @@ function count(record, aggr) {
         var reqHeaderLength = record.reqHeaderLength;
         var statusCode = record.res.statusCode;
 
+        // only count successful requests
+        if (!okStatus(statusCode)) {
+                return;
+        }
+
         // get the content-length if it exists
         var contentLength = 0;
         if (record.res.headers && record.res.headers['content-length']) {
@@ -77,12 +82,12 @@ function count(record, aggr) {
         bw.headerIn = bw.headerIn.plus(reqHeaderLength);
         bw.headerOut = bw.headerOut.plus(resHeaderLength);
 
-        // only count bandwidth for successful GET & PUT
-        if (method === 'GET' && okStatus(statusCode)) {
+        // only count bandwidth for GET & PUT
+        if (method === 'GET') {
                 bw.out = bw.out.plus(contentLength);
         }
 
-        if (method === 'PUT' && okStatus(statusCode)) {
+        if (method === 'PUT') {
                 bw.in = bw.in.plus(contentLength);
         }
 }

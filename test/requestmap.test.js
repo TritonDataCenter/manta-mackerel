@@ -162,9 +162,6 @@ test('404', function (t) {
         var record = clone(RECORD);
         var expected = clone(EXPECTED);
         record.res.statusCode = 404;
-        expected.requests.type['PUT']++;
-        expected.requests.bandwidth.headerIn *= 2;
-        expected.requests.bandwidth.headerOut *= 2;
         runTest({
                 stdin: JSON.stringify(record) + '\n' + JSON.stringify(RECORD)
         }, function (result) {
