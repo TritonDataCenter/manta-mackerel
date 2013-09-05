@@ -117,7 +117,18 @@ function main() {
 
         var queue = mod_libmanta.createQueue({
                 limit: 10,
-                worker: writeToUserDir
+                worker: function (opts, cb) {
+                        try {
+                                writeToUserDir(opts, cb);
+                        } catch (err) {
+                                LOG.error(err, 'queue error');
+                                ERROR = true;
+                        }
+                }
+        });
+
+        queue.on('error', function onError(err) {
+                ERROR = true;
         });
 
         queue.on('end', client.close.bind(client));

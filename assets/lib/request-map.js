@@ -50,6 +50,10 @@ function count(record, aggr) {
                 contentLength = +record.res.headers['content-length'];
         } else if (record.req.headers && record.req.headers['content-length']) {
                 contentLength = +record.req.headers['content-length'];
+        } else if (record.bytesTranferred) {
+                // bytesTransferred will exist if the request is streaming
+                // i.e. transfer-encoding: chunked
+                contentLength = +record.bytesTransferred;
         }
 
         aggr[owner] = aggr[owner] || {
