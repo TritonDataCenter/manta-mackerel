@@ -374,5 +374,5 @@ graph(data, 'computecustomers', 28, 'Customers');
 </script>
 EOF
 
-# mput -f $outfile $edir/latest.html
+mput -f $outfile $edir/latest.html
 
