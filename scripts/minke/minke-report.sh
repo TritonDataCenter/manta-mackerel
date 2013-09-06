@@ -167,6 +167,12 @@ body {
 </div>
 </tr>
 <tr>
+<td colspan=3>
+<div id="usersbyweek">
+<h2>New users per week since launch</h2>
+</div>
+</tr>
+<tr>
 <td>
 <div id="storagegraph7">
 <h2>Storage over the past week</h2>
@@ -338,6 +344,79 @@ function graph(data, field, days, label)
 	    .style("stroke", function(d) { return color(d.name); });
 };
 
+function usersbyweek(odata, label)
+{
+	var users = 0;
+	var data = [];
+	var startweek = odata[0].date;
+	var offs = 60;
+	var yoffs = 40;
+	var i;
+
+	for (i = 0; i < odata.length; i++) {
+		if (i % 7 != 6 && i != odata.length - 1)
+			continue;
+
+		data.push({ date: startweek, value: odata[i].users - users });
+		users = odata[i].users;
+		startweek = odata[i].date;
+	}
+
+	var barWidth = 30;
+	var width = (barWidth + 10) * data.length;
+	var height = 200;
+
+	var x = d3.scale.linear().domain([0, data.length]).range([0, width]);
+	var y = d3.scale.linear().domain([0, d3.max(data, function (datum) {
+		return datum.value;
+	})]).rangeRound([0, height]);
+
+	var svg = d3.select("#usersbyweek")
+	    .append("svg:svg")
+	    .attr("width", width + offs)
+	    .attr("height", height + yoffs);
+
+	svg.selectAll("rect")
+	    .data(data)
+	    .enter()
+	    .append("svg:rect")
+	    .attr("x", function(datum, index) { return x(index) + offs; })
+	    .attr("y", function(datum) { return height - y(datum.value); })
+	    .attr("height", function(datum) { return y(datum.value); })
+	    .attr("width", barWidth)
+	    .attr("fill", "steelblue");
+
+	svg.selectAll("text")
+	    .data(data)
+	    .enter()
+	    .append("svg:text")
+	    .attr("x", function(datum, index) {
+		return x(index) + barWidth + offs;
+	    })
+	    .attr("y", function(datum) { return height - y(datum.value); })
+	    .attr("dx", -barWidth/2)
+	    .attr("dy", "1.2em")
+	    .attr("text-anchor", "middle")
+	    .text(function(datum) { return datum.value;})
+	    .attr("fill", "white");
+
+
+	svg.selectAll("text.yAxis")
+	    .data(data)
+	    .enter().append("svg:text")
+	    .attr("x", function(datum, index) {
+		return x(index) + barWidth + offs;
+	    })
+	    .attr("y", height)
+	    .attr("dx", -barWidth/2)
+	    .attr("text-anchor", "middle")
+	    .text(function(datum) {
+		return (datum.date.split('/').slice(1, 3).join('/'));
+	    })
+	    .attr("transform", "translate(0, 18)")
+	    .attr("class", "yAxis");
+};
+
 var data = [
 EOF
 
@@ -354,6 +433,8 @@ cat >> $outfile <<EOF
 graph(data, 'users', 0);
 graph(data, 'users', 7);
 graph(data, 'users', 28);
+
+usersbyweek(data, 'users');
 
 graph(data, 'storage', 0);
 graph(data, 'storage', 7);
