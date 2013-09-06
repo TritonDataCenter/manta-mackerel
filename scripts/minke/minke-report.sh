@@ -16,7 +16,7 @@ PATH=/usr/openldap/bin:$PATH
 
 function userlookup
 {
-	if [[ `uname -s` -ne "Darwin" ]]; then
+	if [[ `uname -s` != "Darwin" ]]; then
 		LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL \
 		    $LDAP_CREDS -b ou=users,o=smartdc uuid=$1
 		return
@@ -56,7 +56,7 @@ function userdate
 {
 	created=$(expr `getattr $1 $2` / 1000)
 
-	if [[ `uname -s` -ne "Darwin" ]]; then
+	if [[ `uname -s` != "Darwin" ]]; then
 		date -d @$created +%m/%d/%Y
 		return
 	fi
@@ -374,5 +374,5 @@ graph(data, 'computecustomers', 28, 'Customers');
 </script>
 EOF
 
-mput -f $outfile $edir/latest.html
+mput -f $outfile $edir/latest$2.html
 
