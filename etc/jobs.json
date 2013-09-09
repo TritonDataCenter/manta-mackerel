@@ -73,7 +73,7 @@
         ]
       },
       "env": {
-        "COUNT_UNAPPROVED_USERS": "true",
+        "COUNT_UNAPPROVED_USERS": "false",
         "DATE": "$year-$month-$dayT$hour:00:00.000Z",
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "DEST": "$base/storage/$year/$month/$day/$hour/h$hour.json",
@@ -134,7 +134,7 @@
       },
       "env": {
         "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
-        "COUNT_UNAPPROVED_USERS": "true",
+        "COUNT_UNAPPROVED_USERS": "false",
         "DATE": "$year-$month-$dayT$hour:00:00.000Z",
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "DEST": "$base/request/$year/$month/$day/$hour/h$hour.json",
@@ -193,7 +193,7 @@
         ]
       },
       "env": {
-        "COUNT_UNAPPROVED_USERS": "true",
+        "COUNT_UNAPPROVED_USERS": "false",
         "DATE": "$year-$month-$dayT$hour:00:00.000Z",
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "DEST": "$base/compute/$year/$month/$day/$hour/h$hour.json",
@@ -303,7 +303,7 @@
         ]
       },
       "env": {
-        "COUNT_UNAPPROVED_USERS": "true",
+        "COUNT_UNAPPROVED_USERS": "false",
         "DATE": "$year-$month-$dayT00:00:00.000Z",
         "DELIVER_UNAPPROVED_REPORTS": "false",
         "DEST": "$base/summary/$year/$month/$day/d$day.json",
