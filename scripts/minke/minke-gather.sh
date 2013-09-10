@@ -6,63 +6,75 @@ minke=/poseidon/stor/minke
 
 comped="EmployeePersonalUse.txt EmployeeWork.txt ThirdPartyFree.txt misc.txt"
 cdir=$minke/comped
+blacklisted=$cdir/blacklisted
 mdir=/poseidon/stor
 summary=$mdir/usage/summary
 mjs=$minke/scripts/process.js
 outdir=`pwd`/minke.$$
 
-mmkdir -p $minke/scripts
-mkdir -p $outdir
+function mkcomp
+{
+	js=$outdir/process.js
 
-js=$outdir/process.js
-summaries=$outdir/summaries
-
-cat > $js <<EOF
-var comped = {
+	cat > $js <<EOF
+	var comped = {
 EOF
 
-for comp in $comped; do
-	mget $cdir/$comp | tr '' '\n' | \
-	    awk '{ printf("\t\"%s\": true,\n", $0)}' >> $js
-done
+	for comp in $comped; do
+		mget $cdir/$comp | tr '' '\n' | \
+		    awk '{ printf("\t\t\"%s\": true,\n", $0)}' >> $js
+	done
 
-cat >> $js <<EOF
-};
+	cat >> $js <<EOF
+	};
 
-var last = '';
-var showcomp = process.argv.length >= 3 ? true : false;
+	var blacklisted = {
+EOF
 
-process.stdin.on('data', function (chunk) {
-	chunk = last + chunk;
+	mget $blacklisted | \
+	    awk '{ printf("\t\t\"%s\": true,\n", $0)}' >> $js
 
-	for (;;) {
-		var nl = chunk.indexOf('\n');
+	cat >> $js <<EOF
+	};
 
-		if (nl == -1) {
-			last = chunk;
-			return;
+	var last = '';
+	var showcomp = process.argv.length >= 3 ? true : false;
+
+	process.stdin.on('data', function (chunk) {
+		chunk = last + chunk;
+
+		for (;;) {
+			var nl = chunk.indexOf('\n');
+
+			if (nl == -1) {
+				last = chunk;
+				return;
+			}
+
+			line = chunk.substr(0, nl);
+			chunk = chunk.substr(nl + 1);	
+
+			payload = JSON.parse(line);
+
+			if (blacklisted[payload.owner])
+				continue;
+
+			if ((!showcomp && comped[payload.owner]) ||
+			    (showcomp && !comped[payload.owner]))
+				continue;
+
+			console.log(payload.owner + ' ' +
+			    payload.storageGBHours + ' ' +
+			    payload.computeGBSeconds);
 		}
+	});
 
-		line = chunk.substr(0, nl);
-		chunk = chunk.substr(nl + 1);	
-
-		payload = JSON.parse(line);
-
-		if ((!showcomp && comped[payload.owner]) ||
-		    (showcomp && !comped[payload.owner]))
-			continue;
-
-		console.log(payload.owner + ' ' + payload.storageGBHours +
-		    ' ' + payload.computeGBSeconds);
-	}
-});
-
-process.stdin.resume();
-process.stdin.setEncoding('utf8');
+	process.stdin.resume();
+	process.stdin.setEncoding('utf8');
 EOF
 
-mput -f $js $mjs
-mfind $summary | grep json | sort > $summaries
+	mput -f $js $mjs
+}
 
 function crank
 {
@@ -89,11 +101,46 @@ function crank
 	    sort | grep -v "0 0 0" > $overtime
 }
 
+mmkdir -p $minke/scripts
+mkdir -p $outdir
+summaries=$outdir/summaries
+
+mfind $summary | grep json | sort > $summaries
+mkcomp
 crank
+
+#
+# Now check to see if there are any UUIDs that need to be blacklisted.
+#
+tmpy=/var/tmp/minke.yesterday.$$
+tmpt=/var/tmp/minke.today.$$
+blacklist=/var/tmp/minke.blacklist.$$
+
+cat $yesterday | awk '{ print $1 }' | sort > $tmpy
+cat $today | awk '{ print $1 }' | sort > $tmpt
+
+comm -23 $tmpy $tmpt > $blacklist
+rm $tmpy $tmpt
+
+suffix=`tail -1 $overtime | awk '{ print $1 }' | tr '/' '-'`
+
+if [[ -s $blacklist ]]; then
+	nblack=`wc -l $blacklist | awk '{ print $1 }'`
+	echo "minke: expanding blacklist by $nblack entries:"
+	cat $blacklist
+	mget $blacklisted >> $blacklist
+	echo "minke: new blacklist is ${blacklisted}.$suffix"
+	mput -f $blacklist ${blacklisted}.$suffix
+	mln ${blacklisted}.$suffix $blacklisted
+	mkcomp
+	crank
+fi
+
+rm $blacklist
+
 crank .joyent
 
-ndir=minke.`tail -1 $overtime | awk '{ print $1 }' | tr '/' '-'`
-
+ndir=minke.$suffix
 echo "minke: directory is $ndir"
 
 if [[ -d $ndir ]]; then
@@ -103,5 +150,8 @@ if [[ -d $ndir ]]; then
 fi
 
 mv $outdir $ndir
-./minke-report.sh $ndir
-./minke-report.sh $ndir .joyent " (Joyent only)"
+
+scriptdir=`dirname $0`
+
+${scriptdir}/minke-report.sh $ndir
+${scriptdir}/minke-report.sh $ndir .joyent " (Joyent only)"
