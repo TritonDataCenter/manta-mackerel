@@ -9,6 +9,7 @@ today=$outdir/today$kind
 yesterday=$outdir/yesterday$kind
 lastweek=$outdir/lastweek$kind
 overtime=$outdir/overtime$kind
+byweek=$outdir/byweek$kind
 
 LDAP_CREDS="-D cn=root -w secret"
 LDAP_URL=ldaps://ufds.us-east-2.joyent.us
@@ -217,15 +218,21 @@ body {
 <tr>
 <td>
 <div id="computecustomersgraph7">
-<h2>Compute customers over the past week</h2>
+<h2>Compute users over the past week</h2>
 </div>
 <td>
 <div id="computecustomersgraph28">
-<h2>Compute customers over the past four weeks</h2>
+<h2>Compute users over the past four weeks</h2>
 </div>
 <td>
 <div id="computecustomersgraph0">
-<h2>Compute customers since launch</h2>
+<h2>Compute users since launch</h2>
+</div>
+</tr>
+<tr>
+<td colspan=3>
+<div id="computeusersbyweek">
+<h2>Compute users per week since launch</h2>
 </div>
 </tr>
 </table>
@@ -344,23 +351,61 @@ function graph(data, field, days, label)
 	    .style("stroke", function(d) { return color(d.name); });
 };
 
+function weekToDate(year, week)
+{
+	var d = new Date(Date.UTC(year, 0, 1));
+	var dayms = 24 * 60 * 60 * 1000;
+	var weekms = 7 * dayms, delta;
+
+	if (week == 0)
+		return (d);
+
+	while (d.getUTCDay() != 0)
+		d = new Date(d.valueOf() + dayms);
+
+	return new Date(d.valueOf() + ((week - 1) * weekms));
+}
+
+function dateToWeek(convert)
+{
+	var d = new Date(Date.UTC(convert.getFullYear(), 0, 1));
+	var dayms = 24 * 60 * 60 * 1000;
+	var weekms = 7 * dayms, delta;
+
+	while (d.getUTCDay() != 0)
+		d = new Date(d.valueOf() + dayms);
+
+	delta = Math.ceil((convert.valueOf() - d.valueOf()) / weekms);
+
+	return (delta);
+}
+
 function usersbyweek(odata, label)
 {
 	var users = 0;
 	var data = [];
 	var startweek = odata[0].date;
+	var last = dateToWeek(new Date(startweek));
 	var offs = 60;
 	var yoffs = 40;
 	var i;
 
 	for (i = 0; i < odata.length; i++) {
-		if (i % 7 != 6 && i != odata.length - 1)
+		var d = odata[i].date.split('/');
+
+		var week = dateToWeek(new Date(Date.UTC(parseInt(d[0], 10),
+		    parseInt(d[1], 10) - 1, parseInt(d[2], 10))));
+
+		if (week == last)
 			continue;
 
 		data.push({ date: startweek, value: odata[i].users - users });
 		users = odata[i].users;
 		startweek = odata[i].date;
+		last = week;
 	}
+
+	data.push({ date: startweek, value: odata[i - 1].users - users });
 
 	var barWidth = 30;
 	var width = (barWidth + 10) * data.length;
@@ -417,6 +462,75 @@ function usersbyweek(odata, label)
 	    .attr("class", "yAxis");
 };
 
+function computeusersbyweek(odata)
+{
+	var data = [];
+	var offs = 60;
+	var yoffs = 40;
+	var i;
+
+	for (i = 0; i < odata.length; i++) {
+		var d = weekToDate(odata[i].year, odata[i].week);
+
+		data.push({ date: (d.getUTCMonth() + 1) + '/' + d.getUTCDate(),
+		    value: odata[i].computeusers });
+	}
+
+	var barWidth = 30;
+	var width = (barWidth + 10) * data.length;
+	var height = 200;
+
+	var x = d3.scale.linear().domain([0, data.length]).range([0, width]);
+	var y = d3.scale.linear().domain([0, d3.max(data, function (datum) {
+		return datum.value;
+	})]).rangeRound([0, height]);
+
+	var svg = d3.select("#computeusersbyweek")
+	    .append("svg:svg")
+	    .attr("width", width + offs)
+	    .attr("height", height + yoffs);
+
+	svg.selectAll("rect")
+	    .data(data)
+	    .enter()
+	    .append("svg:rect")
+	    .attr("x", function(datum, index) { return x(index) + offs; })
+	    .attr("y", function(datum) { return height - y(datum.value); })
+	    .attr("height", function(datum) { return y(datum.value); })
+	    .attr("width", barWidth)
+	    .attr("fill", "steelblue");
+
+	svg.selectAll("text")
+	    .data(data)
+	    .enter()
+	    .append("svg:text")
+	    .attr("x", function(datum, index) {
+		return x(index) + barWidth + offs;
+	    })
+	    .attr("y", function(datum) { return height - y(datum.value); })
+	    .attr("dx", -barWidth/2)
+	    .attr("dy", "1.2em")
+	    .attr("text-anchor", "middle")
+	    .text(function(datum) { return datum.value;})
+	    .attr("fill", "white");
+
+
+	svg.selectAll("text.yAxis")
+	    .data(data)
+	    .enter().append("svg:text")
+	    .attr("x", function(datum, index) {
+		return x(index) + barWidth + offs;
+	    })
+	    .attr("y", height)
+	    .attr("dx", -barWidth/2)
+	    .attr("text-anchor", "middle")
+	    .text(function(datum) {
+		return (datum.date);
+	    })
+	    .attr("transform", "translate(0, 18)")
+	    .attr("class", "yAxis");
+};
+
 var data = [
 EOF
 
@@ -426,6 +540,16 @@ cat $overtime | \
     \"computecustomers\": %s, \"revenue\": %10.2f },\n", \
     $1, $2, $3, $4, ttlcomp, $5, ($3 * 0.0000589) + ($4 * 0.00004) ) }' >> \
     $outfile
+
+cat >> $outfile <<EOF
+];
+
+var byweek = [
+EOF
+
+cat $byweek | \
+    awk '{ printf("{ year: %s, week: %s, computeusers: %s },\n", \
+    $1, $2, $3) }' >> $outfile
 
 cat >> $outfile <<EOF
 ];
@@ -448,12 +572,16 @@ graph(data, 'totalcompute', 0, 'Compute');
 graph(data, 'totalcompute', 7, 'Compute');
 graph(data, 'totalcompute', 28, 'Compute');
 
-graph(data, 'computecustomers', 0, 'Customers');
-graph(data, 'computecustomers', 7, 'Customers');
-graph(data, 'computecustomers', 28, 'Customers');
+graph(data, 'computecustomers', 0, 'Users');
+graph(data, 'computecustomers', 7, 'Users');
+graph(data, 'computecustomers', 28, 'Users');
+
+computeusersbyweek(byweek);
 
 </script>
 EOF
 
-mput -f $outfile $edir/latest$2.html
+if [[ `uname -s` != "Darwin" ]]; then
+	mput -f $outfile $edir/latest$2.html
+fi
 

@@ -82,6 +82,7 @@ function crank
 	yesterday=$outdir/yesterday$1
 	lastweek=$outdir/lastweek$1
 	overtime=$outdir/overtime$1
+	byweek=$outdir/byweek$1
 	filter="node /assets/$mjs $1"
 
 	tail -1 $summaries | \
@@ -99,6 +100,15 @@ function crank
 	    awk '{ storage += \$2; compute += \$3; if (\$3 != 0) { cust++ } } \
 	    END { printf(\"%d %d %d %d\", NR, storage, compute, cust) }'\`" | \
 	    sort | grep -v "0 0 0" > $overtime
+
+	cat $summaries | \
+	    mjob create -o -s $mjs -m "WEEK=\$(date --date=\`echo \
+	    \$MANTA_INPUT_FILE | cut -d/ -f7-9\` \"+%Y %U\") ; \
+	    cat \$MANTA_INPUT_FILE | $filter | \
+	    awk -v week=\"\$WEEK\" \
+	    '{ if (\$3 != 0) { printf(\"%s %s\n\", week, \$1) } }'" \
+	    -r "sort | uniq | cut -d\" \" -f1,2 | uniq -c | \
+	    awk '{ print \$2 \" \" \$3 \" \" \$1 }'" > $byweek
 }
 
 mmkdir -p $minke/scripts
