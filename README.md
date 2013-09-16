@@ -156,3 +156,26 @@ Run tests using:
 
 To run a single integration test:
     nodeunit -t storage test/integration.test.js
+
+# Resharding
+
+See MANTA-1744 and MANTA-1665.
+
+There are two things that need to happen for consumers of dumps when resharding
+happens:
+1. Shard discovery via Manta, and
+2. Dedupe rows
+
+Ideally, these two things would happen automatically. However, the infrequeent
+nature of resharding makes automating these tasks low priority.
+
+If a reshard needed to happen and the automatic systems were not in place yet,
+shard discovery would need to updated manually via configuration. Duplicate rows
+would be removed via marlin jobs that would run over the (very few) dumps that
+have duplicates.
+
+A somewhat related but separate issue is the transformation of dumps from SQL
+to JSON. Currently that transformation is occurring on the postgres boxes
+themselves. However, as the datasets get larger, it would be preferable to use
+marlin to transform the dumps.
+
