@@ -3,6 +3,7 @@
     "storage": {
       "keygen": "StorageHourlyKeyGenerator",
       "keygenArgs": {
+        "minSize": 1048576,
         "source": "/poseidon/stor/manatee_backups",
         "shardBlacklist": ["1"]
       },
@@ -90,6 +91,7 @@
     "request": {
       "keygen": "FindKeyGenerator",
       "keygenArgs": {
+        "minSize": 1048576,
         "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
       },
       "linkPath": "request/latest",
@@ -150,6 +152,7 @@
     "compute": {
       "keygen": "FindKeyGenerator",
       "keygenArgs": {
+        "minSize": 1048576,
         "source": "/poseidon/stor/logs/marlin-agent/$year/$month/$day/$hour"
       },
       "linkPath": "compute/latest",
@@ -253,6 +256,7 @@
     "summarizeDaily": {
       "keygen": "FindKeyGenerator",
       "keygenArgs": {
+        "minSize": 100,
         "source": [
           "/poseidon/stor/usage/storage/$year/$month/$day",
           "/poseidon/stor/usage/request/$year/$month/$day",

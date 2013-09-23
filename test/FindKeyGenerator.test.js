@@ -1,5 +1,8 @@
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
+// To run, you need operator access or set MANTA_CONFIG to a config with
+// poseidon credentials
+
 if (require.cache[__dirname + '/helper.js'])
         delete require.cache[__dirname + '/helper.js'];
 var helper = require('./helper.js');
@@ -7,6 +10,7 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 var manta = require('manta');
 var mod_keygen = require('../lib/keygen/FindKeyGenerator.js');
+
 
 ///--- Globals
 
@@ -182,6 +186,36 @@ test('multiple directories with regex', function (t) {
         });
         keygen.on('end', function () {
                 t.deepEqual(keys.sort(), expected.sort());
+                t.end();
+        });
+        keygen.start();
+});
+
+test('minSize error', function (t) {
+        var self = this;
+        var errors = [];
+        var keys = [];
+        var path = [
+                '/poseidon/stor/usage/request/2013/06/10'
+        ];
+        var keygen = mod_keygen.keygen({
+                client: self.client,
+                log: helper.createLogger(),
+                args: {
+                        source: path,
+                        regex: 'h[0-9][0-9].json',
+                        minSize: 7050000
+                }
+        });
+        keygen.on('key', function (key) {
+                keys.push(key);
+        });
+        keygen.on('error', function (err) {
+                errors.push(err);
+        });
+        keygen.on('end', function () {
+                t.equal(1, errors.length);
+                t.equal(0, keys.length);
                 t.end();
         });
         keygen.start();

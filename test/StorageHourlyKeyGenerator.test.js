@@ -95,6 +95,7 @@ before(function (cb) {
         } else {
                 this.client = manta.createClientFromFileSync(
                         process.env.MANTA_CONFIG, this.log);
+                this.testdir = '/' + this.client.user + '/stor/mackerel-test';
                 cb();
         }
 });
@@ -302,5 +303,52 @@ test('blacklist', function (t) {
                 t.ifError(err);
                 gen.start();
         });
+
+});
+
+test('minSize error', function (t) {
+        var self = this;
+        var actualKeys = [];
+        var errors = [];
+
+        var keys = [
+                self.testdir + '/1.shard/2013/07/05/22/manta-2013.gz',
+                self.testdir + '/2.shard/2013/07/05/22/manta-2013.gz',
+                self.testdir + '/3.shard/2013/07/05/22/manta-2013.gz',
+                self.testdir + '/4.shard/2013/07/05/22/manta-2013.gz'
+        ];
+
+        var expected = [];
+
+        var gen = keygen.keygen({
+                client: self.client,
+                log: helper.createLogger(),
+                args: {
+                        source: self.testdir,
+                        date: '2013-07-05T22:00:00',
+                        minSize: 1,
+                        shardBlacklist: ['3']
+                }
+        });
+
+        gen.on('key', function (k) {
+                actualKeys.push(k);
+        });
+
+        gen.on('error', function (e) {
+                errors.push(e);
+        });
+
+        gen.once('end', function () {
+                t.deepEqual(expected.sort(), actualKeys.sort());
+                t.equal(1, errors.length);
+                t.done();
+        });
+
+        self.putEmpties(keys, function (err) {
+                t.ifError(err);
+                gen.start();
+        });
+
 
 });
