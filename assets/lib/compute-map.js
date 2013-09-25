@@ -1,7 +1,7 @@
 #!/usr/node/bin/node
 // Copyright (c) 2013, Joyent, Inc. All rights reserved.
 
-var mod_marlin = require('marlin/lib/meter.js');
+var mod_marlin = require('marlin');
 var Big = require('big.js');
 var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
 var lookup = require(lookupPath); // maps uuid->approved_for_provisioning
