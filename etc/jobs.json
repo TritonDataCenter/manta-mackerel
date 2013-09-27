@@ -152,7 +152,7 @@
     "compute": {
       "keygen": "FindKeyGenerator",
       "keygenArgs": {
-        "minSize": 1048576,
+        "minSize": 102400,
         "source": "/poseidon/stor/logs/marlin-agent/$year/$month/$day/$hour"
       },
       "linkPath": "compute/latest",
