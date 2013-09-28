@@ -90,8 +90,8 @@ cat >> $outfile <<EOF
 <td><b>Company</b>
 <td><b>E-mail</b>
 <td><b>Created</b>
-<td><b>Storage (today)</b>
-<td><b>Compute (today)</b>
+<td><b>Storage<br>(GB hours today)</b>
+<td><b>Compute<br>(GB seconds today)</b>
 EOF
  
 	for uuid in `comm -3 $tmp1 $tmp2 | awk '{ print $1 }'`; do
@@ -560,17 +560,23 @@ graph(data, 'users', 28);
 
 usersbyweek(data, 'users');
 
-graph(data, 'storage', 0);
-graph(data, 'storage', 7);
-graph(data, 'storage', 28);
+for (i = 0; i < data.length; i++) {
+	data[i].storage /= (24 * 1024);
+	data[i].compute /= 3600;
+	data[i].totalcompute /= (24 * 3600);
+}
 
-graph(data, 'compute', 0);
-graph(data, 'compute', 7);
-graph(data, 'compute', 28);
+graph(data, 'storage', 0, 'Storage (TB)');
+graph(data, 'storage', 7, 'Storage (TB)');
+graph(data, 'storage', 28, 'Storage (TB)');
 
-graph(data, 'totalcompute', 0, 'Compute');
-graph(data, 'totalcompute', 7, 'Compute');
-graph(data, 'totalcompute', 28, 'Compute');
+graph(data, 'compute', 0, 'Compute (hours)');
+graph(data, 'compute', 7, 'Compute (hours)');
+graph(data, 'compute', 28, 'Compute (hours)');
+
+graph(data, 'totalcompute', 0, 'Compute (days)');
+graph(data, 'totalcompute', 7, 'Compute (days)');
+graph(data, 'totalcompute', 28, 'Compute (days)');
 
 graph(data, 'computecustomers', 0, 'Users');
 graph(data, 'computecustomers', 7, 'Users');
