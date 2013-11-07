@@ -65,12 +65,18 @@ function sanitize(record) {
         if (output.req && output.req.headers) {
                 var ip = output.req.headers['x-forwarded-for'] || '169.254.0.1';
                 ip = ip.split(',')[0].trim();
-                var ipaddr = mod_ipaddr.parse(ip);
-                if (ipaddr.kind() === 'ipv4') {
-                        output['remoteAddress'] =
-                                ipaddr.toIPv4MappedAddress().toString();
+
+                // MANTA-1886 check for 'unknown'
+                if (ip === 'unknown') {
+                        output['remoteAddress'] = 'unknown';
                 } else {
-                        output['remoteAddress'] = ipaddr.toString();
+                        var ipaddr = mod_ipaddr.parse(ip);
+                        if (ipaddr.kind() === 'ipv4') {
+                                output['remoteAddress'] =
+                                        ipaddr.toIPv4MappedAddress().toString();
+                        } else {
+                                output['remoteAddress'] = ipaddr.toString();
+                        }
                 }
                 output.req['request-uri'] = output.req['url'];
                 delete output.req.headers['x-forwarded-for'];
@@ -274,7 +280,14 @@ function main() {
                         return;
                 }
 
-                var output = sanitize(record);
+                var output;
+                try {
+                        output = sanitize(record);
+                } catch (e) {
+                        LOG.error(e, 'Error sanitizing record');
+                        ERROR = true;
+                        return;
+                }
 
                 writeQueue.push({
                         owner: record.req.owner,

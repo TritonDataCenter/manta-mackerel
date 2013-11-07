@@ -278,6 +278,22 @@ test('multiple x-forwarded-for', function (t) {
         });
 });
 
+test('"unknown" in x-forwarded-for', function (t) {
+        var input = JSON.parse(JSON.stringify(RECORD));
+        input.req.headers['x-forwarded-for'] = 'unknown, 76.121.137.102, ' +
+                '::ffff:66.249.85.112';
+        var expected = JSON.parse(JSON.stringify(EXPECTED));
+        expected.remoteAddress = 'unknown';
+        runTest({
+                stdin: JSON.stringify(input)
+        }, function (result) {
+                t.equal(result.code, 0);
+                var actual = JSON.parse(mod_fs.readFileSync(PATH, 'utf8'));
+                t.deepEqual(actual, expected);
+                t.done();
+        });
+});
+
 test('drop poseidon requests', function (t) {
         runTest({
                 stdin: JSON.stringify(RECORD),
@@ -350,3 +366,4 @@ test('malformed line limit', function (t) {
                 t.done();
         });
 });
+
