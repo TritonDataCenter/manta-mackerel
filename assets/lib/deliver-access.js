@@ -64,7 +64,8 @@ function sanitize(record) {
         var output = mod_screen.screen(record, whitelist);
         if (output.req && output.req.headers) {
                 var ip = output.req.headers['x-forwarded-for'] || '169.254.0.1';
-                ip = ip.split(',')[0].trim();
+                // MANTA-1918 if first ip is empty, use 'unknown'
+                ip = ip.split(',')[0].trim() || 'unknown';
 
                 // MANTA-1886 check for 'unknown'
                 if (ip === 'unknown') {
