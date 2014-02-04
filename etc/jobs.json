@@ -84,7 +84,7 @@
         "NAMESPACES": "stor public jobs reports",
         "USER_DEST": "/reports/usage/storage/$year/$month/$day/$hour/h$hour.json",
         "USER_LINK": "/reports/usage/storage/latest",
-        "ZCAT": "gzcat"
+        "ZCAT": "gzcat -f"
       }
     },
 
