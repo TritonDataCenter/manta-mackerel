@@ -36,7 +36,7 @@
             ],
             "init": "assets/bin/init",
             "exec": "assets/bin/storage-reduce1",
-            "count": 10
+            "count": 11
           },
           {
             "type": "reduce",
@@ -48,7 +48,7 @@
             ],
             "init": "assets/bin/init",
             "exec": "assets/bin/storage-reduce2",
-            "count": 10
+            "count": 11
           },
           {
             "type": "reduce",
@@ -62,7 +62,7 @@
             ],
             "init": "assets/bin/init",
             "exec": "assets/bin/storage-reduce3",
-            "count": 10
+            "count": 11
           },
           {
             "type": "reduce",
@@ -123,7 +123,7 @@
             ],
             "init": "assets/bin/init",
             "exec": "assets/bin/request-reduce",
-            "count": 10
+            "count": 11
           },
           {
             "type": "reduce",
@@ -184,7 +184,7 @@
             ],
             "init": "assets/bin/init",
             "exec": "assets/bin/compute-reduce",
-            "count": 10
+            "count": 11
           },
           {
             "type": "reduce",
@@ -295,7 +295,7 @@
             ],
             "init": "assets/bin/init",
             "exec": "assets/bin/summarize-reduce",
-            "count": 10
+            "count": 11
           },
           {
             "type": "reduce",
