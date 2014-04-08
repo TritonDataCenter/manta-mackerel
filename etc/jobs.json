@@ -14,7 +14,7 @@
           {
             "type": "map",
             "memory": 2048,
-            "disk": 16,
+            "disk": 32,
             "assets": [
               "assets/bin/init",
               "assets/bin/storage-map",
