@@ -4,6 +4,7 @@
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+NODE=$dir/../build/node/bin/node
 
-$dir/../lib/sum-columns.js \
-| $dir/../lib/deliver-usage.js
+$NODE $dir/../lib/sum-columns.js \
+| $NODE $dir/../lib/deliver-usage.js

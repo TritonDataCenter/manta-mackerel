@@ -4,6 +4,7 @@
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+NODE=$dir/../build/node/bin/node
 
-$dir/../lib/summarize-map.js \
+$NODE $dir/../lib/summarize-map.js \
 | msplit -j -n $NUM_REDUCERS -f owner

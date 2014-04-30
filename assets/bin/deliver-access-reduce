@@ -4,5 +4,6 @@
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+NODE=$dir/../build/node/bin/node
 
-$dir/../lib/deliver-access.js
+$NODE $dir/../lib/deliver-access.js

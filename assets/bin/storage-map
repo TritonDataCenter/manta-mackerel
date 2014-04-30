@@ -4,7 +4,8 @@
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+NODE=$dir/../build/node/bin/node
 
 $ZCAT \
-| $dir/../lib/storage-map.js \
+| $NODE $dir/../lib/storage-map.js \
 | msplit -j -n $NUM_REDUCERS -f owner,type,objectId
