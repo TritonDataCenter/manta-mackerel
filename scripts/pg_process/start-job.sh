@@ -5,6 +5,8 @@ set -o pipefail
 
 export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
+source ~/.bashrc
+
 backoff=/opt/smartdc/mackerel/scripts/pg_process/backoff.sh
 backoff=./backoff.sh
 disk=
