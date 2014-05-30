@@ -7,4 +7,4 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 NODE=$dir/../build/node/bin/node
 
 $NODE $dir/../lib/compute-reduce.js \
-| $dir/../lib/deliver-usage.js
+| $NODE $dir/../lib/deliver-usage.js
