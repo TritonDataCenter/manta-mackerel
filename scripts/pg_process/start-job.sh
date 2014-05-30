@@ -7,8 +7,6 @@ export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}
 
 source ~/.bashrc
 
-backoff=/opt/smartdc/mackerel/scripts/pg_process/backoff.sh
-backoff=./backoff.sh
 disk=
 
 calc_disk_size ()
@@ -60,7 +58,7 @@ do
         grep moray- | tail -1)
     bytes=$(minfo $dump | grep m-pg-size | cut -d ' ' -f2)
     # Allocate at least 1GB or 4x what the DB dir size was.
-    gbytes=$(echo "scale=0;  $bytes / 2^30 * 4 + 1" | bc)
+    gbytes=$(echo "scale=0;  $bytes / 2^20 * 4 + 1" | bc)
     # DB size is appx 10x what the compressed dump is.
     calc_disk_size $gbyte
 
