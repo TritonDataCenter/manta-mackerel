@@ -59,7 +59,7 @@ function wait_for_pg_start
     fi
     sleep $PG_START_TIMEOUT
     # check and see if pg is up.
-    unset errexit
+    set +o errexit
     psql -U postgres -c 'select current_time'
     if [[ $? -eq 0 ]]; then
         set -o errexit
