@@ -1,8 +1,7 @@
 #!/bin/bash -x
 
 source /root/.bashrc
-LDAP_CREDS="-D cn=root -w secret"
-LDAP_URL=ldaps://ufds.us-east-2.joyent.us
+MAHI_URL=$(json -f etc/config.json mahi.host)
 PATH=/usr/openldap/bin:$PATH
 
 SUMMARY=/poseidon/stor/usage/summary/latest
@@ -36,7 +35,7 @@ while read -r line; do
     BWINBytes=$(echo $line | awk '{print $4}')
     BWOUTBytes=$(echo $line | awk '{print $5}')
 
-    LOGIN=$(LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL $LDAP_CREDS -b ou=users,o=smartdc uuid=$UUID login | grep -v dn | nawk  -F ': ' '{print $2}')
+    LOGIN=$(curl -s $MAHI_URL/getName -H 'content-type:application/json' -X POST --data-binary "{\"uuids\":[\"$UUID\"]}" | json $UUID )
 
     printf "%-25s  %-10s  %-10s  %-5s  %-5s\n" $LOGIN $GBHOURS $GBSECS $(human $BWINBytes) $(human $BWOUTBytes) >> $SUMMARYTMP
 done <<< "$USERS"
