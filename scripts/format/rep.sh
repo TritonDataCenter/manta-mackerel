@@ -2,8 +2,9 @@
 
 source /root/.bashrc
 
-LDAP_CREDS="-D cn=root -w secret"
-LDAP_URL=ldaps://ufds.us-east-2.joyent.us
+#LDAP_CREDS="-D cn=root -w secret"
+#LDAP_URL=ldaps://ufds.us-east-2.joyent.us
+MAHI_URL=http://authcache.us-east.joyent.us
 PATH=/usr/openldap/bin:$PATH
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -52,7 +53,7 @@ while read -r line; do
     JOBS=$(echo $line | awk '{print $4}')
     TOTAL=$(echo $line | awk '{print $5}')
 
-    LOGIN=$(LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL $LDAP_CREDS -b ou=users,o=smartdc uuid=$UUID login | grep -v dn | nawk  -F ': ' '{print $2}')
+    LOGIN=$(curl -s $MAHI_URL/getName -H 'content-type:application/json' -X POST --data-binary "{\"uuids\":[\"$UUID\"]}" | json $UUID )
 
     printf "%-25s  %-7s  %-7s  %-7s  %-7s\n" $LOGIN $(human $TOTAL) $(human $STOR) $(human $PUB) $(human $JOBS) >> $STORAGETMP
 done <<< "$USERS"
@@ -71,7 +72,7 @@ while read -r line; do
     BWIN=$(echo $line | awk '{print $3}')
     BWOUT=$(echo $line | awk '{print $4}')
 
-    LOGIN=$(LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL $LDAP_CREDS -b ou=users,o=smartdc uuid=$UUID login | grep -v dn | nawk  -F ': ' '{print $2}')
+    LOGIN=$(curl -s $MAHI_URL/getName -H 'content-type:application/json' -X POST --data-binary "{\"uuids\":[\"$UUID\"]}" | json $UUID )
 
     printf "%-25s  %-7s  %-7s  %-7s\n" $LOGIN $(human $TOTAL) $(human $BWIN) $(human $BWOUT) >> $REQUESTTMP
 done <<< "$USERS"
@@ -93,7 +94,7 @@ while read -r line; do
     BWIN=$(echo $line | awk '{print $7}')
     BWOUT=$(echo $line | awk '{print $8}')
 
-    LOGIN=$(LDAPTLS_REQCERT=allow ldapsearch -LLL -x -H $LDAP_URL $LDAP_CREDS -b ou=users,o=smartdc uuid=$UUID login | grep -v dn | nawk  -F ': ' '{print $2}')
+    LOGIN=$(curl -s $MAHI_URL/getName -H 'content-type:application/json' -X POST --data-binary "{\"uuids\":[\"$UUID\"]}" | json $UUID )
 
                 printf "%-25s  %-8s  %-8s  %-5s  %-6s  %-5s  %-5s  %-5s\n" $LOGIN $(humanTime $GBSECS) $(humanTime $RAWSECS) $JOBS $PHASES $TASKS $(human $BWIN) $(human $BWOUT)  >> $COMPUTETMP
 done <<< "$USERS"
