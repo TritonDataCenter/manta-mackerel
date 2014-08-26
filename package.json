@@ -25,10 +25,11 @@
                 "wf-client": "git+ssh://git@git.joyent.com:wf-client.git#master"
         },
         "devDependencies": {
-                "nodeunit" : "0.7.4",
+                "nodeunit": "0.7.4",
                 "ansidiff": "1.0.0"
         },
         "engines": {
                 "node": ">=0.8.14"
-        }
+        },
+        "license": "MPL-2.0"
 }
