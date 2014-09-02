@@ -12,8 +12,9 @@
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/common.sh
 
-getDate "$@"
+date=$(date --utc -d '1 hour ago')
 
 NODE=$dir/../../build/node/bin/node
 
-$NODE $dir/../../bin/meter -j 'summarizeDaily' -d "$date"
+$NODE $dir/../../bin/meter -j 'request' -d "$date"
+$NODE $dir/../../bin/meter -j 'accessLogs' -d "$date"
