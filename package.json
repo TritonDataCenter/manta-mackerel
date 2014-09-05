@@ -21,8 +21,7 @@
                 "readable-stream": "0.3.1",
                 "posix-getopt": "1.0.0",
                 "screener": "0.0.5",
-                "vasync": "1.3.3",
-                "wf-client": "git+ssh://git@git.joyent.com:wf-client.git#master"
+                "vasync": "1.3.3"
         },
         "devDependencies": {
                 "nodeunit": "0.7.4",
