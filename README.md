@@ -8,17 +8,13 @@
     Copyright (c) 2014, Joyent, Inc.
 -->
 
-# Mackerel
+# manta-mackerel
 
-Repository: <git@git.joyent.com:mackerel.git>
-Browsing: <https://mo.joyent.com/mackerel>
-Who: Fred Kuo
-Docs: <https://mo.joyent.com/docs/mackerel>
-Tickets/bugs: <https://devhub.joyent.com/jira/browse/MANTA-195>
+This repository is part of the Joyent Manta project.  For contribution
+guidelines, issues, and general documentation, visit the main
+[Manta](http://github.com/joyent/manta) project page.
 
-# Overview
-
-Metering and usage reports for Manta.
+Mackerel generates Metering and usage reports for Manta.
 
 Metering code is in two main categories - scripts that set up and kick off
 Marlin jobs (job creation), and code that is uploaded as assets and
@@ -37,19 +33,18 @@ Compute data comes from Marlin agent audit logs.
 
 Run metering jobs using
 
-    bin/meter [-f configPath] [-w] [-c] [-r] -d date -j jobName
+    bin/meter [-f configPath] [-c] [-r] -d date -j jobName
 
 where date is in some format readable by `Date.parse()` (e.g. ISO-8601 or
 output from date(1)) and jobName is one of `storage`, `compute`, `request`,
-`accessLogs`, or `summarizeDaily`. Set the -w to use workflow to manage the
-metering job. Setting the -c flag will print the job manifest without creating
-a job. Setting the -r flag will automatically retry the job in the event of
-failures.
+`accessLogs`, or `summarizeDaily`. Setting the -c flag will print the job
+manifest without creating a job. Setting the -r flag will automatically retry
+the job in the event of failures.
 
 Examples:
 
     bin/meter -j "storage" -d "$(date)"
-    bin/meter -j "accessLogs" -d "$(date -d '1 month ago')" -w
+    bin/meter -j "accessLogs" -d "$(date -d '1 month ago')"
     bin/meter -j "summarizeDaily" "$(date -d '2 days ago')" -f path/to/config
 
 # Configuration file
@@ -159,7 +154,6 @@ config file at `etc/config.js`. Entries to override include:
         directory instead of the default /poseidon/stor/usage
     * lookupFile: path to the test lookup file
     * mahi.host: mahi host (only used for generating lookups)
-    * workflow.url: url of a manta workflow (only needed if workflow is used)
 
 Run tests using:
     make test
