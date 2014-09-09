@@ -51,7 +51,7 @@ function main() {
 
                 // MANTA-2430 only one hour of metering is generated per day so
                 // mulitply by 24 to get byte-hours
-                record['byteHrs'] = (record['byteHrs'] || new Big(0)) * 24;
+                record['byteHrs'] = (record['byteHrs'] || new Big(0)).times(24);
 
                 record['bandwidth'] = record['bandwidth'] || {
                         'in': new Big(0),
