@@ -59,7 +59,7 @@ calc_disk_size ()
 
 # mainline
 
-date=$(date -u +%Y/%m/%d/%H -d '1 hour ago')
+date=$(date -u +%Y/%m/%d/00) # Daily dump at 00 hour
 shards=$(mls /poseidon/stor/manatee_backups)
 for s in $shards
 do
