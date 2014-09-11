@@ -17,9 +17,16 @@ export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}
 
 source ~/.bashrc
 
+MANTA_ADMIN=$(json -f /opt/smartdc/common/etc/config.json | json manta.user)
+ASSETS_PREFIX=/opt/smartdc/mackerel/scripts/pg_process/assets
+PG_CONF=$ASSETS_PREFIX/postgresql.conf
+PG_BIN=$ASSETS_PREFIX/postgres.tar.bz2
+PROCESS_SCRIPT=$ASSETS_PREFIX/process_dump.sh
+SQLTOJSON=$ASSETS_PREFIX/sqltojson.tar.gz
+
 disk=
 
-calc_disk_size ()
+function calc_disk_size ()
 {
     if [[ $1 -le 2 ]]
     then
@@ -57,6 +64,15 @@ calc_disk_size ()
     fi
 }
 
+function upload_assets ()
+{
+    mmkdir -p /$MANTA_ADMIN/stor/pgdump/assets
+    mput -f $PG_CONF /$MANTA_ADMIN/stor/pgdump/assets/postgresql.conf
+    mput -f $PG_BIN /$MANTA_ADMIN/stor/pgdump/assets/postgres.tar.bz2
+    mput -f $PROCESS_SCRIPT /$MANTA_ADMIN/stor/pgdump/assets/process_dump.sh
+    mput -f $SQLTOJSON /$MANTA_ADMIN/stor/pgdump/assets/sqltojson.tar.gz
+}
+
 # mainline
 
 date=$(date -u +%Y/%m/%d/00) # Daily dump at 00 hour
@@ -70,9 +86,12 @@ do
     gbytes=$(echo "scale=0;  $kbytes / 2^20 * 4 + 1" | bc)
     # DB size is appx 10x what the compressed dump is.
     calc_disk_size $gbytes
+    upload_assets
 
-    echo $dump | mjob create --memory=8192 --disk=$disk  -s \
+    echo $dump | mjob create -n pg_process --memory=8192 --disk=$disk  -s \
         /poseidon/stor/pgdump/assets/postgresql.conf -s \
+        /poseidon/stor/pgdump/assets/postgres.tar.bz2 -s \
+        /poseidon/stor/pgdump/assets/sqltojson.tar.gz -s \
         /poseidon/stor/pgdump/assets/process_dump.sh -m \
         '/assets/poseidon/stor/pgdump/assets/process_dump.sh' -w &
 done

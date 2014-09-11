@@ -15,6 +15,8 @@ set -o pipefail
 
 export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 PG_CONF=/assets/poseidon/stor/pgdump/assets/postgresql.conf
+PG_BIN=/assets/poseidon/stor/pgdump/assets/postgres.tar.bz2
+SQLTOJSON=/assets/poseidon/stor/pgdump/assets/sqltojson.tar.gz
 
 DUMP_DIR=/manatee_dumps
 PG_START_TIMEOUT=5
@@ -42,10 +44,22 @@ function fatal
     exit 1
 }
 
+function prep_assets
+{
+    mkdir -p /opt/process_pg
+    tar -xjf $PG_BIN -C /opt/process_pg/
+    export PATH=$PATH:/opt/process_pg/bin/
+    tar -xzf $SQLTOJSON -C /opt/process_pg/
+    export PATH=$PATH:/opt/process_pg/sqltojson/
+}
+
 # load the pg dump into a running postgres instance
 function prep_db
 {
     mkdir -p /manatee
+    set +o errexit
+    useradd postgres
+    set -o errexit
     chown postgres /manatee
     sudo -u postgres initdb /manatee
     cp $PG_CONF /manatee/.
@@ -119,7 +133,7 @@ function upload_pg_dumps
     return $upload_error
 }
 
-npm install -g sqltojson
+prep_assets
 prep_db
 wait_for_pg_start
 load_db
