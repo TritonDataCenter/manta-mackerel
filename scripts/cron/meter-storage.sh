@@ -12,7 +12,7 @@
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $dir/common.sh
 
-date=$(date --utc -d '4 hours ago')
+date=$(date --utc +%FT00:00:00)
 
 NODE=$dir/../../build/node/bin/node
 
