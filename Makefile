@@ -33,7 +33,7 @@ NPM             := npm
 #
 # Files
 #
-DOC_FILES        = index.restdown
+DOC_FILES        = index.md
 BASH_FILES      := $(shell find bin -name '*.sh') $(shell find assets/bin -type f)
 JS_FILES        := $(shell find assets/lib bin lib -name '*.js' -type f)
 JSL_CONF_NODE    = tools/jsl.node.conf
@@ -80,7 +80,7 @@ mycheck:
 	json -nf etc/config.json
 	json -nf etc/jobs.json
 
-check: mycheck
+check:: mycheck
 
 .PHONY: release
 release: all docs $(SMF_MANIFESTS)

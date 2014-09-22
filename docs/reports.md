@@ -1,6 +1,6 @@
 ---
 title: Manta Usage Reports
-markdown2extras: wiki-tables, code-friendly
+markdown2extras: tables, code-friendly
 apisections:
 ---
 <!--
@@ -69,10 +69,11 @@ have been formatted for easy reading.
         }
     }
 
-||**Field**||**Notes**||
-||remoteAddress||always ipv6||
-||billable_operation||may differ from HTTP method||
-||req.caller||if available, information about the user that made the request||
+| Field | Notes |
+| ----- | ----- |
+| remoteAddress | always ipv6 |
+| billable_operation | may differ from HTTP method |
+| req.caller | if available, information about the user that made the request |
 
 # Storage Usage
 
@@ -111,11 +112,12 @@ Snaplinks existing in one namespace that point to an object in another
 namespace are counted under the first namespace in this order: `stor` `public`
 `jobs` `reports`. Objects smaller than 4096 bytes are rounded up to 4096 bytes.
 
-||**Field**||**Notes**||
-||date||hour that this report is for||
-||stor, public, reports, jobs||usage under each namespace e.g. /:login/jobs||
-||keys||total number of object keys, including snaplinks||
-||objects||total unique objects||
+| Field | Notes |
+| ----- | ----- |
+| date | hour that this report is for |
+| stor, public, reports, jobs | usage under each namespace e.g. /:login/jobs |
+| keys | total number of object keys, including snaplinks |
+| objects | total unique objects |
 
 # Request and Bandwidth Usage
 
@@ -140,10 +142,11 @@ namespace are counted under the first namespace in this order: `stor` `public`
         "date": "2013-06-24T17:00:00.000Z"
     }
 
-||**Field**||**Notes**||
-||date||hour that this report is for||
-||type||billable operation type, not HTTP method||
-||bandwidth||bandwidth in and out only include successful GETs and PUTs||
+| Field | Notes |
+| ----- | ----- |
+| date | hour that this report is for |
+| type | billable operation type, not HTTP method |
+| bandwidth | bandwidth in and out only include successful GETs and PUTs |
 
 
 # Compute Usage
@@ -201,13 +204,14 @@ namespace are counted under the first namespace in this order: `stor` `public`
 
 Broken down by job and phase.
 
-||**Field**||**Notes**||
-||date||hour that this report is for||
-||memory||megabytes of memory requested for the phase||
-||disk||gigabytes of disk requested for the phase||
-||seconds||total wall time spent across all tasks for the phase that hour||
-||ntasks||number of tasks seen running for that phase that hour||
-||bandwidth||all bytes, including any overhead||
+| Field | Notes |
+| ----- | ----- |
+| date | hour that this report is for |
+| memory | megabytes of memory requested for the phase |
+| disk | gigabytes of disk requested for the phase |
+| seconds | total wall time spent across all tasks for the phase that hour |
+| ntasks | number of tasks seen running for that phase that hour |
+| bandwidth | all bytes, including any overhead |
 
 # Summary
 
@@ -234,6 +238,7 @@ Broken down by job and phase.
         "computeGBSeconds": "54680"
     }
 
-||**Field**||**Notes**||
-||date||calendar day that this report is for||
-||computeGBSeconds||seconds of compute time per GB memory||
+| Field | Notes |
+| ----- | ----- |
+| date | calendar day that this report is for |
+| computeGBSeconds | seconds of compute time per GB memory |
