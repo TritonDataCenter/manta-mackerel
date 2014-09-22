@@ -57,7 +57,7 @@ include ./tools/mk/Makefile.smf.defs
 
 RELEASE_TARBALL         := $(REPO_NAME)-pkg-$(STAMP).tar.bz2
 ROOT                    := $(shell pwd)
-TMPDIR                  := /tmp/$(STAMP)
+RELSTAGEDIR             := /tmp/$(STAMP)
 
 #
 # Repo-specific targets
@@ -85,9 +85,9 @@ check: mycheck
 .PHONY: release
 release: all docs $(SMF_MANIFESTS)
 	@echo "Building $(RELEASE_TARBALL)"
-	@mkdir -p $(TMPDIR)/root/opt/smartdc/$(REPO_NAME)
-	@mkdir -p $(TMPDIR)/root
-	@mkdir -p $(TMPDIR)/root/opt/smartdc/$(REPO_NAME)/etc
+	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)
+	@mkdir -p $(RELSTAGEDIR)/root
+	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)/etc
 	cp -r	$(ROOT)/assets \
 		$(ROOT)/build \
 		$(ROOT)/bin \
@@ -97,9 +97,9 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/scripts \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
-		$(TMPDIR)/root/opt/smartdc/$(REPO_NAME)/
-	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root)
-	@rm -rf $(TMPDIR)
+		$(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)/
+	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root)
+	@rm -rf $(RELSTAGEDIR)
 
 
 .PHONY: publish
