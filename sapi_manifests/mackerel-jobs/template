@@ -1,0 +1,344 @@
+{
+  "jobs": {
+    "storage": {
+      "keygen": "StorageHourlyKeyGenerator",
+      "keygenArgs": {
+        "minSize": 1048576,
+        "source": "/poseidon/stor/manatee_backups",
+        "shardBlacklist": ["1"]
+      },
+      "linkPath": "storage/latest",
+      "job": {
+        "name": "metering-storage-hourly-$year-$month-$dayT$hour:00:00",
+        "phases": [
+          {
+            "type": "map",
+            "memory":{{#METERING_STORAGE_MAP_MEMORY}}{{METERING_STORAGE_MAP_MEMORY}}{{/METERING_STORAGE_MAP_MEMORY}}{{^METERING_STORAGE_MAP_MEMORY}}2048{{/METERING_STORAGE_MAP_MEMORY}},
+            "disk":{{#METERING_STORAGE_MAP_DISK}}{{METERING_STORAGE_MAP_DISK}}{{/METERING_STORAGE_MAP_DISK}}{{^METERING_STORAGE_MAP_DISK}}128{{/METERING_STORAGE_MAP_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/storage-map",
+              "assets/etc/lookup.json",
+              "assets/lib/storage-map.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/storage-map"
+          },
+          {
+            "type": "reduce",
+            "memory":{{#METERING_STORAGE_REDUCE1_MEMORY}}{{METERING_STORAGE_REDUCE1_MEMORY}}{{/METERING_STORAGE_REDUCE1_MEMORY}}{{^METERING_STORAGE_REDUCE1_MEMORY}}2048{{/METERING_STORAGE_REDUCE1_MEMORY}},
+            "disk":{{#METERING_STORAGE_REDUCE1_DISK}}{{METERING_STORAGE_REDUCE1_DISK}}{{/METERING_STORAGE_REDUCE1_DISK}}{{^METERING_STORAGE_REDUCE1_DISK}}8{{/METERING_STORAGE_REDUCE1_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/storage-reduce1",
+              "assets/lib/storage-reduce1.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/storage-reduce1",
+            "count": {{#METERING_STORAGE_REDUCE1_COUNT}}{{METERING_STORAGE_REDUCE1_COUNT}}{{/METERING_STORAGE_REDUCE1_COUNT}}{{^METERING_STORAGE_REDUCE1_COUNT}}11{{/METERING_STORAGE_REDUCE1_COUNT}}
+          },
+          {
+            "type": "reduce",
+            "memory":{{#METERING_STORAGE_REDUCE2_MEMORY}}{{METERING_STORAGE_REDUCE2_MEMORY}}{{/METERING_STORAGE_REDUCE2_MEMORY}}{{^METERING_STORAGE_REDUCE2_MEMORY}}1024{{/METERING_STORAGE_REDUCE2_MEMORY}},
+            "disk":{{#METERING_STORAGE_REDUCE2_DISK}}{{METERING_STORAGE_REDUCE2_DISK}}{{/METERING_STORAGE_REDUCE2_DISK}}{{^METERING_STORAGE_REDUCE2_DISK}}8{{/METERING_STORAGE_REDUCE2_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/storage-reduce2",
+              "assets/lib/sum-columns.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/storage-reduce2",
+            "count": {{#METERING_STORAGE_REDUCE2_COUNT}}{{METERING_STORAGE_REDUCE2_COUNT}}{{/METERING_STORAGE_REDUCE2_COUNT}}{{^METERING_STORAGE_REDUCE2_COUNT}}11{{/METERING_STORAGE_REDUCE2_COUNT}}
+            "count": 11
+          },
+          {
+            "type": "reduce",
+            "memory":{{#METERING_STORAGE_REDUCE3_MEMORY}}{{METERING_STORAGE_REDUCE3_MEMORY}}{{/METERING_STORAGE_REDUCE3_MEMORY}}{{^METERING_STORAGE_REDUCE3_MEMORY}}1024{{/METERING_STORAGE_REDUCE3_MEMORY}},
+            "disk":{{#METERING_STORAGE_REDUCE3_DISK}}{{METERING_STORAGE_REDUCE3_DISK}}{{/METERING_STORAGE_REDUCE3_DISK}}{{^METERING_STORAGE_REDUCE3_DISK}}8{{/METERING_STORAGE_REDUCE3_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/storage-reduce3",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-usage.js",
+              "assets/lib/storage-reduce3.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/storage-reduce3",
+            "count": {{#METERING_STORAGE_REDUCE3_COUNT}}{{METERING_STORAGE_REDUCE3_COUNT}}{{/METERING_STORAGE_REDUCE3_COUNT}}{{^METERING_STORAGE_REDUCE3_COUNT}}11{{/METERING_STORAGE_REDUCE3_COUNT}}
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "assets/bin/concat"
+            ],
+            "exec": "assets/bin/concat",
+          }
+        ]
+      },
+      "env": {
+        "COUNT_UNAPPROVED_USERS": "true",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "DEST": "$base/storage/$year/$month/$day/$hour/h$hour.json",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "MIN_SIZE": "131072",
+        "NAMESPACES": "stor public jobs reports",
+        "USER_DEST": "/reports/usage/storage/$year/$month/$day/$hour/h$hour.json",
+        "USER_LINK": "/reports/usage/storage/latest",
+        "ZCAT": "gzcat -f"
+      }
+    },
+
+
+    "request": {
+      "keygen": "FindKeyGenerator",
+      "keygenArgs": {
+        "minSize": 1048576,
+        "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
+      },
+      "linkPath": "request/latest",
+      "job": {
+        "name": "metering-request-hourly-$year-$month-$dayT$hour:00:00",
+        "phases": [
+          {
+            "type": "map",
+            "memory":{{#METERING_REQUEST_MAP_MEMORY}}{{METERING_REQUEST_MAP_MEMORY}}{{/METERING_REQUEST_MAP_MEMORY}}{{^METERING_REQUEST_MAP_MEMORY}}1024{{/METERING_REQUEST_MAP_MEMORY}},
+            "disk":{{#METERING_REQUEST_MAP_DISK}}{{METERING_REQUEST_MAP_DISK}}{{/METERING_REQUEST_MAP_DISK}}{{^METERING_REQUEST_MAP_DISK}}8{{/METERING_REQUEST_MAP_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/request-map",
+              "assets/etc/lookup.json",
+              "assets/lib/request-map.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/request-map"
+          },
+          {
+            "type": "reduce",
+            "memory":{{#METERING_REQUEST_REDUCE_MEMORY}}{{METERING_REQUEST_REDUCE_MEMORY}}{{/METERING_REQUEST_REDUCE_MEMORY}}{{^METERING_REQUEST_REDUCE_MEMORY}}1024{{/METERING_REQUEST_REDUCE_MEMORY}},
+            "disk":{{#METERING_REQUEST_REDUCE_DISK}}{{METERING_REQUEST_REDUCE_DISK}}{{/METERING_REQUEST_REDUCE_DISK}}{{^METERING_REQUEST_REDUCE_DISK}}8{{/METERING_REQUEST_REDUCE_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/request-reduce",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-usage.js",
+              "assets/lib/sum-columns.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/request-reduce",
+            "count": {{#METERING_REQUEST_REDUCE_COUNT}}{{METERING_REQUEST_REDUCE_COUNT}}{{/METERING_REQUEST_REDUCE_COUNT}}{{^METERING_REQUEST_REDUCE_COUNT}}11{{/METERING_REQUEST_REDUCE_COUNT}}
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "assets/bin/concat"
+            ],
+            "exec": "assets/bin/concat",
+            "count": 1
+          }
+        ]
+      },
+      "env": {
+        "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
+        "COUNT_UNAPPROVED_USERS": "true",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "DEST": "$base/request/$year/$month/$day/$hour/h$hour.json",
+        "DROP_POSEIDON_REQUESTS": "true",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "MALFORMED_LIMIT": "10",
+        "USER_DEST": "/reports/usage/request/$year/$month/$day/$hour/h$hour.json",
+        "USER_LINK": "/reports/usage/request/latest"
+      }
+    },
+
+
+    "compute": {
+      "keygen": "FindKeyGenerator",
+      "keygenArgs": {
+        "minSize": 102400,
+        "source": "/poseidon/stor/logs/marlin-agent/$year/$month/$day/$hour"
+      },
+      "linkPath": "compute/latest",
+      "job": {
+        "name": "metering-compute-hourly-$year-$month-$dayT$hour:00:00",
+        "phases": [
+          {
+            "type": "map",
+            "memory":{{#METERING_COMPUTE_MAP_MEMORY}}{{METERING_COMPUTE_MAP_MEMORY}}{{/METERING_COMPUTE_MAP_MEMORY}}{{^METERING_COMPUTE_MAP_MEMORY}}1024{{/METERING_COMPUTE_MAP_MEMORY}},
+            "disk":{{#METERING_COMPUTE_MAP_DISK}}{{METERING_COMPUTE_MAP_DISK}}{{/METERING_COMPUTE_MAP_DISK}}{{^METERING_COMPUTE_MAP_DISK}}8{{/METERING_COMPUTE_MAP_DISK}},
+            "assets": [
+              "assets/bin/compute-map",
+              "assets/bin/init",
+              "assets/etc/lookup.json",
+              "assets/lib/compute-map.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/compute-map"
+          },
+          {
+            "type": "reduce",
+            "memory":{{#METERING_COMPUTE_REDUCE_MEMORY}}{{METERING_COMPUTE_REDUCE_MEMORY}}{{/METERING_COMPUTE_REDUCE_MEMORY}}{{^METERING_COMPUTE_REDUCE_MEMORY}}1024{{/METERING_COMPUTE_REDUCE_MEMORY}},
+            "disk":{{#METERING_COMPUTE_REDUCE_DISK}}{{METERING_COMPUTE_REDUCE_DISK}}{{/METERING_COMPUTE_REDUCE_DISK}}{{^METERING_COMPUTE_REDUCE_DISK}}8{{/METERING_COMPUTE_REDUCE_DISK}},
+            "assets": [
+              "assets/bin/compute-reduce",
+              "assets/bin/init",
+              "assets/etc/lookup.json",
+              "assets/lib/compute-reduce.js",
+              "assets/lib/deliver-usage.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/compute-reduce",
+            "count": {{#METERING_COMPUTE_REDUCE_COUNT}}{{METERING_COMPUTE_REDUCE_COUNT}}{{/METERING_COMPUTE_REDUCE_COUNT}}{{^METERING_COMPUTE_REDUCE_COUNT}}11{{/METERING_COMPUTE_REDUCE_COUNT}}
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "assets/bin/concat"
+            ],
+            "exec": "assets/bin/concat",
+            "count": 1
+          }
+        ]
+      },
+      "env": {
+        "COUNT_UNAPPROVED_USERS": "true",
+        "DATE": "$year-$month-$dayT$hour:00:00.000Z",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "DEST": "$base/compute/$year/$month/$day/$hour/h$hour.json",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "MALFORMED_LIMIT": "10",
+        "USER_DEST": "/reports/usage/compute/$year/$month/$day/$hour/h$hour.json",
+        "USER_LINK": "/reports/usage/compute/latest"
+      }
+    },
+
+
+    "accessLogs": {
+      "keygen": "FindKeyGenerator",
+      "keygenArgs": {
+        "source": "/poseidon/stor/logs/muskie/$year/$month/$day/$hour"
+      },
+      "job": {
+        "name": "metering-deliver-access-logs-$year-$month-$dayT$hour:00:00",
+        "phases": [
+          {
+            "type": "map",
+            "memory":{{#METERING_ACCESSLOGS_MAP_MEMORY}}{{METERING_ACCESSLOGS_MAP_MEMORY}}{{/METERING_ACCESSLOGS_MAP_MEMORY}}{{^METERING_ACCESSLOGS_MAP_MEMORY}}1024{{/METERING_ACCESSLOGS_MAP_MEMORY}},
+            "disk":{{#METERING_ACCESSLOGS_MAP_DISK}}{{METERING_ACCESSLOGS_MAP_DISK}}{{/METERING_ACCESSLOGS_MAP_DISK}}{{^METERING_ACCESSLOGS_MAP_DISK}}8{{/METERING_ACCESSLOGS_MAP_DISK}},
+            "assets": [
+              "assets/bin/deliver-access-map",
+              "assets/bin/init",
+              "assets/etc/lookup.json",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/deliver-access-map"
+          },
+          {
+            "type": "reduce",
+            "memory":{{#METERING_ACCESSLOGS_REDUCE_MEMORY}}{{METERING_ACCESSLOGS_REDUCE_MEMORY}}{{/METERING_ACCESSLOGS_REDUCE_MEMORY}}{{^METERING_ACCESSLOGS_REDUCE_MEMORY}}1024{{/METERING_ACCESSLOGS_REDUCE_MEMORY}},
+            "disk":{{#METERING_ACCESSLOGS_REDUCE_DISK}}{{METERING_ACCESSLOGS_REDUCE_DISK}}{{/METERING_ACCESSLOGS_REDUCE_DISK}}{{^METERING_ACCESSLOGS_REDUCE_DISK}}8{{/METERING_ACCESSLOGS_REDUCE_DISK}},
+            "assets": [
+              "assets/bin/deliver-access-reduce",
+              "assets/bin/init",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-access.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/deliver-access-reduce",
+            "count": {{#METERING_ACCESSLOGS_REDUCE_COUNT}}{{METERING_ACCESSLOGS_REDUCE_COUNT}}{{/METERING_ACCESSLOGS_REDUCE_COUNT}}{{^METERING_ACCESSLOGS_REDUCE_COUNT}}17{{/METERING_ACCESSLOGS_REDUCE_COUNT}}
+          },
+          }
+        ]
+      },
+      "env": {
+        "ACCESS_DEST": "/reports/access-logs/$year/$month/$day/$hour/h$hour.json",
+        "ACCESS_LINK": "/reports/access-logs/latest",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "MALFORMED_LIMIT": "10",
+        "DROP_POSEIDON_REQUESTS": "true",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream"
+      }
+    },
+
+
+    "summarizeDaily": {
+      "keygen": "FindKeyGenerator",
+      "keygenArgs": {
+        "minSize": 100,
+        "source": [
+          "/poseidon/stor/usage/storage/$year/$month/$day",
+          "/poseidon/stor/usage/request/$year/$month/$day",
+          "/poseidon/stor/usage/compute/$year/$month/$day"
+        ],
+        "regex": "h[0-9[0-9]"
+      },
+      "linkPath": "summary/latest",
+      "job": {
+        "name": "metering-summarize-daily-$year-$month-$day",
+        "phases": [
+          {
+            "type": "map",
+            "memory":{{#METERING_SUMMARIZEDAILY_MAP_MEMORY}}{{METERING_SUMMARIZEDAILY_MAP_MEMORY}}{{/METERING_SUMMARIZEDAILY_MAP_MEMORY}}{{^METERING_SUMMARIZEDAILY_MAP_MEMORY}}1024{{/METERING_SUMMARIZEDAILY_MAP_MEMORY}},
+            "disk":{{#METERING_SUMMARIZEDAILY_MAP_DISK}}{{METERING_SUMMARIZEDAILY_MAP_DISK}}{{/METERING_SUMMARIZEDAILY_MAP_DISK}}{{^METERING_SUMMARIZEDAILY_MAP_DISK}}8{{/METERING_SUMMARIZEDAILY_MAP_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/summarize-map",
+              "assets/etc/billingComputeTable.json",
+              "assets/etc/lookup.json",
+              "assets/lib/summarize-map.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/summarize-map"
+          },
+          {
+            "type": "reduce",
+            "memory":{{#METERING_SUMMARIZEDAILY_REDUCE_MEMORY}}{{METERING_SUMMARIZEDAILY_REDUCE_MEMORY}}{{/METERING_SUMMARIZEDAILY_REDUCE_MEMORY}}{{^METERING_SUMMARIZEDAILY_REDUCE_MEMORY}}1024{{/METERING_SUMMARIZEDAILY_REDUCE_MEMORY}},
+            "disk":{{#METERING_SUMMARIZEDAILY_REDUCE_DISK}}{{METERING_SUMMARIZEDAILY_REDUCE_DISK}}{{/METERING_SUMMARIZEDAILY_REDUCE_DISK}}{{^METERING_SUMMARIZEDAILY_REDUCE_DISK}}8{{/METERING_SUMMARIZEDAILY_REDUCE_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/summarize-reduce",
+              "assets/etc/lookup.json",
+              "assets/lib/deliver-usage.js",
+              "assets/lib/sum-columns.js",
+              "assets/lib/summarize-reduce.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/summarize-reduce",
+            "count": {{#METERING_SUMMARIZEDAILY_REDUCE_COUNT}}{{METERING_SUMMARIZEDAILY_REDUCE_COUNT}}{{/METERING_SUMMARIZEDAILY_REDUCE_COUNT}}{{^METERING_SUMMARIZEDAILY_REDUCE_COUNT}}11{{/METERING_SUMMARIZEDAILY_REDUCE_COUNT}}
+          },
+          {
+            "type": "reduce",
+            "assets": [
+              "assets/bin/concat"
+            ],
+            "exec": "assets/bin/concat",
+            "count": 1
+          }
+        ]
+      },
+      "env": {
+        "COUNT_UNAPPROVED_USERS": "true",
+        "DATE": "$year-$month-$dayT00:00:00.000Z",
+        "DELIVER_UNAPPROVED_REPORTS": "false",
+        "DEST": "$base/summary/$year/$month/$day/d$day.json",
+        "HEADER_CONTENT_TYPE": "application/x-json-stream",
+        "USER_DEST": "/reports/usage/summary/$year/$month/$day/d$day.json",
+        "USER_LINK": "/reports/usage/summary/latest"
+      }
+    }
+
+  }
+}
