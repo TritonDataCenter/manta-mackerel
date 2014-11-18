@@ -4,10 +4,6 @@
         "maxDelay": 120000,
         "failAfter": 30
     },
-    "workflow": {
-        "url": "{{WORKFLOW_SERVICE}}",
-        "path": "lib/workflows"
-    },
     "mahi": {
         "host": "{{AUTH_SERVICE}}",
         "port": 6379
