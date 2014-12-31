@@ -6,7 +6,14 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2015, Joyent, Inc.
+ */
+
+/*
+ * Input is rows that have been msplit using (owner, type, objectId).
+ * This stream calculates the size of each unique objects, dedupes links and
+ * counts directories. The output is msplit using the tuple (owner, namespace)
+ * to be summed in the next phase.
  */
 
 /* BEGIN JSSTYLED */
@@ -67,10 +74,12 @@
  *        },
  *        "objects": {
  *            objectId: {
- *                namespace: 0, // count of # keys in this
- *                      // namespace for this objectId
- *                ...
- *                _size: 0
+ *                size: 0,
+ *                counts: {
+ *                  namespace: 0, // count of # keys in this
+ *                                // namespace for this objectId
+ *                  ...
+ *                }
  *            },
  *            ...
  *        }
@@ -81,156 +90,200 @@
 
 /*
  * output format:
- * {
- *    "owner": owner,
- *    "namespace": namespace,
- *    "directories": directories,
- *    "keys": keys,
- *    "objects": objects,
- *    "bytes": bytes
- * }
+ *
+ *  {
+ *       "owner": "cc56f978-00a7-4908-8d20-9580a3f60a6",
+ *       "stor": {
+ *           "directories": 111,
+ *           "keys": 234,
+ *           "objects": 184,
+ *           "bytes": "348582"
+ *       },
+ *       "public": {
+ *           "directories": 2,
+ *           "keys": 5,
+ *           "objects": 5,
+ *           "bytes": "2235"
+ *       },
+ *       "jobs": {
+ *           "directories": 0,
+ *           "keys": 0,
+ *           "objects": 0,
+ *           "bytes": "0"
+ *       },
+ *       "reports": {
+ *           "directories": 6,
+ *           "keys": 7,
+ *           "objects": 9,
+ *           "bytes": "12592"
+ *       }
+ *  }
  */
 
 /* END JSSTYLED */
 
-var mod_carrier = require('carrier');
 var Big = require('big.js');
-var ERROR = false;
-var MIN_SIZE = +process.env['MIN_SIZE'] || 131072;
+var Transform = require('stream').Transform;
+var lstream = require('lstream');
+var util = require('util');
 
-var LOG = require('bunyan').createLogger({
-    name: 'storage-reduce1.js',
-    stream: process.stderr,
-    level: process.env['LOG_LEVEL'] || 'info'
-});
-
+var MIN_SIZE = +process.env.MIN_SIZE || 131072; // minimum object size
 var NAMESPACES = (process.env.NAMESPACES).split(' ');
 
-function count(record, aggr) {
-    var owner = record.owner;
-    var type = record.type;
-    var namespace;
-    try {
-        namespace = record.key.split('/')[2]; // /:uuid/:namespace/...
-    } catch (e) {
-        LOG.error(e, 'error getting namespace: ' + record.key);
-        ERROR = true;
+
+function StorageReduce1Stream(opts) {
+    this.log = opts.log;
+    this.namespaces = opts.namespaces;
+    this.lineNumber = 0;
+    this.aggr = {};
+    this.minSize = opts.minSize || 131072;
+    opts.decodeStrings = false;
+    Transform.call(this, opts);
+}
+util.inherits(StorageReduce1Stream, Transform);
+
+
+StorageReduce1Stream.prototype._transform = function _transform(line, enc, cb) {
+    this.lineNumber++;
+
+    var record = JSON.parse(line);
+    if (!record.owner || !record.type) {
+        this.log.error({
+            line: line,
+            linenumber: this.lineNumber
+        }, 'Missing owner or type field on line ' + this.lineNumber);
+        cb(new Error('missing owner or type'));
         return;
     }
 
-    aggr[owner] = aggr[owner] || {
+    var owner = record.owner;
+    var type = record.type;
+    var namespace = record.key.split('/')[2]; // /:uuid/:namespace/...
+    record.namespace = namespace;
+
+    this.aggr[owner] = this.aggr[owner] || {
         dirs: {},
         objects: {}
     };
-
-    aggr[owner].dirs[namespace] = aggr[owner].dirs[namespace] || 0;
+    this.aggr[owner].dirs[namespace] = this.aggr[owner].dirs[namespace] || 0;
 
     if (type === 'directory') {
-        aggr[owner].dirs[namespace]++;
+        this._incrDirectory(record);
     } else if (type === 'object') {
-        var index = aggr[owner].objects;
-        var n;
-        try {
-            var objectId = record.objectId;
-            var size = Math.max(record.contentLength, MIN_SIZE) *
-              record.sharks.length;
-        } catch (e) {
-            console.warn(e);
-            return;
-        }
-
-        if (!index[objectId]) {
-            index[objectId] = {};
-            for (n in NAMESPACES) {
-                index[objectId][NAMESPACES[n]] = 0;
-            }
-        }
-
-        index[objectId][namespace]++;
-        index[objectId]._size = size;
+        this._incrObject(record);
     } else {
-        LOG.error(record, 'unrecognized object type: ' + type);
-        ERROR = true;
+        this.log.error({
+            line: line,
+            lineNumber: this.lineNumber
+        }, 'unrecognized object type: ' + type);
+        cb(new Error('unrecognized object'));
+        return;
     }
-}
 
-function printResults(aggr) {
-    var n, dirs;
-    Object.keys(aggr).forEach(function (owner) {
-        var keys = {};
-        var bytes = {};
-        var objects = {};
+    cb();
+    return;
+};
 
-        for (n in NAMESPACES) {
-            keys[NAMESPACES[n]] = 0;
-            bytes[NAMESPACES[n]] = new Big(0);
-            objects[NAMESPACES[n]] = 0;
+
+StorageReduce1Stream.prototype._incrDirectory = function _incrDir(record) {
+    var owner = record.owner;
+    var namespace = record.namespace;
+
+    this.aggr[owner].dirs[namespace]++;
+};
+
+
+StorageReduce1Stream.prototype._incrObject = function _incrObject(record) {
+    var owner = record.owner;
+    var namespace = record.namespace;
+    var objectId = record.objectId;
+    var size = Math.max(record.contentLength, this.minSize);
+    var total = size * record.sharks.length;
+
+    var objectList = this.aggr[owner].objects;
+    if (!objectList[objectId]) {
+        objectList[objectId] = {
+            size: total,
+            counts: {}
+        };
+    }
+
+    if (objectList[objectId].counts[namespace]) {
+        objectList[objectId].counts[namespace]++;
+    } else {
+        objectList[objectId].counts[namespace] = 1;
+    }
+};
+
+
+StorageReduce1Stream.prototype._flush = function _flush(cb) {
+    function bigToString(key, value) {
+        if (value instanceof Big) {
+            return (value.toString());
         }
+        return (value);
+    }
 
-        Object.keys(aggr[owner].objects).forEach(function (object) {
-            var counted = false;
-            var objCounts = aggr[owner].objects[object];
-            for (n in NAMESPACES) {
-                if (!counted && objCounts[NAMESPACES[n]] > 0) {
-                    counted = true;
-                    var size = objCounts._size;
-                    bytes[NAMESPACES[n]] =
-                        bytes[NAMESPACES[n]].plus(size);
-                    objects[NAMESPACES[n]]++;
-                }
-                keys[NAMESPACES[n]] += objCounts[NAMESPACES[n]];
-            }
+    var self = this;
+    Object.keys(this.aggr).forEach(function (owner) {
+        var out = {
+            owner: owner
+        };
+
+        self.namespaces.forEach(function (namespace) {
+            out[namespace] = {
+                directories: self.aggr[owner].dirs[namespace] || 0,
+                keys: 0,
+                objects: 0,
+                bytes: new Big(0)
+            };
         });
 
-        for (n in NAMESPACES) {
-            dirs = aggr[owner].dirs[NAMESPACES[n]] || 0;
-            console.log(JSON.stringify({
-                owner: owner,
-                namespace: NAMESPACES[n],
-                directories: dirs,
-                keys: keys[NAMESPACES[n]],
-                objects: objects[NAMESPACES[n]],
-                bytes: bytes[NAMESPACES[n]].toString()
-            }));
-        }
+        Object.keys(self.aggr[owner].objects).forEach(function (objectId) {
+            var size = self.aggr[owner].objects[objectId].size;
+            var counts = self.aggr[owner].objects[objectId].counts;
+            var counted = false;
+            Object.keys(self.namespaces).forEach(function (namespace) {
+                if (counts[namespace]) {
+                    if (!counted) {
+                        out[namespace].objects++;
+                        out[namespace].bytes.plus(size);
+                        counted = true;
+                    }
+                    out[namespace].keys += counts[namespace];
+                }
+            });
+        });
+
+        self.push(JSON.stringify(out, bigToString) + '\n');
     });
-}
+    cb();
+};
 
 
 function main() {
-    var carry = mod_carrier.carry(process.openStdin());
-
-    var aggr = {};
-    var lineCount = 0;
-    carry.on('line', function onLine(line) {
-        lineCount++;
-        try {
-            var record = JSON.parse(line);
-        } catch (e) {
-            LOG.error(e, 'Error on line ' + lineCount);
-            ERROR = true;
-            return;
-        }
-
-        if (!record.owner || !record.type) {
-            LOG.error(line, 'Missing owner or type field on line ' +
-                lineCount);
-            ERROR = true;
-            return;
-        }
-
-        count(record, aggr);
+    var log = require('bunyan').createLogger({
+        name: 'storage-reduce1.js',
+        stream: process.stderr,
+        level: process.env.LOG_LEVEL || 'info'
     });
 
-    carry.on('end', function onEnd() {
-        printResults(aggr);
+    var reduceStream = new StorageReduce1Stream({
+        namespaces: NAMESPACES,
+        minSize: MIN_SIZE,
+        log: log
     });
+
+    reduceStream.once('error', function (error) {
+        log.fatal({error: error}, 'storage reduce phase 1 error');
+        process.exit(1);
+    });
+
+    process.stdin.pipe(new lstream()).pipe(reduceStream).pipe(process.stdout);
 }
 
 if (require.main === module) {
-    process.on('exit', function onExit() {
-        process.exit(ERROR);
-    });
-
     main();
 }
+
+module.exports = StorageReduce1Stream;
