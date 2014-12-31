@@ -1,34 +1,34 @@
 {
-        "name": "mackerel",
-        "description": "Manta Metering System",
-        "version": "1.0.0",
-        "author": "Joyent (joyent.com)",
-        "private": true,
-        "main": "./lib/index.js",
-        "dependencies": {
-                "assert-plus": "0.1.2",
-                "big.js": "2.0.0",
-                "backoff": "1.2.0",
-                "bunyan": "0.21.1",
-                "carrier": "0.1.10",
-                "ipaddr.js": "0.1.1",
-                "jsprim": "0.5.0",
-                "libmanta": "git+ssh://git@github.com:joyent/node-libmanta.git#master",
-                "marlin": "git+ssh://git@github.com:joyent/manta-marlin.git#master",
-                "manta": "git+ssh://git@github.com:joyent/node-manta.git#master",
-                "manta-compute-bin": "git+ssh://git@github.com:joyent/manta-compute-bin.git#master",
-                "once": "1.1.1",
-                "readable-stream": "0.3.1",
-                "posix-getopt": "1.0.0",
-                "screener": "0.0.5",
-                "vasync": "1.3.3"
-        },
-        "devDependencies": {
-                "nodeunit": "0.7.4",
-                "ansidiff": "1.0.0"
-        },
-        "engines": {
-                "node": ">=0.8.14"
-        },
-        "license": "MPL-2.0"
+    "name": "mackerel",
+    "description": "Manta Metering System",
+    "version": "1.0.0",
+    "author": "Joyent (joyent.com)",
+    "private": true,
+    "main": "./lib/index.js",
+    "dependencies": {
+        "assert-plus": "0.1.2",
+        "big.js": "2.0.0",
+        "backoff": "1.2.0",
+        "bunyan": "0.21.1",
+        "carrier": "0.1.10",
+        "ipaddr.js": "0.1.1",
+        "jsprim": "0.5.0",
+        "libmanta": "git+ssh://git@github.com:joyent/node-libmanta.git#master",
+        "marlin": "git+ssh://git@github.com:joyent/manta-marlin.git#master",
+        "manta": "git+ssh://git@github.com:joyent/node-manta.git#master",
+        "manta-compute-bin": "git+ssh://git@github.com:joyent/manta-compute-bin.git#master",
+        "once": "1.1.1",
+        "readable-stream": "0.3.1",
+        "posix-getopt": "1.0.0",
+        "screener": "0.0.5",
+        "vasync": "1.3.3"
+    },
+    "devDependencies": {
+        "nodeunit": "0.7.4",
+        "ansidiff": "1.0.0"
+    },
+    "engines": {
+        "node": ">=0.8.14"
+    },
+    "license": "MPL-2.0"
 }
