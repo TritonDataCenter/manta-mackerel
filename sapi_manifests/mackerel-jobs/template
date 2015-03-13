@@ -52,7 +52,6 @@
             "init": "assets/bin/init",
             "exec": "assets/bin/storage-reduce2",
             "count": {{#METERING_STORAGE_REDUCE2_COUNT}}{{METERING_STORAGE_REDUCE2_COUNT}}{{/METERING_STORAGE_REDUCE2_COUNT}}{{^METERING_STORAGE_REDUCE2_COUNT}}11{{/METERING_STORAGE_REDUCE2_COUNT}}
-            "count": 11
           },
           {
             "type": "reduce",
@@ -76,6 +75,7 @@
               "assets/bin/concat"
             ],
             "exec": "assets/bin/concat",
+            "count": 1
           }
         ]
       },
@@ -257,7 +257,6 @@
             "init": "assets/bin/init",
             "exec": "assets/bin/deliver-access-reduce",
             "count": {{#METERING_ACCESSLOGS_REDUCE_COUNT}}{{METERING_ACCESSLOGS_REDUCE_COUNT}}{{/METERING_ACCESSLOGS_REDUCE_COUNT}}{{^METERING_ACCESSLOGS_REDUCE_COUNT}}17{{/METERING_ACCESSLOGS_REDUCE_COUNT}}
-          },
           }
         ]
       },
