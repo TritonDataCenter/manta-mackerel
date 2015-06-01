@@ -1,0 +1,33 @@
+{
+    "moray": {
+        "host": "{{MARLIN_MORAY_SHARD}}",
+        "port": 2020,
+        "maxConnections": 1,
+        "retry": {
+            "retries": 3,
+            "maxTimeout": 7000
+        }
+    },
+    "manta": {
+        "url": "{{MANTA_URL}}",
+        "user": "{{ADMIN_USERNAME}}",
+        "sign": {
+            "key": "/root/.ssh/id_rsa",
+            "keyId": "{{ADMIN_KEY_ID}}"
+        },
+        "retry": {
+            "attempts": 5,
+            "minTimeout": 1000
+        },
+        "connectTimeout": 1000,
+        "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
+    },
+    "moray_bucket_prefix": "chronos"
+    "mutex_object": "/{{ADMIN_USERNAME}}/stor/usage/assets/chronos_mutex"
+    "runner": {
+        "period": 60000,
+        "timeout": 600000,
+        "smf_fmri": "svc:/site/chronos:default",
+        "log_directory": "/var/log/chronos"
+    }
+}
