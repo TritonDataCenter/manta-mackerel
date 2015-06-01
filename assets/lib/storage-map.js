@@ -16,11 +16,11 @@
  */
 
 var Transform = require('stream').Transform;
+var bunyan = require('bunyan');
+var dashdash = require('dashdash');
 var lstream = require('lstream');
 var util = require('util');
 
-var LOOKUP_PATH = process.env.LOOKUP_FILE || '../etc/lookup.json';
-var EXCLUDE_UNAPPROVED_USERS = process.env.EXCLUDE_UNAPPROVED_USERS === 'true';
 
 /*
  * check for the fields we know we need
@@ -71,7 +71,7 @@ StorageMapStream.prototype._transform = function _transform(line, enc, cb) {
             cb();
             return;
         } catch (e) {
-            this.log.fatal({error: e, line: line}, 'error parsing schema');
+            this.log.error({error: e, line: line}, 'error parsing schema');
             cb(e);
             return;
         }
@@ -95,10 +95,12 @@ StorageMapStream.prototype._transform = function _transform(line, enc, cb) {
     if (this.excludeUnapproved) {
         if (!this.lookup[obj.owner]) {
             this.log.warn({obj: obj}, 'No login found for %s', obj.owner);
+            cb();
+            return;
         }
 
         if (!this.lookup[obj.owner].approved) {
-            this.log.warn({obj: obj},
+            this.log.debug({obj: obj},
                 '%s not approved for provisioning. Skipping...', obj.owner);
             cb();
             return;
@@ -113,27 +115,71 @@ StorageMapStream.prototype._transform = function _transform(line, enc, cb) {
 
 
 function main() {
-    var log = require('bunyan').createLogger({
+    var log = bunyan.createLogger({
         name: 'storage-map.js',
         stream: process.stderr,
         level: process.env.LOG_LEVEL || 'info'
     });
 
-    var lookup;
+    var options = [
+        {
+            name: 'excludeUnapproved',
+            type: 'bool',
+            env: 'EXCLUDE_UNAPPROVED_USERS',
+            help: 'Exclude usage for users that have ' +
+                    'approved_for_provisioning = false'
+        },
+        {
+            name: 'lookupPath',
+            type: 'string',
+            env: 'LOOKUP_PATH',
+            default: '../etc/lookup.json',
+            help: 'Path to lookup file'
+        },
+        {
+            names: ['help', 'h'],
+            type: 'bool',
+            help: 'Print help'
+        }
+    ];
 
-    if (EXCLUDE_UNAPPROVED_USERS) {
-        lookup = require(LOOKUP_PATH);
+    var parser = dashdash.createParser({options: options});
+    var opts;
+    try {
+        opts = parser.parse(process.argv);
+    } catch (e) {
+        console.error('storage-map: error: %s', e.message);
+        process.exit(1);
+    }
+
+    if (opts.help) {
+        var help = parser.help({includeEnv: true}).trimRight();
+        console.log('usage: node storage-map.js [OPTIONS]\n' +
+                    'options:\n' +
+                    help);
+        process.exit(0);
+    }
+
+    if (opts.hasOwnProperty('excludeUnapproved') &&
+        !opts.hasOwnProperty('lookupPath')) {
+        console.error('storage-map: error: missing lookup file');
+        process.exit(1);
+    }
+
+    var lookup;
+    if (opts.excludeUnapproved) {
+        lookup = require(opts.lookupPath);
     }
 
     var mapStream = new StorageMapStream({
+        excludeUnapproved: opts.excludeUnapproved,
         log: log,
-        lookup: lookup,
-        excludeUnapproved: EXCLUDE_UNAPPROVED_USERS
+        lookup: lookup
     });
 
     mapStream.once('error', function (error) {
-        log.fatal({error: error}, 'storage map error');
-        process.exit(1);
+        log.error({error: error}, 'storage map error');
+        process.abort();
     });
 
     process.stdin.pipe(new lstream()).pipe(mapStream).pipe(process.stdout);

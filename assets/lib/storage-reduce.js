@@ -11,9 +11,9 @@
 
 /*
  * Input is rows that have been msplit using (owner, type, objectId).
- * This stream calculates the size of each unique objects, dedupes links and
- * counts directories. The output is msplit using the tuple (owner, namespace)
- * to be summed in the next phase.
+ * This stream calculates the size of each unique object, dedupes links and
+ * counts directories. The output is msplit using the
+ * `owner` field to be summed in the next phase.
  */
 
 /* BEGIN JSSTYLED */
@@ -124,11 +124,10 @@
 
 var Big = require('big.js');
 var Transform = require('stream').Transform;
+var bunyan = require('bunyan');
+var dashdash = require('dashdash');
 var lstream = require('lstream');
 var util = require('util');
-
-var MIN_SIZE = +process.env.MIN_SIZE || 131072; // minimum object size
-var NAMESPACES = (process.env.NAMESPACES).split(' ');
 
 
 function StorageReduce1Stream(opts) {
@@ -136,7 +135,11 @@ function StorageReduce1Stream(opts) {
     this.namespaces = opts.namespaces;
     this.lineNumber = 0;
     this.aggr = {};
-    this.minSize = opts.minSize || 131072;
+    if (typeof(opts.minSize) !== 'number') {
+        this.minSize = 0;
+    } else {
+        this.minSize = opts.minSize;
+    }
     opts.decodeStrings = false;
     Transform.call(this, opts);
 }
@@ -146,7 +149,19 @@ util.inherits(StorageReduce1Stream, Transform);
 StorageReduce1Stream.prototype._transform = function _transform(line, enc, cb) {
     this.lineNumber++;
 
-    var record = JSON.parse(line);
+    var record;
+    try {
+        record = JSON.parse(line);
+    } catch (e) {
+        this.log.error({
+            error: e.message,
+            line: line,
+            lineNumber: this.lineNumber
+        }, 'error parsing line');
+        cb(e);
+        return;
+    }
+
     if (!record.owner || !record.type) {
         this.log.error({
             line: line,
@@ -218,7 +233,7 @@ StorageReduce1Stream.prototype._incrObject = function _incrObject(record) {
 
 StorageReduce1Stream.prototype._flush = function _flush(cb) {
     function bigToString(key, value) {
-        if (value instanceof Big) {
+        if (value instanceof Big || typeof (value) === 'number') {
             return (value.toString());
         }
         return (value);
@@ -243,11 +258,11 @@ StorageReduce1Stream.prototype._flush = function _flush(cb) {
             var size = self.aggr[owner].objects[objectId].size;
             var counts = self.aggr[owner].objects[objectId].counts;
             var counted = false;
-            Object.keys(self.namespaces).forEach(function (namespace) {
+            self.namespaces.forEach(function (namespace) {
                 if (counts[namespace]) {
                     if (!counted) {
                         out[namespace].objects++;
-                        out[namespace].bytes.plus(size);
+                        out[namespace].bytes = out[namespace].bytes.plus(size);
                         counted = true;
                     }
                     out[namespace].keys += counts[namespace];
@@ -262,21 +277,56 @@ StorageReduce1Stream.prototype._flush = function _flush(cb) {
 
 
 function main() {
-    var log = require('bunyan').createLogger({
-        name: 'storage-reduce1.js',
+    var log = bunyan.createLogger({
+        name: 'storage-reduce.js',
         stream: process.stderr,
         level: process.env.LOG_LEVEL || 'info'
     });
 
+    var options = [
+        {
+            name: 'namespaces',
+            type: 'string',
+            env: 'NAMESPACES',
+            help: 'A list of comma-separated namespaces to include ' +
+                'in storage reports (even if usage is empty)',
+            default: 'stor public jobs reports'
+        },
+        {
+            name: 'minSize',
+            type: 'integer',
+            env: 'MIN_SIZE',
+            help: 'Minimum object size. If an object is less than ' +
+                'this size, it is metered as being minSize.',
+            default: 0
+        },
+        {
+            names: ['help', 'h'],
+            type: 'bool',
+            help: 'Print help'
+        }
+    ];
+
+    var parser = dashdash.createParser({options: options});
+    var opts;
+    try {
+        opts = parser.parse(process.argv);
+    } catch (e) {
+        console.error('storage-reduce: error: %s', e.message);
+        process.exit(1);
+    }
+
+    var namespaces = opts.namespaces.split(' ');
+
     var reduceStream = new StorageReduce1Stream({
-        namespaces: NAMESPACES,
-        minSize: MIN_SIZE,
+        namespaces: namespaces,
+        minSize: opts.minSize,
         log: log
     });
 
     reduceStream.once('error', function (error) {
-        log.fatal({error: error}, 'storage reduce phase 1 error');
-        process.exit(1);
+        log.error({error: error}, 'storage reduce phase 1 error');
+        process.abort();
     });
 
     process.stdin.pipe(new lstream()).pipe(reduceStream).pipe(process.stdout);

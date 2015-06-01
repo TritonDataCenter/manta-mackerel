@@ -1,12 +1,6 @@
 {
-    "monitorBackoff": {
-        "initialDelay": 1000,
-        "maxDelay": 120000,
-        "failAfter": 30
-    },
     "mahi": {
-        "host": "{{AUTH_SERVICE}}",
-        "port": 6379
+        "url": "http://{{AUTH_SERVICE}}"
     },
     "manta": {
         "url": "{{MANTA_URL}}",
@@ -21,8 +15,5 @@
         },
         "connectTimeout": 1000,
         "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
-    },
-    "jobsFile": "etc/jobs.json",
-    "mantaBaseDirectory": "/poseidon/stor/usage",
-    "lookupFile": "assets/etc/lookup.json"
+    }
 }

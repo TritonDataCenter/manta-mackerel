@@ -6,24 +6,22 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2015, Joyent, Inc.
  */
 
-var Big = require('big.js');
-var mod_MemoryStream = require('readable-stream/passthrough.js');
-var mod_carrier = require('carrier');
-var mod_child_process = require('child_process');
-var mod_events = require('events');
-var mod_libmanta = require('libmanta');
-var mod_manta = require('manta');
-var mod_path = require('path');
+/*
+ * Uploads each user's usage record to their respective /reports directory and
+ * creates a link to that record.
+ */
 
-var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
-var lookup = require(lookupPath); // maps uuid->login
-var ERROR = false;
-var DELIVER_UNAPPROVED_REPORTS =
-    process.env['DELIVER_UNAPPROVED_REPORTS'] === 'true';
-var DRY_RUN = process.env['DRY_RUN'] === 'true';
+var Transform = require('stream').Transform;
+var bunyan = require('bunyan');
+var dashdash = require('dashdash');
+var lstream = require('lstream');
+var manta = require('manta');
+var path = require('path');
+var util = require('util');
+var vasync = require('vasync');
 
 function filter(key, value) {
     if (typeof (value) === 'number') {
@@ -32,162 +30,266 @@ function filter(key, value) {
     return (value);
 }
 
-var LOG = require('bunyan').createLogger({
-    name: 'deliver-usage.js',
-    stream: process.stderr,
-    level: process.env['LOG_LEVEL'] || 'info'
-});
 
-function writeToUserDir(opts, cb) {
-    LOG.debug(opts, 'writeToUserDir start');
-    var record = opts.record;
-    if (process.env['DATE']) {
-        record.date = process.env['DATE'];
-    }
-    var login = opts.login;
-    var client = opts.client;
-    var linkPath = '/' + login + process.env['USER_LINK'];
-    var path = '/' + login + process.env['USER_DEST'];
-    var line = JSON.stringify(record, filter) + '\n';
-    var size = Buffer.byteLength(line);
-    var mstream = new mod_MemoryStream();
-    var dir = mod_path.dirname(path);
+function DeliverUsageStream(opts) {
+    this.backfill = opts.backfill;
+    this.dryRun = opts.dryRun;
+    this.deliverUnapproved = opts.deliverUnapproved;
+    this.log = opts.log;
+    this.lookup = opts.lookup;
+    this.mantaUrl = opts.mantaUrl;
+    this.tmpdir = opts.tmpdir || '/var/tmp/';
+    this.userDestination = opts.userDestination;
+    this.userLink = opts.userLink;
 
-    LOG.debug(dir, 'creating directory');
-    client.mkdirp(dir, function (err) {
-        if (err) {
-            LOG.error(err, 'error mkdirp ' + dir);
-            ERROR = true;
-            cb(err);
-            return;
-        }
-
-        LOG.info(dir, 'directory created');
-
-        var options = {
-            size: size,
-            type: process.env['HEADER_CONTENT_TYPE'],
-            'x-marlin-stream': 'stderr'
-        };
-
-        LOG.debug({path: path, options: options}, 'putting ' + path);
-        client.put(path, mstream, options, function (err2) {
-            if (err2) {
-                LOG.error(err2, 'error put ' + path);
-                ERROR = true;
-                cb(err2);
-                return;
-            }
-            LOG.info(path, 'put successful');
-            if (!process.env['USER_LINK']) {
-                cb();
-                return;
-            }
-            LOG.debug({
-                path: path,
-                linkPath: linkPath
-            }, 'creating link');
-            client.ln(path, linkPath, function (err3) {
-                if (err3) {
-                    LOG.warn(err3, 'error ln ' + linkPath);
-                    ERROR = true;
-                    cb(err3);
-                    return;
-                }
-                LOG.info({
-                    path: path,
-                    linkPath: linkPath
-                }, 'link created');
-                cb();
-                return;
-            });
-        });
-
-        process.nextTick(function () {
-            mstream.write(line);
-            mstream.end();
-        });
+    var uploadQueue = vasync.queuev({
+        worker: this._upload.bind(this),
+        concurrency: 25
     });
-}
+    var client = manta.createClient({
+        sign: null,
+        url: this.mantaUrl
+    });
 
-function main() {
-    // don't deliver anything if this is set
-    if (DRY_RUN) {
-        process.stdin.pipe(process.stdout);
-        process.stdin.resume();
+    this.uploadQueue = uploadQueue;
+    this.mantaClient = client;
+    this.lineNumber = 0;
+
+    this.once('finish', function () {
+        uploadQueue.close();
+    });
+
+    opts.decodeStrings = false;
+    Transform.call(this, opts);
+}
+util.inherits(DeliverUsageStream, Transform);
+
+
+DeliverUsageStream.prototype._transform = function transform(line, enc, cb) {
+    this.lineNumber++;
+
+    // re-emit input as output
+    this.push(line + '\n');
+
+    var record;
+    try {
+        record = JSON.parse(line);
+    } catch (e) {
+        this.emit('malformed', line);
+        this.log.warn({
+            error: e,
+            line: line,
+            lineNumber: this.lineNumber
+        }, 'error parsing line ' + this.lineNumber);
+        cb();
         return;
     }
 
-    var client = mod_manta.createClient({
-        sign: null,
-        url: process.env['MANTA_URL']
-    });
-
-    var queue = mod_libmanta.createQueue({
-        limit: 10,
-        worker: function (opts, cb) {
-            try {
-                writeToUserDir(opts, cb);
-            } catch (err) {
-                LOG.error(err, 'queue error');
-                ERROR = true;
-            }
-        }
-    });
-
-    queue.on('error', function onError(err) {
-        ERROR = true;
-    });
-
-    queue.on('end', client.close.bind(client));
-
-    var carry = mod_carrier.carry(process.stdin);
-
-    function onLine(line) {
-        var record = JSON.parse(line);
-
-        // re-emit input as output but with numbers converted to strings
-        console.log(JSON.stringify(record, filter));
-
-        var login = lookup[record.owner];
-
-        if (!login) {
-            LOG.error(record,
-                'No login found for UUID ' + record.owner);
-            ERROR = true;
-            return;
-        }
-
-        if (!DELIVER_UNAPPROVED_REPORTS && !login.approved) {
-            LOG.warn(record, record.owner +
-                ' not approved for provisioning. Skipping...');
-            return;
-        }
-
-        // remove owner field from the user's personal report
-        delete record.owner;
-
-        // remove header bandwidth from request reports
-        if (record.bandwidth) {
-            delete record.bandwidth.headerIn;
-            delete record.bandwidth.headerOut;
-        }
-
-        queue.push({
-            record: record,
-            login: login.login,
-            client: client
-        });
+    if (!this.lookup[record.owner]) {
+        this.log.warn({
+            record: record
+        }, 'No login found for %s', record.owner);
+        cb();
+        return;
     }
 
-    carry.on('line', onLine);
-    carry.once('end', queue.close.bind(queue));
-    process.stdin.resume();
+    if (!this.deliverUnapproved && !this.lookup[record.owner].approved) {
+        this.log.debug({record: record},
+            '%s not approved for provisioning. Skipping...', record.owner);
+        cb();
+        return;
+    }
+
+    this.uploadQueue.push(record, function (err) {
+        if (err) {
+            this.log.error({
+                err: err,
+                record: record
+            }, 'error uploading usage for record');
+        }
+    });
+    cb();
+};
+
+DeliverUsageStream.prototype._upload = function _upload(record, cb) {
+    var self = this;
+    var login = this.lookup[record.owner].login;
+    var client = this.mantaClient;
+
+    var linkPath = '/' + login + this.userLink;
+    var key;
+    if (this.dryRun) {
+        key = process.env.MANTA_OUTPUT_BASE + login;
+    } else {
+        key = '/' + login + this.userDestination;
+    }
+
+    vasync.pipeline({
+        funcs: [
+            function mkdir(_, pipelinecb) {
+                var dir = path.dirname(key);
+                client.mkdirp(dir, function (err) {
+                    if (err) {
+                        pipelinecb(err);
+                        return;
+                    }
+                    pipelinecb();
+                });
+            },
+            function put(_, pipelinecb) {
+
+                // remove owner field from the user's personal report
+                delete record.owner;
+
+                // remove header bandwidth from request reports
+                if (record.bandwidth) {
+                    delete record.bandwidth.headerIn;
+                    delete record.bandwidth.headerOut;
+                }
+
+                var line = JSON.stringify(record, filter) + '\n';
+                var size = Buffer.byteLength(line);
+                var options = {
+                    size: size,
+                    type: 'application/x-json-stream',
+                    headers: {
+                        'x-marlin-stream': 'stdout'
+                    }
+                };
+                var writeStream = client.createWriteStream(key, options);
+                writeStream.end(line, pipelinecb);
+            },
+            function link(_, pipelinecb) {
+                if (self.backfill || self.dryRun) {
+                    pipelinecb();
+                    return;
+                }
+                client.ln(key, linkPath, function (err) {
+                    if (err) {
+                        pipelinecb(err);
+                        return;
+                    }
+                    pipelinecb();
+                });
+            }
+        ]
+    }, function (err) {
+        if (err) {
+            cb(err);
+            return;
+        }
+        cb();
+    });
+};
+
+
+
+function main() {
+    var log = bunyan.createLogger({
+        name: 'deliver-usage.js',
+        stream: process.stderr,
+        level: process.env.LOG_LEVEL || 'info'
+    });
+
+    var options = [
+        {
+            name: 'backfill',
+            type: 'bool',
+            env: 'BACKFILL',
+            help: 'Don\'t create the "latest" link'
+        },
+        {
+            name: 'deliverUnapproved',
+            type: 'bool',
+            env: 'DELIVER_UNAPPROVED_REPORTS',
+            help: 'Do not deliver personal usage reports for users that have ' +
+                    'approved_for_provisioning = false'
+        },
+        {
+            name: 'dryRun',
+            type: 'bool',
+            env: 'DRY_RUN',
+            help: 'Write in job directory instead of user directories'
+        },
+        {
+            name: 'lookupPath',
+            type: 'string',
+            env: 'LOOKUP_PATH',
+            default: '../etc/lookup.json',
+            help: 'Path to lookup file'
+        },
+        {
+            name: 'mantaUrl',
+            type: 'string',
+            env: 'MANTA_URL',
+            help: 'Manta URL'
+        },
+        {
+            name: 'userDestination',
+            type: 'string',
+            env: 'USER_DEST',
+            help: 'Manta path to write usage reports to relative ' +
+                    'to the user\'s top-level directory ' +
+                    'e.g. /reports/usage/storage/report.json'
+        },
+        {
+            name: 'userLink',
+            type: 'string',
+            env: 'USER_LINK',
+            help: 'Manta path to create a link to relative ' +
+                    'to the user\'s top-level directory ' +
+                    'e.g. /reports/usage/storage/latest'
+        },
+        {
+            names: ['help', 'h'],
+            type: 'bool',
+            help: 'Print help'
+        }
+    ];
+
+    var parser = dashdash.createParser({options: options});
+    var opts;
+    try {
+        opts = parser.parse(process.argv);
+    } catch (e) {
+        console.error('deliver-usage: error: %s', e.message);
+        process.exit(1);
+    }
+
+    if (opts.help) {
+        var help = parser.help({includeEnv: true}).trimRight();
+        console.log('usage: node deliver-usage.js [OPTIONS]\n' +
+                    'options:\n' +
+                    help);
+        process.exit(0);
+    }
+
+    if (!opts.hasOwnProperty('lookupPath')) {
+        console.error('deliver-usage: error: missing lookup file');
+        process.exit(1);
+    }
+
+    var lookup = require(opts.lookupPath);
+
+    var deliver = new DeliverUsageStream({
+        backfill: opts.backfill,
+        dryRun: opts.dryRun,
+        deliverUnapproved: opts.deliverUnapproved,
+        log: log,
+        lookup: lookup,
+        mantaUrl: opts.mantaUrl,
+        userDestination: opts.userDestination,
+        userLink: opts.userLink
+    });
+
+    deliver.once('error', function (error) {
+        log.error(error, 'deliver usage error');
+        process.abort();
+    });
+
+    process.stdin.pipe(new lstream()).pipe(deliver).pipe(process.stdout);
 }
 
 if (require.main === module) {
-    process.on('exit', function onExit() {
-        process.exit(ERROR);
-    });
     main();
 }

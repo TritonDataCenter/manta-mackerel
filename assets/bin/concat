@@ -1,7 +1,0 @@
-#!/bin/bash
-# Copyright (c) 2013, Joyent, Inc. All rights reserved.
-
-set -o pipefail
-
-mmkdir -p $(dirname $DEST) && \
-mpipe -H "content-type: $HEADER_CONTENT_TYPE" $DEST

@@ -42,7 +42,7 @@ JSSTYLE_FILES    = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 
-NODE_PREBUILT_VERSION=v0.8.26
+NODE_PREBUILT_VERSION=v0.10.30
 NODE_PREBUILT_TAG=zone
 
 
@@ -98,6 +98,7 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
 		$(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)/
+	ln -s $(ROOT)/deps/chronos/inputfuncs/all_matches.js $(ROOT)/inputfuncs/all_matches.js
 	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root)
 	@rm -rf $(RELSTAGEDIR)
 
