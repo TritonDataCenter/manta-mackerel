@@ -135,7 +135,7 @@ function StorageReduce1Stream(opts) {
     this.namespaces = opts.namespaces;
     this.lineNumber = 0;
     this.aggr = {};
-    if (typeof(opts.minSize) !== 'number') {
+    if (typeof (opts.minSize) !== 'number') {
         this.minSize = 0;
     } else {
         this.minSize = opts.minSize;

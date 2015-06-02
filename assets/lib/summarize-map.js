@@ -75,7 +75,9 @@ SummarizeMapStream.prototype._transform = function _transform(line, enc, cb) {
 
     if (this.excludeUnapproved) {
         if (!this.lookup[record.owner]) {
-            this.log.warn({record: record}, 'No login found for %s', record.owner);
+            this.log.warn({
+                record: record
+            }, 'No login found for %s', record.owner);
         }
 
         if (!this.lookup[record.owner].approved) {

@@ -82,7 +82,7 @@ RequestMapStream.prototype._transform = function _transform(line, enc, cb) {
                     headerIn: new Big(0),
                     headerOut: new Big(0)
                 }
-            },
+            }
         };
         this.billableOps.forEach(function (op) {
             self.aggr[owner].requests.type[op] = 0;
@@ -132,7 +132,8 @@ RequestMapStream.prototype._shouldProcess = function _shouldProcess(record) {
     var isPing = record.req.url === '/ping';
     var hasOwner = typeof (record.req.owner) !== 'undefined';
     var okStatus = record.res.statusCode >= 200 && record.res.statusCode <= 299;
-    var isAdmin = record.req.caller && record.req.caller.login === this.adminUser;
+    var isAdmin = record.req.caller &&
+        record.req.caller.login === this.adminUser;
 
     var isApproved;
     if (this.excludeUnapproved && hasOwner) {

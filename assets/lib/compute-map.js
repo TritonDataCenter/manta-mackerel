@@ -71,7 +71,7 @@ function aggregate(aggr, entry) {
         if (!LOOKUP[owner].approved) {
             this.log.warn('%s not approved for provisioning. Skipping...',
                 owner);
-            return;
+            return (aggr);
         }
     }
 

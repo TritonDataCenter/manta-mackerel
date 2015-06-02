@@ -109,8 +109,8 @@ DeliverAccessStream.prototype._write = function write(line, enc, cb) {
     if (!this.files[owner]) {
         this.files[owner] = fs.createWriteStream(this.tmpdir + '/' + owner);
         this.files.once('open', function () {
-            var ok = self.files[owner].write(output);
-            if (!ok) {
+            var openok = self.files[owner].write(output);
+            if (!openok) {
                 self.files[owner].once('drain', cb);
             } else {
                 setImmediate(cb);
@@ -135,7 +135,8 @@ DeliverAccessStream.prototype._shouldProcess = function _shouldProcess(record) {
 
     var isPing = record.req.url === '/ping';
     var hasOwner = typeof (record.req.owner) !== 'undefined';
-    var isAdmin = record.req.caller && record.req.caller.login === this.adminUser;
+    var isAdmin = record.req.caller &&
+        record.req.caller.login === this.adminUser;
 
     var isApproved;
     if (!this.deliverUnapproved && hasOwner) {

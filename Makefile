@@ -75,13 +75,6 @@ CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 test: $(NODEUNIT)
 	(cd test && make test)
 
-.PHONY: mycheck
-mycheck:
-	json -nf etc/config.json
-	json -nf etc/jobs.json
-
-check:: mycheck
-
 .PHONY: release
 release: all docs $(SMF_MANIFESTS)
 	@echo "Building $(RELEASE_TARBALL)"

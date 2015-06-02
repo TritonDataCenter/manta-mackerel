@@ -95,7 +95,7 @@ function SumColumnStream(opts) {
     this.aggr = {};
     this.lineNumber = 0;
     opts.decodeStrings = false;
-    Transform.call(this,opts);
+    Transform.call(this.opts);
 }
 util.inherits(SumColumnStream, Transform);
 
