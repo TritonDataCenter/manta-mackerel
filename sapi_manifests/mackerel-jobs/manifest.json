@@ -1,5 +1,5 @@
 {
 	"name": "mackerel-jobs",
-	"path": "/opt/smartdc/mackerel/etc/jobs.json",
+	"path": "/opt/smartdc/mackerel/chronos/etc/jobs.json",
 	"master": true
 }

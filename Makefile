@@ -27,7 +27,6 @@ REPO_NAME       := mackerel
 #
 # Tools
 #
-NODEUNIT        := ./node_modules/.bin/nodeunit
 NPM             := npm
 
 #
@@ -35,14 +34,15 @@ NPM             := npm
 #
 DOC_FILES        = index.md
 BASH_FILES      := $(shell find bin -name '*.sh') $(shell find assets/bin -type f)
-JS_FILES        := $(shell find assets/lib bin lib -name '*.js' -type f)
+JS_FILES        := $(shell find assets/lib bin cmd -name '*.js' -type f)
 JSL_CONF_NODE    = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES    = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 
-NODE_PREBUILT_VERSION=v0.8.26
+NODE_PREBUILT_IMAGE=fd2cc906-8938-11e3-beab-4359c665ac99
+NODE_PREBUILT_VERSION=v0.10.32
 NODE_PREBUILT_TAG=zone
 
 
@@ -63,24 +63,14 @@ RELSTAGEDIR             := /tmp/$(STAMP)
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) assets
-	$(NPM) rebuild
-
-$(NODEUNIT): | $(NPM_EXEC)
+all: $(SMF_MANIFESTS) | $(REPO_DEPS) assets chronos
 	$(NPM) install
 
-CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
+DISTCLEAN_FILES += node_modules
 
 .PHONY: test
-test: $(NODEUNIT)
+test:
 	(cd test && make test)
-
-.PHONY: mycheck
-mycheck:
-	json -nf etc/config.json
-	json -nf etc/jobs.json
-
-check:: mycheck
 
 .PHONY: release
 release: all docs $(SMF_MANIFESTS)
@@ -91,13 +81,16 @@ release: all docs $(SMF_MANIFESTS)
 	cp -r	$(ROOT)/assets \
 		$(ROOT)/build \
 		$(ROOT)/bin \
+		$(ROOT)/chronos \
+		$(ROOT)/cmd \
 		$(ROOT)/etc \
-		$(ROOT)/lib \
 		$(ROOT)/sapi_manifests \
 		$(ROOT)/scripts \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
 		$(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)/
+	cp -r $(ROOT)/inputfuncs $(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)/chronos
+	cp -r $(ROOT)/jobfuncs $(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)/chronos
 	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root)
 	@rm -rf $(RELSTAGEDIR)
 
@@ -112,9 +105,12 @@ publish: release
 	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/$(REPO_NAME)/$(RELEASE_TARBALL)
 
 .PHONY: assets
-assets: $(NODEUNIT)
+assets:
 	tar -zcf $(ROOT)/assets/node_modules.tar node_modules build/node/bin/node
 
+.PHONY: chronos
+chronos:
+	cd chronos && make
 
 include ./tools/mk/Makefile.deps
 include ./tools/mk/Makefile.node_prebuilt.targ

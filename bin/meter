@@ -1,1 +1,16 @@
-../lib/main.js
+#!/bin/bash
+# Copyright (c) 2015, Joyent, Inc. All rights reserved.
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+ASSETS=$DIR/../assets
+NODE=$DIR/../build/node/bin/node
+REMOTE=/$(json -f $DIR/../etc/config.json manta.user)/stor/usage/assets
+
+$NODE $DIR/../node_modules/manta-sync/manta-sync $ASSETS $REMOTE && \
+$NODE $DIR/../cmd/generateLookup.js && \
+$DIR/../chronos/bin/chronos

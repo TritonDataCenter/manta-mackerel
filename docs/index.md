@@ -82,6 +82,23 @@ namespace.
          }
     }
 
+The job is run with 3 phases: a map phase and two reduce phases.
+
+The map phase extracts the \_value field from the JSON-ified moray dumps. The
+rows are then msplit by (owner, type, objectId). All directories for a
+particular user will be sent to one reducer. All the other object keys will be
+splayed across the reducers, with keys with the same owner and pointing to the
+same object ending up on the same reducer. Cardinality of the output is number
+of keys in Manta.
+
+The first reduce phase counts directories and unique objects per user. Since it
+uses an in-memory map to keep track of each user's unique objects, memory usage
+can become an issue. Bump up reducer memory and/or increase the number of
+reducers. The rows are msplit by owner and namespace. Cardinality of output is
+at most the (number of users) * (number of reducers).
+
+The second reduce phase 
+
 ## Request
 
 Request count categorized by billable method type, which may not match HTTP
