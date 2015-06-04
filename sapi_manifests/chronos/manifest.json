@@ -1,5 +1,5 @@
 {
 	"name": "mackerel-chronos",
-	"path": "/opt/smartdc/mackerel/deps/chronos/etc/config.json",
+	"path": "/opt/smartdc/mackerel/chronos/etc/config.json",
 	"master": true
 }

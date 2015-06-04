@@ -1,6 +1,6 @@
 // TODO environment variable overrides in addEnv based on environment passed to chronos to allow for e.g. backfill, dryrun
 
-var fmt = require('../deps/chronos/lib/common.js');
+var fmt = require('../lib/common.js').fmt;
 var sprintf = require('util').format;
 
 // prepend environment variables
@@ -44,8 +44,8 @@ function _gen_storage_phases(job, datestamp) {
                 root + '/assets/lib/storage-map.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: root + '/assets/bin/init',
-            exec: root + '/assets/bin/storage-map'
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/storage-map'
         },
         {
             type: 'reduce',
@@ -57,8 +57,8 @@ function _gen_storage_phases(job, datestamp) {
                 root + '/assets/lib/storage-reduce1.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: root + '/assets/bin/init',
-            exec: root + '/assets/bin/storage-reduce1',
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/storage-reduce1',
             count: job.reduce1Count
         },
         {
@@ -71,8 +71,8 @@ function _gen_storage_phases(job, datestamp) {
                 root + '/assets/lib/sum-columns.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: root + '/assets/bin/init',
-            exec: root + '/assets/bin/storage-reduce2',
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/storage-reduce2',
             count: job.reduce2Count
         },
         {
@@ -105,8 +105,8 @@ function _gen_request_phases(job, datestamp) {
                 root + '/assets/lib/request-map.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: root + '/assets/bin/init',
-            exec: root + '/assets/bin/request-map'
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/request-map'
         },
         {
             type: 'reduce',
@@ -120,13 +120,13 @@ function _gen_request_phases(job, datestamp) {
                 root + '/assets/lib/sum-columns.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: '/assets/bin/init',
-            exec: '/assets/bin/request-reduce',
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/request-reduce',
             count: job.reduce1Count
         },
         {
             type: 'reduce',
-            exec: 'cat',
+            exec: 'cat'
         }
     ];
 
@@ -154,8 +154,8 @@ function _gen_compute_phases(job, datestamp) {
                 root + '/assets/lib/compute-map.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: root + '/assets/bin/init',
-            exec: root + '/assets/bin/compute-map'
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/compute-map'
         },
         {
             type: 'reduce',
@@ -169,13 +169,13 @@ function _gen_compute_phases(job, datestamp) {
                 root + '/assets/lib/deliver-usage.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: '/assets/bin/init',
-            exec: '/assets/bin/compute-reduce',
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/compute-reduce',
             count: job.reduce1Count
         },
         {
             type: 'reduce',
-            exec: 'cat',
+            exec: 'cat'
         }
     ];
 
@@ -202,8 +202,8 @@ function _gen_access_logs_phases(job, datestamp) {
                 root + '/assets/etc/lookup.json',
                 root + '/assets/node_modules.tar'
             ],
-            init: root + '/assets/bin/init',
-            exec: root + '/assets/bin/deliver-access-map'
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/deliver-access-map'
         },
         {
             type: 'reduce',
@@ -216,8 +216,8 @@ function _gen_access_logs_phases(job, datestamp) {
                 root + '/assets/lib/deliver-access.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: '/assets/bin/init',
-            exec: '/assets/bin/deliver-access-reduce',
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/deliver-access-reduce',
             count: job.reduce1Count
         }
     ];
@@ -247,8 +247,8 @@ function _gen_summary_phases(job, datestamp) {
                 root + '/assets/lib/summarize-map.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: root + '/assets/bin/init',
-            exec: root + '/assets/bin/summarize-map'
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/summarize-map'
         },
         {
             type: 'reduce',
@@ -263,13 +263,13 @@ function _gen_summary_phases(job, datestamp) {
                 root + '/assets/lib/summarize-reduce.js',
                 root + '/assets/node_modules.tar'
             ],
-            init: '/assets/bin/init',
-            exec: '/assets/bin/summary-reduce',
+            init: '/assets' + root + '/assets/bin/init',
+            exec: '/assets' + root + '/assets/bin/summary-reduce',
             count: job.reduce1Count
         },
         {
             type: 'reduce',
-            exec: 'cat',
+            exec: 'cat'
         }
     ];
 

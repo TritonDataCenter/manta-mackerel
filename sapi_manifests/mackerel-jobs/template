@@ -3,13 +3,14 @@
         "disabled": false,
         "category": "mackerel",
         "name": "storage",
-        "start_at": "1970-01-01T00:00:00.000Z",
+        "start_at": "%y-%m-%dT%00:00:00.000Z",
+        "past_check_range": 604800,
         "data_delay": 29700,
         "frequency": "daily",
         "output_file": "/{{ADMIN_USERNAME}}/stor/usage/storage/%y/%m/%d/%H/h%H.json",
         "input_pattern": [
             {{#INDEX_MORAY_SHARDS}}
-                "/{{ADMIN_USERNAME}}/stor/manatee_backups/{{host}}/%y/%m/%d/%H/manta-*.gz"{{^last}},{{/last}}
+                "/{{ADMIN_USERNAME}}/stor/manatee_backups/{{host}}/%y/%m/%d/00/manta-*.gz"{{^last}},{{/last}}
             {{/INDEX_MORAY_SHARDS}}
         ],
         "input_style": [
@@ -23,15 +24,17 @@
         "reduce1Count": {{#METERING_STORAGE_REDUCE1_COUNT}}{{METERING_STORAGE_REDUCE1_COUNT}}{{/METERING_STORAGE_REDUCE1_COUNT}}{{^METERING_STORAGE_REDUCE1_COUNT}}11{{/METERING_STORAGE_REDUCE1_COUNT}},
         "reduce2Memory": {{#METERING_STORAGE_REDUCE2_MEMORY}}{{METERING_STORAGE_REDUCE2_MEMORY}}{{/METERING_STORAGE_REDUCE2_MEMORY}}{{^METERING_STORAGE_REDUCE2_MEMORY}}1024{{/METERING_STORAGE_REDUCE2_MEMORY}},
         "reduce2Disk": {{#METERING_STORAGE_REDUCE2_DISK}}{{METERING_STORAGE_REDUCE2_DISK}}{{/METERING_STORAGE_REDUCE2_DISK}}{{^METERING_STORAGE_REDUCE2_DISK}}8{{/METERING_STORAGE_REDUCE2_DISK}},
-        "reduce2Count": {{#METERING_STORAGE_REDUCE2_COUNT}}{{METERING_STORAGE_REDUCE2_COUNT}}{{/METERING_STORAGE_REDUCE2_COUNT}}{{^METERING_STORAGE_REDUCE2_COUNT}}11{{/METERING_STORAGE_REDUCE2_COUNT}}
+        "reduce2Count": {{#METERING_STORAGE_REDUCE2_COUNT}}{{METERING_STORAGE_REDUCE2_COUNT}}{{/METERING_STORAGE_REDUCE2_COUNT}}{{^METERING_STORAGE_REDUCE2_COUNT}}11{{/METERING_STORAGE_REDUCE2_COUNT}},
+        "reduce3Memory": {{#METERING_STORAGE_REDUCE3_MEMORY}}{{METERING_STORAGE_REDUCE3_MEMORY}}{{/METERING_STORAGE_REDUCE3_MEMORY}}{{^METERING_STORAGE_REDUCE3_MEMORY}}1024{{/METERING_STORAGE_REDUCE3_MEMORY}},
+        "reduce3Disk": {{#METERING_STORAGE_REDUCE3_DISK}}{{METERING_STORAGE_REDUCE3_DISK}}{{/METERING_STORAGE_REDUCE3_DISK}}{{^METERING_STORAGE_REDUCE3_DISK}}8{{/METERING_STORAGE_REDUCE3_DISK}},
+        "reduce3Count": {{#METERING_STORAGE_REDUCE3_COUNT}}{{METERING_STORAGE_REDUCE3_COUNT}}{{/METERING_STORAGE_REDUCE3_COUNT}}{{^METERING_STORAGE_REDUCE3_COUNT}}11{{/METERING_STORAGE_REDUCE3_COUNT}},
         "env": {
-            "ADMIN_USER": "{{ADMIN_USERNAME}},
-            "EXCLUDE_UNAPPROVED_USERS": 0,
+            "COUNT_UNAPPROVED_USERS": "true",
             "DATE": "%y-%m-%dT%H:00:00.000Z",
-            "DELIVER_UNAPPROVED_REPORTS": 0,
-            "MIN_SIZE": 131072,
+            "DELIVER_UNAPPROVED_REPORTS": "false",
+            "HEADER_CONTENT_TYPE": "application/x-json-stream",
+            "MIN_SIZE": "131072",
             "NAMESPACES": "stor public jobs reports",
-            "USER_DEST": "/reports/usage/storage/%y/%m/%d/%H/h%H.json",
             "USER_LINK": "/reports/usage/storage/latest",
             "ZCAT": "gzcat -f"
         }
@@ -42,8 +45,9 @@
         "disabled": false,
         "category": "mackerel",
         "name": "request",
-        "start_at": "1970-01-01T00:00:00.000Z",
-        "data_delay": 600,
+        "start_at": "%y-%m-%dT%H:00:00.000Z",
+        "past_check_range": 604800,
+        "data_delay": 4200,
         "frequency": "hourly",
         "output_file": "/{{ADMIN_USERNAME}}/stor/usage/request/%y/%m/%d/%H/h%H.json",
         "input_pattern": "/{{ADMIN_USERNAME}}/stor/logs/muskie/%y/%m/%d/%H/*.log",
@@ -57,12 +61,12 @@
         "reduce1Disk":{{#METERING_REQUEST_REDUCE_DISK}}{{METERING_REQUEST_REDUCE_DISK}}{{/METERING_REQUEST_REDUCE_DISK}}{{^METERING_REQUEST_REDUCE_DISK}}8{{/METERING_REQUEST_REDUCE_DISK}},
         "reduce1Count": {{#METERING_REQUEST_REDUCE_COUNT}}{{METERING_REQUEST_REDUCE_COUNT}}{{/METERING_REQUEST_REDUCE_COUNT}}{{^METERING_REQUEST_REDUCE_COUNT}}11{{/METERING_REQUEST_REDUCE_COUNT}},
         "env": {
-            "EXCLUDE_UNAPPROVED_USERS": 0,
+            "COUNT_UNAPPROVED_USERS": "true",
             "DATE": "%y-%m-%dT%H:00:00.000Z",
-            "DELIVER_UNAPPROVED_REPORTS": 0,
-            "INCLUDE_ADMIN_REQUESTS": 0,
-            "MALFORMED_LIMIT": 10,
-            "USER_DEST": "/reports/usage/request/%y/%m/%d/%H/h%H.json",
+            "DELIVER_UNAPPROVED_REPORTS": "false",
+            "DROP_ADMIN_REQUESTS": "true",
+            "HEADER_CONTENT_TYPE": "application/x-json-stream",
+            "MALFORMED_LIMIT": "10",
             "USER_LINK": "/reports/usage/request/latest"
         }
     },
@@ -72,8 +76,9 @@
         "disabled": false,
         "category": "mackerel",
         "name": "compute",
-        "start_at": "1970-01-01T00:00:00.000Z",
-        "data_delay": 600,
+        "start_at": "%y-%m-%dT%H:00:00.000Z",
+        "past_check_range": 604800,
+        "data_delay": 4200,
         "frequency": "hourly",
         "output_file": "/{{ADMIN_USERNAME}}/stor/usage/compute/%y/%m/%d/%H/h%H.json",
         "input_pattern": "/{{ADMIN_USERNAME}}/stor/logs/marlin-agent/%y/%m/%d/%H/*.log",
@@ -87,11 +92,11 @@
         "reduce1Disk":{{#METERING_COMPUTE_REDUCE_DISK}}{{METERING_COMPUTE_REDUCE_DISK}}{{/METERING_COMPUTE_REDUCE_DISK}}{{^METERING_COMPUTE_REDUCE_DISK}}8{{/METERING_COMPUTE_REDUCE_DISK}},
         "reduce1Count": {{#METERING_COMPUTE_REDUCE_COUNT}}{{METERING_COMPUTE_REDUCE_COUNT}}{{/METERING_COMPUTE_REDUCE_COUNT}}{{^METERING_COMPUTE_REDUCE_COUNT}}11{{/METERING_COMPUTE_REDUCE_COUNT}},
         "env": {
-            "EXCLUDE_UNAPPROVED_USERS": 0,
+            "COUNT_UNAPPROVED_USERS": "true",
             "DATE": "%y-%m-%dT%H:00:00.000Z",
-            "DELIVER_UNAPPROVED_REPORTS": 0,
-            "MALFORMED_LIMIT": 10,
-            "USER_DEST": "/reports/usage/compute/%y/%m/%d/%H/h%H.json",
+            "DELIVER_UNAPPROVED_REPORTS": "false",
+            "HEADER_CONTENT_TYPE": "application/x-json-stream",
+            "MALFORMED_LIMIT": "10",
             "USER_LINK": "/reports/usage/compute/latest"
         }
     },
@@ -101,8 +106,9 @@
         "disabled": false,
         "category": "mackerel",
         "name": "access-logs",
-        "start_at": "1970-01-01T00:00:00.000Z",
-        "data_delay": 600,
+        "start_at": "%y-%m-%dT%H:00:00.000Z",
+        "past_check_range": 604800,
+        "data_delay": 4200,
         "frequency": "hourly",
         "output_file": "/{{ADMIN_USERNAME}}/stor/usage/access-logs/%y/%m/%d/%H/done",
         "input_pattern": "/{{ADMIN_USERNAME}}/stor/logs/muskie/%y/%m/%d/%H/*.log",
@@ -118,9 +124,10 @@
         "env": {
             "ACCESS_DEST": "/reports/access-logs/%y/%m/%d/%H/h%H.json",
             "ACCESS_LINK": "/reports/access-logs/latest",
-            "EXCLUDE_UNAPPROVED_USERS": 0,
-            "MALFORMED_LIMIT": "10",
-            "INCLUDE_ADMIN_REQUESTS": 0
+            "DELIVER_UNAPPROVED_REPORTS": "false",
+            "DROP_ADMIN_REQUESTS": "true",
+            "HEADER_CONTENT_TYPE": "application/x-json-stream",
+            "MALFORMED_LIMIT": "10"
         }
     },
 
@@ -129,28 +136,30 @@
         "disabled": false,
         "category": "mackerel",
         "name": "summary",
-        "start_at": "1970-01-01T00:00:00.000Z",
+        "start_at": "%y-%m-%dT00:00:00.000Z",
+        "past_check_range": 604800,
         "data_delay": 108000,
         "frequency": "daily",
         "output_file": "/{{ADMIN_USERNAME}}/stor/usage/summary/%y/%m/%d/d%d.json",
         "input_pattern": [
-            "/{{ADMIN_USERNAME}}/stor/usage/storage/%y/%m/%d",
-            "/{{ADMIN_USERNAME}}/stor/usage/request/%y/%m/%d",
-            "/{{ADMIN_USERNAME}}/stor/usage/compute/%y/%m/%d"
+            "/{{ADMIN_USERNAME}}/stor/usage/storage/%y/%m/%d/%H/h%H.json",
+            "/{{ADMIN_USERNAME}}/stor/usage/request/%y/%m/%d/%H/h%H.json",
+            "/{{ADMIN_USERNAME}}/stor/usage/compute/%y/%m/%d/%H/h%H.json"
         ],
         "input_style": [
             "daily_each_hour",
             "single_file"
         ],
+        "user": "{{ADMIN_USERNAME}}",
         "mapMemory":{{#METERING_ACCESSLOGS_MAP_MEMORY}}{{METERING_ACCESSLOGS_MAP_MEMORY}}{{/METERING_ACCESSLOGS_MAP_MEMORY}}{{^METERING_ACCESSLOGS_MAP_MEMORY}}1024{{/METERING_ACCESSLOGS_MAP_MEMORY}},
         "mapDisk":{{#METERING_ACCESSLOGS_MAP_DISK}}{{METERING_ACCESSLOGS_MAP_DISK}}{{/METERING_ACCESSLOGS_MAP_DISK}}{{^METERING_ACCESSLOGS_MAP_DISK}}8{{/METERING_ACCESSLOGS_MAP_DISK}},
         "reduce1Memory":{{#METERING_ACCESSLOGS_REDUCE_MEMORY}}{{METERING_ACCESSLOGS_REDUCE_MEMORY}}{{/METERING_ACCESSLOGS_REDUCE_MEMORY}}{{^METERING_ACCESSLOGS_REDUCE_MEMORY}}1024{{/METERING_ACCESSLOGS_REDUCE_MEMORY}},
         "reduce1Disk":{{#METERING_ACCESSLOGS_REDUCE_DISK}}{{METERING_ACCESSLOGS_REDUCE_DISK}}{{/METERING_ACCESSLOGS_REDUCE_DISK}}{{^METERING_ACCESSLOGS_REDUCE_DISK}}8{{/METERING_ACCESSLOGS_REDUCE_DISK}},
         "reduce1Count": {{#METERING_ACCESSLOGS_REDUCE_COUNT}}{{METERING_ACCESSLOGS_REDUCE_COUNT}}{{/METERING_ACCESSLOGS_REDUCE_COUNT}}{{^METERING_ACCESSLOGS_REDUCE_COUNT}}11{{/METERING_ACCESSLOGS_REDUCE_COUNT}},
         "env": {
-            "EXCLUDE_UNAPPROVED_USERS": 0,
+            "COUNT_UNAPPROVED_USERS": "true",
             "DATE": "%y-%m-%dT%H:00:00.000Z",
-            "DELIVER_UNAPPROVED_REPORTS": 0,
+            "DELIVER_UNAPPROVED_REPORTS": "false",
             "USER_DEST": "/reports/usage/summary/%y/%m/%d/d%d.json",
             "USER_LINK": "/reports/usage/summary/latest"
         }

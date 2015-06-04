@@ -15,5 +15,6 @@
         },
         "connectTimeout": 1000,
         "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
-    }
+    },
+    "lookupPath": "/{{ADMIN_USERNAME}}/stor/usage/assets/etc/lookup.json"
 }

@@ -7,6 +7,6 @@
 [submodule "deps/restdown"]
 	path = deps/restdown
 	url = git://github.com/trentm/restdown.git
-[submodule "deps/chronos"]
-	path = deps/chronos
+[submodule "chronos"]
+	path = chronos
 	url = git@github.com:joyent/chronos.git
