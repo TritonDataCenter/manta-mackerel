@@ -37,7 +37,7 @@
             ],
             "init": "assets/bin/init",
             "exec": "assets/bin/storage-reduce1",
-            "count": {{#METERING_STORAGE_REDUCE1_COUNT}}{{METERING_STORAGE_REDUCE1_COUNT}}{{/METERING_STORAGE_REDUCE1_COUNT}}{{^METERING_STORAGE_REDUCE1_COUNT}}11{{/METERING_STORAGE_REDUCE1_COUNT}}
+            "count": {{#METERING_STORAGE_REDUCE1_COUNT}}{{METERING_STORAGE_REDUCE1_COUNT}}{{/METERING_STORAGE_REDUCE1_COUNT}}{{^METERING_STORAGE_REDUCE1_COUNT}}41{{/METERING_STORAGE_REDUCE1_COUNT}}
           },
           {
             "type": "reduce",
