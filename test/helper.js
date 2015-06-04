@@ -1,60 +1,42 @@
-// Copyright 2012 Mark Cavage.  All rights reserved.
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
-var bunyan = require('bunyan');
-var once = require('once');
+/*
+ * Copyright (c) 2015, Joyent, Inc.
+ */
 
+var lstream = require('lstream');
 
+function streamTest(t, stream, input, expected, cb) {
+    var actual = [];
+    var lines = new lstream();
 
-///--- Helpers
-
-function createLogger(name, stream) {
-    var log = bunyan.createLogger({
-        level: (process.env.LOG_LEVEL || 'warn'),
-        name: name || process.argv[1],
-        stream: stream || process.stdout,
-        src: true,
-        serializers: bunyan.stdSerializers
+    stream.on('readable', function () {
+        var chunk;
+        var line = '';
+        while (null !== (chunk = stream.read())) {
+            line += chunk;
+        }
+        actual.push(JSON.parse(line));
     });
-    return (log);
+    stream.once('error', function (err) {
+        cb(err);
+    });
+    stream.once('end', function () {
+        if (!Array.isArray(expected)) {
+            expected = [ expected ];
+        }
+        t.deepEqual(actual, expected, 'output matches');
+        cb();
+    });
+
+    lines.pipe(stream);
+    lines.end(input, 'utf8');
 }
 
-
-
-///--- Exports
-
 module.exports = {
-
-    after: function after(teardown) {
-        module.parent.exports.tearDown = function _teardown(callback) {
-            try {
-                teardown.call(this, callback);
-            } catch (e) {
-                console.error('after:\n' + e.stack);
-                process.exit(1);
-            }
-        };
-    },
-
-    before: function before(setup) {
-        module.parent.exports.setUp = function _setup(callback) {
-            try {
-                setup.call(this, callback);
-            } catch (e) {
-                console.error('before:\n' + e.stack);
-                process.exit(1);
-            }
-        };
-    },
-
-    test: function test(name, tester) {
-        module.parent.exports[name] = function _(t) {
-            t.end = once(t.done.bind(t));
-            t.notOk = function notOk(ok, message) {
-                return (t.ok(!ok, message));
-            };
-            tester.call(this, t);
-        };
-    },
-
-    createLogger: createLogger
+    streamTest: streamTest
 };

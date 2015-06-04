@@ -8,257 +8,472 @@
  * Copyright (c) 2014, Joyent, Inc.
  */
 
-var mod_fs = require('fs');
-var mod_child_process = require('child_process');
-var mod_path = require('path');
+var bunyan = require('bunyan');
+var test = require('tape');
+var h = require('./helper.js');
 
-var mod_bunyan = require('bunyan');
-var helper = require('./helper.js');
+var RequestMapStream = require('../assets/lib/request-map.js');
 
-var requestmap = mod_path.resolve(__dirname, '../assets/lib/request-map.js');
-
-var log = new mod_bunyan({
+var log = new bunyan({
     'name': 'requestmap.test.js',
-    'level': process.env['LOG_LEVEL'] || 'debug'
+    'level': process.env.LOG_LEVEL || 'fatal'
 });
 
-var test = helper.test;
+var BILLABLE_OPS = ['DELETE', 'GET', 'HEAD', 'LIST', 'OPTIONS', 'POST', 'PUT'];
 
-var LOOKUP_FILE = '../../test/test_data/lookup.json';
-var LOOKUP = require('./test_data/lookup.json');
-
-var RECORD = {
-    'name': 'muskie',
-    'billable_operation': 'PUT',
-    'req': {
-        'method': 'PUT',
-        'url': '/poseidon/stor/manatee_backups',
-        'headers': {
-            'accept': 'application/json',
-            'content-type': 'application/json; type=directory',
-            'date': 'Sun, 10 Mar 2013 10:00:02 GMT',
-            'x-request-id': '175cc9ce-6342-44be-877d-9a1eaaa25e6e',
-            'authorization': 'authorization_key',
-            'user-agent': 'restify/2.1.1 (ia32-sunos; ' +
-                'v8/3.11.10.25; OpenSSL/0.9.8w) node/0.8.14',
-            'accept-version': '~1.0',
-            'host': 'manta.beta.joyent.us',
-            'connection': 'keep-alive',
-            'transfer-encoding': 'chunked',
-            'x-forwarded-for': '::ffff:10.3.91.236'
+function generateRecord(override) {
+    var record = {
+        'name': 'muskie',
+        'hostname': 'c84b3cab-1c20-4566-a880-0e202b6b63dd',
+        'pid': 15503,
+        'component': 'HttpServer',
+        'audit': true,
+        'level': 30,
+        '_audit': true,
+        'operation': 'getstorage',
+        'billable_operation': 'GET',
+        'bytesTransferred': '4000',
+        'reqHeaderLength': 100,
+        'req': {
+            'method': 'GET',
+            'url': '/poseidon/stor/test.json',
+            'headers': {
+                'accept': '*/*',
+                'date': 'elided',
+                'x-request-id': 'elided',
+                'authorization': 'elided',
+                'user-agent': 'elided',
+                'accept-version': '~1.0',
+                'host': 'us-east.manta.joyent.com',
+                'connection': 'keep-alive',
+                'x-forwarded-for': '::ffff:165.225.128.232'
+            },
+            'httpVersion': '1.1',
+            'owner': 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a',
+            'caller': {
+                'login': 'poseidon',
+                'uuid': 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a',
+                'groups': [
+                    'operators'
+                ],
+                'user': null
+            },
+            'timers': {
+                'elided': 0
+            }
         },
-        "caller": {
-            "login": "poseidon",
-            "uuid": "bc50e6fc-e3e0-4cf7-bc3d-eb8229acba56",
-            "groups": [ "operators" ]
+        'resHeaderLength': 200,
+        'res': {
+            'statusCode': 200,
+            'headers': {
+                'etag': '8faa04ee-beea-c9d7-c493-96ac2367636f',
+                'last-modified': 'elided',
+                'accept-ranges': 'bytes',
+                'content-type': 'application/json',
+                'content-md5': 'tMWfm2tOmvOX2tD6OG8H/g==',
+                'content-length': '400',
+                'durability-level': 2,
+                'date': 'elided',
+                'server': 'Manta'
+            }
         },
-        'httpVersion': '1.1',
-        'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0'
-    },
-    'res': {
-        'statusCode': 204,
-        'headers': {
-            'last-modified': 'Wed, 13 Feb 2013 18:00:02 GMT',
-            'date': 'Sun, 10 Mar 2013 10:00:02 GMT',
-            'server': 'Manta',
-            'x-request-id': '175cc9ce-6342-44be-877d-9a1eaaa25e6e',
-            'x-response-time': 18,
-            'x-server-name': '218e7193-45c8-41e1-b4a4-7a3e6972bea6'
-        }
-    },
-    'hostname': '218e7193-45c8-41e1-b4a4-7a3e6972bea6',
-    'pid': 45918,
-    'audit': true,
-    'level': 30,
-    '_audit': true,
-    'operation': 'putdirectory',
-    'remoteAddress': '10.3.91.236',
-    'remotePort': 36997,
-    'reqHeaderLength': 806,
-    'resHeaderLength': 200,
-    'latency': 18,
-    'msg': 'handled: 204',
-    'time': '2013-03-10T10:00:02.872Z',
-    'v': 0
-};
+        'latency': 12,
+        '_auditData': true,
+        'dataLatency': 12,
+        'dataSize': 3313,
+        'latencyToFirstByte': 12,
+        'msg': 'handled: 200',
+        'time': 'elided',
+        'v': 0
+    };
 
-var EXPECTED = {
-    'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0',
-    'requests': {
-        'type': {
-            'PUT': 1,
-            'LIST': 0,
-            'GET': 0,
-            'DELETE': 0,
-            'POST': 0,
-            'LIST': 0,
-            'HEAD': 0,
-            'OPTIONS': 0
-        },
-        'bandwidth': {
-            'in': '0',
-            'out': '0',
-            'headerIn': '806',
-            'headerOut': '200'
-        }
-    },
-};
+    if (override) {
+        Object.keys(override).forEach(function (k) {
+            if (k === 'req' || k === 'res') {
+                Object.keys(override[k]).forEach(function (l) {
+                    record[k][l] = override[k][l];
+                });
+            } else {
+                record[k] = override[k];
+            }
+        });
+    }
 
-function runTest(opts, cb) {
-    opts.env = opts.env || {};
-    opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
-    var spawn = mod_child_process.spawn(requestmap, opts.opts, opts);
-
-    var stdout = '';
-    var stderr = '';
-    var error;
-
-    spawn.stdout.on('data', function (data) {
-        stdout += data;
-    });
-
-    spawn.stderr.on('data', function (data) {
-        stderr += data;
-    });
-
-    spawn.on('error', function (err) {
-        error = err;
-    });
-
-    spawn.stdin.on('error', function (err) {
-        error = err;
-    });
-
-    spawn.on('close', function (code) {
-        var result = {
-            stdin: opts.stdin,
-            stdout: stdout,
-            stderr: stderr,
-            code: code,
-            error: error
-        };
-        if (opts.debug) {
-            console.log(result);
-        }
-        cb(result);
-    });
-
-    process.nextTick(function () {
-        spawn.stdin.write(opts.stdin || '');
-        spawn.stdin.end();
-    });
+    return (record);
 }
 
-function clone(x) { return (JSON.parse(JSON.stringify(x))); }
+function emptyOutput(override) {
+    var output = {
+        'requests': {
+            'type': {
+                'PUT': 0,
+                'LIST': 0,
+                'GET': 0,
+                'DELETE': 0,
+                'POST': 0,
+                'HEAD': 0,
+                'OPTIONS': 0
+            },
+            'bandwidth': {
+                'in': '0',
+                'out': '0',
+                'headerIn': '0',
+                'headerOut': '0'
+            }
+        },
+    };
+
+    if (override) {
+        if (override.type) {
+            Object.keys(override.type).forEach(function (k) {
+                output.requests.type[k] = override.type[k];
+            });
+        }
+        if (override.bandwidth) {
+            Object.keys(override.bandwidth).forEach(function (k) {
+                output.requests.bandwidth[k] = override.bandwidth[k];
+            });
+        }
+        output.owner = override.owner;
+    }
+
+    return (output);
+}
+
+
+
+test('GET', function (t) {
+    var owner = 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a';
+    var records = [
+        generateRecord(),
+        generateRecord()
+    ];
+
+    var input = records.map(JSON.stringify).join('\n');
+
+    var stream = new RequestMapStream({
+        admin: 'poseidon',
+        billableOps: BILLABLE_OPS,
+        includeAdmin: true,
+        excludeUnapproved: false,
+        log: log
+    });
+
+    var expected = emptyOutput({
+        owner: owner,
+        type: {
+            GET: 2
+        },
+        bandwidth: {
+            in: '0',
+            out: '800',
+            headerIn: '200',
+            headerOut: '400'
+        }
+    });
+
+    h.streamTest(t, stream, input, expected, function (err) {
+        t.ifError(err, 'no error');
+        t.end();
+    });
+});
+
 
 test('ignore bad lines', function (t) {
-    var input = '[ Nov 28 21:35:27 Disabled. ]\n' +
-            '[ Nov 28 21:35:27 Rereading configuration. ]\n' +
-            '[ Nov 28 21:35:27 Enabled. ]\n' +
-            JSON.stringify(RECORD);
-    runTest({
-        stdin: input
-    }, function (result) {
-        t.equal(0, result.code);
-        t.deepEqual(JSON.parse(result.stdout), EXPECTED);
-        t.done();
+    var owner = 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a';
+    var input = [
+        '[ Nov 28 21:35:27 Disabled. ]',
+        '[ Nov 28 21:35:27 Rereading configuration. ]',
+        '[ Nov 28 21:35:27 Enabled. ]',
+        JSON.stringify(generateRecord())
+    ].join('\n');
+
+    var stream = new RequestMapStream({
+        admin: 'poseidon',
+        billableOps: BILLABLE_OPS,
+        includeAdmin: true,
+        excludeUnapproved: false,
+        log: log
     });
-});
 
-
-test('404', function (t) {
-    var record = clone(RECORD);
-    var expected = clone(EXPECTED);
-    record.res.statusCode = 404;
-    runTest({
-        stdin: JSON.stringify(record) + '\n' + JSON.stringify(RECORD)
-    }, function (result) {
-        t.equal(0, result.code);
-        t.deepEqual(JSON.parse(result.stdout), expected);
-        t.done();
+    var malformed = 0;
+    stream.on('malformed', function () {
+        malformed++;
     });
-});
 
-test('drop poseidon', function (t) {
-    var record = clone(RECORD);
-    var expected = clone(EXPECTED);
-    expected.requests.type['PUT'] = 0;
-    expected.requests.bandwidth.headerIn = 0;
-    expected.requests.bandwidth.headerOut = 0;
-    runTest({
-        stdin: JSON.stringify(record),
-        env: {
-            'DROP_POSEIDON_REQUESTS': 'true'
+    var expected = emptyOutput({
+        owner: owner,
+        type: {
+            GET: 1
+        },
+        bandwidth: {
+            in: '0',
+            out: '400',
+            headerIn: '100',
+            headerOut: '200'
         }
-    }, function (result) {
-        t.equal(0, result.code);
-        t.equal('', result.stdout);
-        t.done();
+    });
+
+    h.streamTest(t, stream, input, expected, function (err) {
+        t.ifError(err, 'no error');
+        t.equal(3, malformed, 'malformed line count');
+        t.end();
+    });
+});
+
+
+test('ignore 404', function (t) {
+    var owner = 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a';
+    var records = [
+        generateRecord({
+            res: {
+                statusCode: 404
+            }
+        }),
+        generateRecord()
+    ];
+
+    var input = records.map(JSON.stringify).join('\n');
+    var stream = new RequestMapStream({
+        admin: 'poseidon',
+        billableOps: BILLABLE_OPS,
+        includeAdmin: true,
+        excludeUnapproved: false,
+        log: log
+    });
+    var expected = emptyOutput({
+        owner: owner,
+        type: {
+            GET: 1
+        },
+        bandwidth: {
+            in: '0',
+            out: '400',
+            headerIn: '100',
+            headerOut: '200'
+        }
+    });
+    h.streamTest(t, stream, input, expected, function (err) {
+        t.ifError(err, 'no error');
+        t.end();
     });
 });
 
 test('count unapproved users', function (t) {
-    var record = clone(RECORD);
-    var expected = clone(EXPECTED);
-    expected.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
-    record.req.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
-    t.equal(LOOKUP[record.req.owner].approved, false);
+    var owner1 = 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a';
+    var owner2 = '7cd763f2-094c-11e5-8c52-a7dc71d5f7c3';
+    var records = [
+        generateRecord(),
+        generateRecord({
+            req: {
+                owner: owner2
+            }
+        })
+    ];
+    var lookup = {};
+    lookup[owner1] = {
+        approved: true,
+        login: 'poseidon'
+    };
+    lookup[owner2] = {
+        approved: false,
+        login: 'bob_user'
+    };
 
-    runTest({
-        stdin: JSON.stringify(record),
-        env: {
-            'COUNT_UNAPPROVED_USERS': 'true'
-        }
-    }, function (result) {
-        t.equal(0, result.code);
-        t.deepEqual(JSON.parse(result.stdout), expected);
-        t.done();
+    var input = records.map(JSON.stringify).join('\n');
+
+    var stream = new RequestMapStream({
+        admin: 'poseidon',
+        billableOps: BILLABLE_OPS,
+        includeAdmin: true,
+        excludeUnapproved: false,
+        log: log,
+        lookup: lookup
+    });
+
+    var expected = [
+        emptyOutput({
+            owner: owner1,
+            type: {
+                GET: 1
+            },
+            bandwidth: {
+                in: '0',
+                out: '400',
+                headerIn: '100',
+                headerOut: '200'
+            }
+        }),
+        emptyOutput({
+            owner: owner2,
+            type: {
+                GET: 1
+            },
+            bandwidth: {
+                in: '0',
+                out: '400',
+                headerIn: '100',
+                headerOut: '200'
+            }
+        })
+    ];
+
+    h.streamTest(t, stream, input, expected, function (err) {
+        t.ifError(err, 'no error');
+        t.end();
     });
 });
 
-test('do not count unapproved users', function (t) {
-    var record = clone(RECORD);
-    record.req.owner = 'ed5fa8da-fd61-42bb-a24a-515b56c6d581';
-    t.equal(LOOKUP[record.req.owner].approved, false);
+test('count unapproved users', function (t) {
+    var owner1 = 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a';
+    var owner2 = '7cd763f2-094c-11e5-8c52-a7dc71d5f7c3';
+    var records = [
+        generateRecord(),
+        generateRecord({
+            req: {
+                owner: owner2
+            }
+        })
+    ];
+    var lookup = {};
+    lookup[owner1] = {
+        approved: true,
+        login: 'poseidon'
+    };
+    lookup[owner2] = {
+        approved: false,
+        login: 'bob_user'
+    };
 
-    runTest({
-        stdin: JSON.stringify(record),
-        env: {
-            'COUNT_UNAPPROVED_USERS': 'false'
-        }
-    }, function (result) {
-        t.equal(0, result.code);
-        t.equal('', result.stdout);
-        t.done();
+    var input = records.map(JSON.stringify).join('\n');
+
+    var stream = new RequestMapStream({
+        admin: 'poseidon',
+        billableOps: BILLABLE_OPS,
+        includeAdmin: true,
+        excludeUnapproved: true,
+        log: log,
+        lookup: lookup
+    });
+
+    var expected = [
+        emptyOutput({
+            owner: owner1,
+            type: {
+                GET: 1
+            },
+            bandwidth: {
+                in: '0',
+                out: '400',
+                headerIn: '100',
+                headerOut: '200'
+            }
+        })
+    ];
+
+    h.streamTest(t, stream, input, expected, function (err) {
+        t.ifError(err, 'no error');
+        t.end();
     });
 });
 
-test('malformed line', function (t) {
-    var record = clone(RECORD);
+test('don\'t count unapproved users', function (t) {
+    var owner1 = 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a';
+    var owner2 = '7cd763f2-094c-11e5-8c52-a7dc71d5f7c3';
+    var records = [
+        generateRecord(),
+        generateRecord({
+            req: {
+                owner: owner2
+            }
+        })
+    ];
+    var lookup = {};
+    lookup[owner1] = {
+        approved: true,
+        login: 'poseidon'
+    };
+    lookup[owner2] = {
+        approved: false,
+        login: 'bob_user'
+    };
 
-    runTest({
-        stdin: JSON.stringify(record) + '\n{"incomplete":{"record":',
-        env: {
-            'COUNT_UNAPPROVED_USERS': 'true'
-        }
-    }, function (result) {
-        t.equal(1, result.code);
-        t.done();
+    var input = records.map(JSON.stringify).join('\n');
+
+    var stream = new RequestMapStream({
+        admin: 'poseidon',
+        billableOps: BILLABLE_OPS,
+        includeAdmin: true,
+        excludeUnapproved: false,
+        log: log,
+        lookup: lookup
+    });
+
+    var expected = [
+        emptyOutput({
+            owner: owner1,
+            type: {
+                GET: 1
+            },
+            bandwidth: {
+                in: '0',
+                out: '400',
+                headerIn: '100',
+                headerOut: '200'
+            }
+        }),
+        emptyOutput({
+            owner: owner2,
+            type: {
+                GET: 1
+            },
+            bandwidth: {
+                in: '0',
+                out: '400',
+                headerIn: '100',
+                headerOut: '200'
+            }
+        })
+    ];
+
+    h.streamTest(t, stream, input, expected, function (err) {
+        t.ifError(err, 'no error');
+        t.end();
     });
 });
 
-test('malformed line limit', function (t) {
-    var record = clone(RECORD);
+test('drop admin requests', function (t) {
+    var owner = 'cfcd7b0c-0571-11e5-8b6d-1fe27e2fd88a';
+    var records = [
+        generateRecord(),
+        generateRecord()
+    ];
 
-    runTest({
-        stdin: JSON.stringify(record) + '\n{"incomplete":{"record":',
-        env: {
-            "MALFORMED_LIMIT": "1",
-            'COUNT_UNAPPROVED_USERS': 'true'
+    var input = records.map(JSON.stringify).join('\n');
+
+    var stream = new RequestMapStream({
+        admin: 'poseidon',
+        billableOps: BILLABLE_OPS,
+        includeAdmin: false,
+        excludeUnapproved: false,
+        log: log
+    });
+
+    var expected = emptyOutput({
+        owner: owner,
+        type: {
+            GET: 2
+        },
+        bandwidth: {
+            in: '0',
+            out: '800',
+            headerIn: '200',
+            headerOut: '400'
         }
-    }, function (result) {
-        t.equal(0, result.code);
-        t.deepEqual(JSON.parse(result.stdout), EXPECTED);
-        t.done();
+    });
+
+    h.streamTest(t, stream, input, expected, function (err) {
+        t.ifError(err, 'no error');
+        t.end();
     });
 });

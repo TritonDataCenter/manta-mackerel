@@ -29,12 +29,15 @@
         "reduce3Disk": {{#METERING_STORAGE_REDUCE3_DISK}}{{METERING_STORAGE_REDUCE3_DISK}}{{/METERING_STORAGE_REDUCE3_DISK}}{{^METERING_STORAGE_REDUCE3_DISK}}8{{/METERING_STORAGE_REDUCE3_DISK}},
         "reduce3Count": {{#METERING_STORAGE_REDUCE3_COUNT}}{{METERING_STORAGE_REDUCE3_COUNT}}{{/METERING_STORAGE_REDUCE3_COUNT}}{{^METERING_STORAGE_REDUCE3_COUNT}}11{{/METERING_STORAGE_REDUCE3_COUNT}},
         "env": {
-            "COUNT_UNAPPROVED_USERS": "true",
+            "ADMIN_USER": "{{ADMIN_USERNAME}}",
+            "BACKFILL": "0",
+            "EXCLUDE_UNAPPROVED_USERS": "0",
             "DATE": "%y-%m-%dT%H:00:00.000Z",
-            "DELIVER_UNAPPROVED_REPORTS": "false",
-            "HEADER_CONTENT_TYPE": "application/x-json-stream",
+            "DELIVER_UNAPPROVED_REPORTS": "0",
+            "DRY_RUN": "0",
             "MIN_SIZE": "131072",
             "NAMESPACES": "stor public jobs reports",
+            "USER_DEST": "/reports/usage/storage/%y/%m/%d/%H/h%H.json",
             "USER_LINK": "/reports/usage/storage/latest",
             "ZCAT": "gzcat -f"
         }
@@ -61,12 +64,16 @@
         "reduce1Disk":{{#METERING_REQUEST_REDUCE_DISK}}{{METERING_REQUEST_REDUCE_DISK}}{{/METERING_REQUEST_REDUCE_DISK}}{{^METERING_REQUEST_REDUCE_DISK}}8{{/METERING_REQUEST_REDUCE_DISK}},
         "reduce1Count": {{#METERING_REQUEST_REDUCE_COUNT}}{{METERING_REQUEST_REDUCE_COUNT}}{{/METERING_REQUEST_REDUCE_COUNT}}{{^METERING_REQUEST_REDUCE_COUNT}}11{{/METERING_REQUEST_REDUCE_COUNT}},
         "env": {
-            "COUNT_UNAPPROVED_USERS": "true",
+            "ADMIN_USER": "{{ADMIN_USERNAME}}",
+            "BACKFILL": "0",
+            "BILLABLE_OPS": "DELETE,GET,HEAD,LIST,OPTIONS,POST,PUT',
+            "EXCLUDE_UNAPPROVED_USERS": "0",
             "DATE": "%y-%m-%dT%H:00:00.000Z",
-            "DELIVER_UNAPPROVED_REPORTS": "false",
-            "DROP_ADMIN_REQUESTS": "true",
-            "HEADER_CONTENT_TYPE": "application/x-json-stream",
+            "DELIVER_UNAPPROVED_REPORTS": "0",
+            "DRY_RUN": "0",
+            "INCLUDE_ADMIN_REQUESTS": "0",
             "MALFORMED_LIMIT": "10",
+            "USER_DEST": "/reports/usage/request/%y/%m/%d/%H/h%H.json",
             "USER_LINK": "/reports/usage/request/latest"
         }
     },
@@ -92,11 +99,13 @@
         "reduce1Disk":{{#METERING_COMPUTE_REDUCE_DISK}}{{METERING_COMPUTE_REDUCE_DISK}}{{/METERING_COMPUTE_REDUCE_DISK}}{{^METERING_COMPUTE_REDUCE_DISK}}8{{/METERING_COMPUTE_REDUCE_DISK}},
         "reduce1Count": {{#METERING_COMPUTE_REDUCE_COUNT}}{{METERING_COMPUTE_REDUCE_COUNT}}{{/METERING_COMPUTE_REDUCE_COUNT}}{{^METERING_COMPUTE_REDUCE_COUNT}}11{{/METERING_COMPUTE_REDUCE_COUNT}},
         "env": {
-            "COUNT_UNAPPROVED_USERS": "true",
+            "BACKFILL": "0",
+            "EXCLUDE_UNAPPROVED_USERS": "0",
             "DATE": "%y-%m-%dT%H:00:00.000Z",
-            "DELIVER_UNAPPROVED_REPORTS": "false",
-            "HEADER_CONTENT_TYPE": "application/x-json-stream",
+            "DELIVER_UNAPPROVED_REPORTS": "0",
+            "DRY_RUN": "0",
             "MALFORMED_LIMIT": "10",
+            "USER_DEST": "/reports/usage/compute/%y/%m/%d/%H/h%H.json",
             "USER_LINK": "/reports/usage/compute/latest"
         }
     },
@@ -122,12 +131,15 @@
         "reduce1Disk":{{#METERING_ACCESSLOGS_REDUCE_DISK}}{{METERING_ACCESSLOGS_REDUCE_DISK}}{{/METERING_ACCESSLOGS_REDUCE_DISK}}{{^METERING_ACCESSLOGS_REDUCE_DISK}}8{{/METERING_ACCESSLOGS_REDUCE_DISK}},
         "reduce1Count": {{#METERING_ACCESSLOGS_REDUCE_COUNT}}{{METERING_ACCESSLOGS_REDUCE_COUNT}}{{/METERING_ACCESSLOGS_REDUCE_COUNT}}{{^METERING_ACCESSLOGS_REDUCE_COUNT}}11{{/METERING_ACCESSLOGS_REDUCE_COUNT}},
         "env": {
-            "ACCESS_DEST": "/reports/access-logs/%y/%m/%d/%H/h%H.json",
-            "ACCESS_LINK": "/reports/access-logs/latest",
-            "DELIVER_UNAPPROVED_REPORTS": "false",
-            "DROP_ADMIN_REQUESTS": "true",
-            "HEADER_CONTENT_TYPE": "application/x-json-stream",
-            "MALFORMED_LIMIT": "10"
+            "ADMIN_USER": "{{ADMIN_USERNAME}}",
+            "BACKFILL": "0",
+            "DELIVER_UNAPPROVED_REPORTS": "0",
+            "DRY_RUN": "0",
+            "EXCLUDE_UNAPPROVED_USERS": "0",
+            "INCLUDE_ADMIN_REQUESTS": "0",
+            "MALFORMED_LIMIT": "10",
+            "USER_DEST": "/reports/access-logs/%y/%m/%d/%H/h%H.json",
+            "USER_LINK": "/reports/access-logs/latest"
         }
     },
 
@@ -157,9 +169,11 @@
         "reduce1Disk":{{#METERING_ACCESSLOGS_REDUCE_DISK}}{{METERING_ACCESSLOGS_REDUCE_DISK}}{{/METERING_ACCESSLOGS_REDUCE_DISK}}{{^METERING_ACCESSLOGS_REDUCE_DISK}}8{{/METERING_ACCESSLOGS_REDUCE_DISK}},
         "reduce1Count": {{#METERING_ACCESSLOGS_REDUCE_COUNT}}{{METERING_ACCESSLOGS_REDUCE_COUNT}}{{/METERING_ACCESSLOGS_REDUCE_COUNT}}{{^METERING_ACCESSLOGS_REDUCE_COUNT}}11{{/METERING_ACCESSLOGS_REDUCE_COUNT}},
         "env": {
-            "COUNT_UNAPPROVED_USERS": "true",
+            "BACKFILL": "0",
+            "BILLABLE_OPS": "DELETE,GET,HEAD,LIST,OPTIONS,POST,PUT',
+            "EXCLUDE_UNAPPROVED_USERS": "0",
             "DATE": "%y-%m-%dT%H:00:00.000Z",
-            "DELIVER_UNAPPROVED_REPORTS": "false",
+            "DELIVER_UNAPPROVED_REPORTS": "0",
             "USER_DEST": "/reports/usage/summary/%y/%m/%d/d%d.json",
             "USER_LINK": "/reports/usage/summary/latest"
         }

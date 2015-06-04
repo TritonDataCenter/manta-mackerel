@@ -6,18 +6,14 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2015, Joyent, Inc.
  */
 
-var mod_carrier = require('carrier');
 var Big = require('big.js');
-var lineCount = 0;
-var ERROR = false;
-var LOG = require('bunyan').createLogger({
-    name: 'sum-columns.js',
-    stream: process.stderr,
-    level: process.env['LOG_LEVEL'] || 'info'
-});
+var Transform = require('stream').Transform;
+var bunyan = require('bunyan');
+var lstream = require('lstream');
+var util = require('util');
 
 function getAggKey(obj) {
     var key = '';
@@ -71,70 +67,94 @@ function plusEquals(oldvalue, newvalue) {
 }
 
 
-function onLine(aggr, line) {
-    lineCount++;
+function parse(key, value) {
+    if (key === '') {
+        return (value);
+    }
+
+    if (typeof (value) === 'string') {
+        try {
+            return (new Big(value));
+        } catch (e) {
+            return (value);
+        }
+    }
+    return (value);
+}
+
+function stringify(key, value) {
+    if (value instanceof Big || typeof (value) === 'number') {
+
+        return (value.toString());
+    }
+    return (value);
+}
+
+function SumColumnStream(opts) {
+    this.log = opts.log;
+    this.aggr = {};
+    this.lineNumber = 0;
+    opts.decodeStrings = false;
+    Transform.call(this.opts);
+}
+util.inherits(SumColumnStream, Transform);
+
+SumColumnStream.prototype._transform = function _transform(line, enc, cb) {
+    this.lineNumber++;
 
     var parsed;
     try {
-        parsed = JSON.parse(line, function (key, value) {
-            if (key === '') {
-                return (value);
-            }
-
-            if (typeof (value) === 'string') {
-                try {
-                    return (new Big(value));
-                } catch (e) {
-                    return (value);
-                }
-            }
-            return (value);
-        });
+        parsed = JSON.parse(line, parse);
     } catch (e) {
-        LOG.error(e, 'Error on line ' + lineCount);
-        ERROR = true;
+        this.log.error({
+            error: e.message,
+            line: line,
+            lineNumber: this.lineNumber
+        }, 'error parsing line');
+        cb(e);
         return;
     }
 
     var aggKey = getAggKey(parsed);
-
-    if (!aggr[aggKey]) {
-        aggr[aggKey] = parsed;
+    if (!this.aggr[aggKey]) {
+        this.aggr[aggKey] = parsed;
     } else {
-        copyProperties(parsed, aggr[aggKey]);
-        plusEquals(aggr[aggKey], parsed);
+        copyProperties(parsed, this.aggr[aggKey]);
+        plusEquals(this.aggr[aggKey], parsed);
     }
-}
+};
 
-
-function onEnd(aggr) {
-    Object.keys(aggr).forEach(function (k) {
-        console.log(JSON.stringify(aggr[k], function (key, value) {
-            if (value instanceof Big ||
-                typeof (value) === 'number') {
-
-                return (value.toString());
-            }
-            return (value);
-        }));
+SumColumnStream.prototype._flush = function _flush(cb) {
+    var self = this;
+    Object.keys(this.aggr).forEach(function (k) {
+        self.push(JSON.stringify(self.aggr[k], stringify) + '\n');
     });
-}
+    cb();
+};
 
 
 function main() {
-    var carry = mod_carrier.carry(process.openStdin());
+    var log = bunyan.createLogger({
+        name: 'sum-columns.js',
+        stream: process.stderr,
+        level: process.env.LOG_LEVEL || 'info'
+    });
 
-    var aggr = {};
+    var sumStream = new SumColumnStream({
+        log: log
+    });
 
-    carry.on('line', onLine.bind(null, aggr));
-    carry.once('end', onEnd.bind(null, aggr));
+    sumStream.once('error', function (error) {
+        log.error({error: error}, 'sum-columns error');
+        process.abort();
+    });
+
+    process.stdin.pipe(new lstream()).pipe(sumStream).pipe(process.stdout);
 }
 
 
 if (require.main === module) {
-    process.on('exit', function onExit() {
-        process.exit(ERROR);
-    });
-
     main();
 }
+
+module.exports = SumColumnStream;

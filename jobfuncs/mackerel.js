@@ -77,22 +77,6 @@ function _gen_storage_phases(job, datestamp) {
         },
         {
             type: 'reduce',
-            memory: job.reduce3Memory,
-            disk: job.reduce3Disk,
-            assets: [
-                root + '/assets/bin/init',
-                root + '/assets/bin/storage-reduce3',
-                root + '/assets/etc/lookup.json',
-                root + '/assets/lib/deliver-usage.js',
-                root + '/assets/lib/storage-reduce3.js',
-                root + '/assets/node_modules.tar'
-            ],
-            init: '/assets' + root + '/assets/bin/init',
-            exec: '/assets' + root + '/assets/bin/storage-reduce3',
-            count: job.reduce3Count
-        },
-        {
-            type: 'reduce',
             exec: 'cat'
         }
     ];
@@ -142,7 +126,7 @@ function _gen_request_phases(job, datestamp) {
         },
         {
             type: 'reduce',
-            exec: 'cat'
+            exec: 'cat',
         }
     ];
 
@@ -191,7 +175,7 @@ function _gen_compute_phases(job, datestamp) {
         },
         {
             type: 'reduce',
-            exec: 'cat'
+            exec: 'cat',
         }
     ];
 
@@ -285,7 +269,7 @@ function _gen_summary_phases(job, datestamp) {
         },
         {
             type: 'reduce',
-            exec: 'cat'
+            exec: 'cat',
         }
     ];
 

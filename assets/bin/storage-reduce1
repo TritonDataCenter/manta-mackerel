@@ -1,10 +1,10 @@
 #!/bin/bash
-# Copyright (c) 2013, Joyent, Inc. All rights reserved.
+# Copyright (c) 2015, Joyent, Inc. All rights reserved.
 
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 NODE=$dir/../build/node/bin/node
 
-$NODE $dir/../lib/storage-reduce1.js \
-| msplit -j -n $NUM_REDUCERS -f owner,namespace
+$NODE $dir/../lib/storage-reduce.js \
+| msplit -j -n $NUM_REDUCERS -f owner

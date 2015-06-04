@@ -6,93 +6,118 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2015, Joyent, Inc.
  */
 
-var mod_carrier = require('carrier');
+
 var Big = require('big.js');
-var LOG = require('bunyan').createLogger({
-    name: 'compute-reduce.js',
-    stream: process.stderr,
-    level: process.env['LOG_LEVEL'] || 'info'
-});
-var ERROR = false;
+var Transform = require('stream').Transform;
+var lstream = require('lstream');
+var util = require('util');
 
 function plusEquals(aggrPhase, phase) {
-    aggrPhase['seconds'] += phase['seconds'];
-    aggrPhase['ntasks'] += phase['ntasks'];
-    aggrPhase['bandwidth']['in'] =
-        aggrPhase['bandwidth']['in'].plus(phase['bandwidth']['in']);
-    aggrPhase['bandwidth']['out'] =
-        aggrPhase['bandwidth']['out'].plus(phase['bandwidth']['out']);
+    aggrPhase.seconds += phase.seconds;
+    aggrPhase.ntasks += phase.ntasks;
+    aggrPhase.bandwidth.in = aggrPhase.bandwidth.in.plus(phase.bandwidth.in);
+    aggrPhase.bandwidth.out = aggrPhase.bandwidth.out.plus(phase.bandwidth.out);
 }
 
 function stringify(key, value) {
-    if (value instanceof Big) {
+    if (value instanceof Big || typeof (value) === 'number') {
         return (value.toString());
     }
     return (value);
 }
 
-function main() {
-    var carry = mod_carrier.carry(process.openStdin());
-    var lineCount = 0;
-    var aggr = {};
-
-    carry.on('line', function onLine(line) {
-        lineCount++;
-
+function parse(key, value) {
+    if (key === '') {
+        return (value);
+    }
+    if (typeof (value) === 'string') {
         try {
-            var record = JSON.parse(line, function (key, value) {
-                if (key === '') {
-                    return (value);
-                }
-                if (typeof (value) === 'string') {
-                    try {
-                        return (new Big(value));
-                    } catch (e) {
-                        return (value);
-                    }
-                }
-                return (value);
-            });
+            return (new Big(value));
         } catch (e) {
-            LOG.error(e, 'Error on line ' + lineCount);
-            ERROR = true;
-            return;
+            return (value);
         }
+    }
+    return (value);
+}
 
-        var owner = record.owner;
-        var jobs = record.jobs;
-        aggr[owner] = aggr[owner] || {
-            owner: owner,
-            jobs: {}
-        };
+function ComputeReduceStream(opts) {
+    this.log = opts.log;
+    this.lineNumber = 0;
+    this.aggr = {};
+    Transform.call(this, opts);
+}
+util.inherits(ComputeReduceStream, Transform);
 
-        Object.keys(jobs).forEach(function (j) {
-            aggr[owner].jobs[j] = aggr[owner].jobs[j] || {};
-            Object.keys(jobs[j]).forEach(function (p) {
-                var phases = jobs[j];
-                var aggrPhases = aggr[owner].jobs[j];
-                if (typeof (aggrPhases[p]) === 'undefined') {
-                    aggrPhases[p] = phases[p];
-                    return;
-                }
-                plusEquals(aggrPhases[p], phases[p]);
-            });
+ComputeReduceStream.prototype._transform = function _transform(line, enc, cb) {
+    var self = this;
+    this.lineNumber++;
+
+    var record;
+    try {
+        record = JSON.parse(line, parse);
+    } catch (e) {
+        this.log.error({
+            error: e.message,
+            line: line,
+            lineNumber: this.lineNumber
+        }, 'error parsing line');
+        cb(e);
+        return;
+    }
+
+    var owner = record.owner;
+    var jobs = record.jobs;
+    this.aggr[owner] = this.aggr[owner] || {
+        owner: owner,
+        jobs: {}
+    };
+
+    Object.keys(jobs).forEach(function (j) {
+        self.aggr[owner].jobs[j] = self.aggr[owner].jobs[j] || {};
+        Object.keys(jobs[j]).forEach(function (p) {
+            var phases = jobs[j];
+            var aggrPhases = self.aggr[owner].jobs[j];
+            if (typeof (aggrPhases[p]) === 'undefined') {
+                aggrPhases[p] = phases[p];
+                return;
+            }
+            plusEquals(aggrPhases[p], phases[p]);
         });
     });
-    carry.once('end', function () {
-        Object.keys(aggr).forEach(function (o) {
-            console.log(JSON.stringify(aggr[o], stringify));
-        });
+};
+
+ComputeReduceStream.prototype._flush = function _flush(cb) {
+    var self = this;
+    Object.keys(this.aggr).forEach(function (owner) {
+        self.push(JSON.stringify(self.aggr[owner], stringify) + '\n');
     });
+    cb();
+};
+
+function main() {
+    var log = require('bunyan').createLogger({
+        name: 'compute-reduce.js',
+        stream: process.stderr,
+        level: process.env.LOG_LEVEL || 'info'
+    });
+
+    var reduceStream = new ComputeReduceStream({
+        log: log
+    });
+
+    reduceStream.once('error', function (error) {
+        log.error({error: error}, 'compute map error');
+        process.abort();
+    });
+
+    process.stdin.pipe(new lstream()).pipe(reduceStream).pipe(process.stdout);
 }
 
 if (require.main === module) {
-    process.on('exit', function onExit() {
-        process.exit(ERROR);
-    });
-
     main();
 }
+
+module.exports = ComputeReduceStream;

@@ -6,34 +6,22 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2015, Joyent, Inc.
  */
 
-var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
-var lookup = require(lookupPath); // maps uuid->login
+
+var Writable = require('stream').Writable;
+var bunyan = require('bunyan');
+var dashdash = require('dashdash');
+var fs = require('fs');
+var ipaddr = require('ipaddr.js');
+var lstream = require('lstream');
+var manta = require('manta');
 var mantaFileSave = require('manta-compute-bin').mantaFileSave;
-var mod_ipaddr = require('ipaddr.js');
-var mod_bunyan = require('bunyan');
-var mod_carrier = require('carrier');
-var mod_fs = require('fs');
-var mod_manta = require('manta');
-var mod_screen = require('screener');
-var mod_libmanta = require('libmanta');
+var screen = require('screener');
+var util = require('util');
+var vasync = require('vasync');
 
-var files = {}; // keeps track of all the files we create
-var waitingForDrain = {};
-var ERROR = false;
-var tmpdir = '/var/tmp';
-var DELIVER_UNAPPROVED_REPORTS =
-    process.env['DELIVER_UNAPPROVED_REPORTS'] === 'true';
-var DROP_POSEIDON_REQUESTS = process.env['DROP_POSEIDON_REQUESTS'] === 'true';
-var MALFORMED_LIMIT = process.env['MALFORMED_LIMIT'] || '0';
-
-var LOG = require('bunyan').createLogger({
-    name: 'deliver-access.js',
-    stream: process.stderr,
-    level: process.env['LOG_LEVEL'] || 'info'
-});
 
 /*
  * Allow all headers, then auth and x-forwarded-for headers will be removed
@@ -58,18 +46,122 @@ var whitelist = {
 };
 
 
-function shouldProcess(record) {
-    return (record.audit &&
-        record.req.url !== '/ping' &&
-        typeof (record.req.owner) !== 'undefined' &&
-        (!record.req.caller ||
-            !DROP_POSEIDON_REQUESTS ||
-            record.req.caller.login !== 'poseidon'));
+/*
+ * Emits 'done' after all files have been uploaded to user directories.
+ * The 'done' event fires after the Writable stream 'finish' event.
+ */
+function DeliverAccessStream(opts) {
+    this.adminUser = opts.adminUser;
+    this.backfill = opts.backfill;
+    this.dryRun = opts.dryRun;
+    this.deliverUnapproved = opts.deliverUnapproved;
+    this.includeAdmin = opts.includeAdmin;
+    this.log = opts.log;
+    this.lookup = opts.lookup;
+    this.mantaUrl = opts.mantaUrl;
+    this.tmpdir = opts.tmpdir || '/var/tmp/';
+    this.userDestination = opts.userDestination;
+    this.userLink = opts.userLink;
+
+    this.lineNumber = 0;
+    this.files = {};
+
+    this.once('finish', this._uploadFiles.bind(this));
+
+    opts.decodeStrings = false;
+    Writable.call(this, opts);
 }
+util.inherits(DeliverAccessStream, Writable);
 
 
-function sanitize(record) {
-    var output = mod_screen.screen(record, whitelist);
+DeliverAccessStream.prototype._write = function write(line, enc, cb) {
+    var self = this;
+    this.lineNumber++;
+
+    var record;
+    try {
+        record = JSON.parse(line);
+    } catch (e) {
+        this.emit('malformed', line);
+        this.log.warn({
+            error: e,
+            line: line,
+            lineNumber: this.lineNumber
+        }, 'error parsing line ' + this.lineNumber);
+        cb();
+        return;
+    }
+
+    if (!this._shouldProcess(record)) {
+        cb();
+        return;
+    }
+
+    var owner = record.req.owner;
+    var output;
+    try {
+        output = JSON.stringify(this._sanitize(record)) + '\n';
+    } catch (e) {
+        cb(e);
+        return;
+    }
+
+    if (!this.files[owner]) {
+        this.files[owner] = fs.createWriteStream(this.tmpdir + '/' + owner);
+        this.files.once('open', function () {
+            var openok = self.files[owner].write(output);
+            if (!openok) {
+                self.files[owner].once('drain', cb);
+            } else {
+                setImmediate(cb);
+            }
+        });
+    } else {
+        var ok = self.files[owner].write(output);
+        if (!ok) {
+            this.files[owner].once('drain', cb);
+        } else {
+            setImmediate(cb);
+        }
+    }
+};
+
+
+DeliverAccessStream.prototype._shouldProcess = function _shouldProcess(record) {
+    var isAudit = record.audit;
+    if (!isAudit) {
+        return (false);
+    }
+
+    var isPing = record.req.url === '/ping';
+    var hasOwner = typeof (record.req.owner) !== 'undefined';
+    var isAdmin = record.req.caller &&
+        record.req.caller.login === this.adminUser;
+
+    var isApproved;
+    if (!this.deliverUnapproved && hasOwner) {
+        if (!this.lookup[record.req.owner]) {
+            this.log.warn({
+                record: record
+            }, 'No login found for %s', record.req.owner);
+            isApproved = true;
+        } else {
+            isApproved = this.lookup[record.req.owner].approved || isAdmin;
+        }
+    } else {
+        isApproved = true;
+    }
+
+    return (isAudit &&
+            !isPing &&
+            hasOwner &&
+            isApproved &&
+            (this.includeAdmin || !isAdmin));
+};
+
+
+DeliverAccessStream.prototype._sanitize = function _sanitize(record) {
+    var output = screen.screen(record, whitelist);
     if (output.req && output.req.headers) {
         var ip = output.req.headers['x-forwarded-for'] || '169.254.0.1';
         // MANTA-1918 if first ip is empty, use 'unknown'
@@ -77,265 +169,213 @@ function sanitize(record) {
 
         // MANTA-1886 check for 'unknown'
         if (ip === 'unknown') {
-            output['remoteAddress'] = 'unknown';
+            output.remoteAddress = 'unknown';
         } else {
-            var ipaddr = mod_ipaddr.parse(ip);
-            if (ipaddr.kind() === 'ipv4') {
-                output['remoteAddress'] =
-                    ipaddr.toIPv4MappedAddress().toString();
+            var addr = ipaddr.parse(ip);
+            if (addr.kind() === 'ipv4') {
+                output.remoteAddress = addr.toIPv4MappedAddress().toString();
             } else {
-                output['remoteAddress'] = ipaddr.toString();
+                output.remoteAddress = addr.toString();
             }
         }
-        output.req['request-uri'] = output.req['url'];
+        output.req['request-uri'] = output.req.url;
+        delete output.req.headers.authorization;
         delete output.req.headers['x-forwarded-for'];
-        delete output.req['url'];
-        delete output.req.headers['authorization'];
+        delete output.req.url;
     }
-    LOG.debug({record: record, output: output}, 'record sanitized');
     return (output);
-}
+};
 
 
-function write(opts, cb) {
-    LOG.debug(opts, 'write start');
-    var owner = opts.owner;
-    var record = opts.record;
-    var path = tmpdir + '/' + owner;
-    var output = JSON.stringify(record) + '\n';
-    var flushed;
+DeliverAccessStream.prototype._uploadFiles = function _uploadFiles() {
+    var self = this;
+    var client = manta.createClient({
+        sign: null,
+        url: this.mantaUrl
+    });
 
-    if (!files[owner]) {
-        process.stdin.pause();
-        files[owner] = mod_fs.createWriteStream(path);
+    var uploadQueue = vasync.queuev({
+        worker: function saveFile(owner, cb) {
+            var login = self.lookup[owner].login;
 
-        files[owner].on('drain', function (o) {
-            delete waitingForDrain[o];
-            if (Object.keys(waitingForDrain).length === 0) {
-                process.stdin.resume();
+            if (!login) {
+                cb(new Error('No login found for UUID ' + owner));
+                return;
             }
-        }.bind(files[owner], owner));
 
-        files[owner].once('open', function (o) {
-            var initialFlush = this.write(output, cb);
-            if (!initialFlush) {
-                waitingForDrain[o] = true;
+            var filename = self.tmpdir + '/' + owner;
+            var headers = {
+                'content-type': 'application/x-json-stream'
+            };
+            var linkPath = '/' + login + self.userLink;
+
+            var key;
+            if (self.dryRun) {
+                key = process.env.MANTA_OUTPUT_BASE + login;
             } else {
-                process.stdin.resume();
-            }
-        }.bind(files[owner], owner));
-    } else {
-        flushed = files[owner].write(output, cb);
-        if (!flushed) {
-            waitingForDrain[owner] = true;
-            process.stdin.pause();
-        }
-    }
-}
-
-
-function saveAll(cb) {
-    function save(owner, callback) {
-        LOG.debug(owner, 'save start');
-        var login = lookup[owner].login;
-        var key = '/' + login + process.env['ACCESS_DEST'];
-        var linkPath = '/' + login + process.env['ACCESS_LINK'];
-        var headers = {
-            'content-type': process.env['HEADER_CONTENT_TYPE']
-        };
-        var filename = tmpdir + '/' + owner;
-
-        if (!login) {
-            callback(new Error('No login found for UUID ' + owner));
-            return;
-        }
-
-        mantaFileSave({
-            client: client,
-            filename: filename,
-            key: key,
-            headers: headers,
-            log: LOG,
-            iostream: 'stderr'
-        }, function saveCB(err) {
-            if (err) {
-                callback(err);
-                return;
+                key = '/' + login + self.userDestination;
             }
 
-            LOG.info({
+            mantaFileSave({
+                client: client,
                 filename: filename,
+                headers: headers,
+                iostream: 'stdout',
                 key: key,
-                headers: headers
-            }, 'upload successful');
-
-            if (!process.env['ACCESS_LINK']) {
-                callback();
-                return;
-            }
-
-            LOG.debug({
-                key: key,
-                linkPath: linkPath
-            }, 'creating link');
-
-            client.ln(key, linkPath, function (err2) {
-                if (err2) {
-                    LOG.warn(err2, 'error ln ' + linkPath);
+                log: self.log
+            }, function (err) {
+                if (err) {
+                    cb(err);
                     return;
                 }
 
-                LOG.info({
-                    key: key,
-                    linkPath: linkPath
-                }, 'link created');
+                if (self.backfill || self.dryRun) {
+                    cb();
+                    return;
+                }
 
-                callback();
-                return;
+                client.ln(key, linkPath, function (linkErr) {
+                    if (linkErr) {
+                        cb(linkErr);
+                        return;
+                    }
+                    cb();
+                });
             });
-        });
-    }
-
-    var client = mod_manta.createClient({
-        sign: null,
-        url: process.env['MANTA_URL']
+        },
+        concurrency: 25
     });
 
-    var uploadQueue = mod_libmanta.createQueue({
-        worker: save,
-        limit: 25
-    });
-
-    uploadQueue.on('error', function (err) {
-        LOG.error(err, 'error saving');
-        ERROR = true;
-    });
-
+    uploadQueue.push(Object.keys(this.files));
     uploadQueue.once('end', function () {
-        client.close();
-        cb();
-    });
-
-    LOG.info(Object.keys(files), 'files to upload');
-    Object.keys(files).forEach(function (k) {
-        uploadQueue.push(k);
+        self.emit('done');
     });
     uploadQueue.close();
-}
+};
 
 
 function main() {
-    var carry = mod_carrier.carry(process.openStdin());
-    var lineCount = 0;
-    var malformed = 0;
-
-    var writeQueue = mod_libmanta.createQueue({
-        worker: write,
-        limit: 15
+    var log = bunyan.createLogger({
+        name: 'deliver-access.js',
+        stream: process.stderr,
+        level: process.env.LOG_LEVEL || 'info'
     });
 
-    writeQueue.on('error', function (err) {
-        LOG.error(err, 'write error');
-    });
-
-    writeQueue.once('end', function () {
-        Object.keys(files).forEach(function (owner) {
-            files[owner].end();
-        });
-        saveAll(function (err) {
-            if (err) {
-                LOG.error(err, 'Error saving access logs');
-                ERROR = true;
-            }
-        });
-    });
-
-    function onLine(line) {
-        lineCount++;
-        var record;
-        //console.log(line); // re-emit each line for aggregation
-
-        // since bunyan logs may contain lines such as
-        // [ Nov 28 21:35:27 Enabled. ]
-        // we need to ignore them
-        if (line[0] != '{') {
-            return;
+    var options = [
+        {
+            name: 'adminUser',
+            type: 'string',
+            env: 'ADMIN_USER',
+            help: 'Manta admin user login'
+        },
+        {
+            name: 'backfill',
+            type: 'bool',
+            env: 'BACKFILL',
+            help: 'Don\'t create the "latest" link'
+        },
+        {
+            name: 'dryRun',
+            type: 'bool',
+            env: 'DRY_RUN',
+            help: 'Write in job directory instead of user directories'
+        },
+        {
+            name: 'deliverUnapproved',
+            type: 'bool',
+            env: 'DELIVER_UNAPPROVED_REPORTS',
+            help: 'Deliver personal access logs for users that have ' +
+                    'approved_for_provisioning = false'
+        },
+        {
+            name: 'includeAdmin',
+            type: 'bool',
+            env: 'INCLUDE_ADMIN_REQUESTS',
+            help: 'Include requests by the the Manta admin user (i.e. poseidon)'
+        },
+        {
+            name: 'lookupPath',
+            type: 'string',
+            env: 'LOOKUP_PATH',
+            default: '../etc/lookup.json',
+            help: 'Path to lookup file'
+        },
+        {
+            name: 'mantaUrl',
+            type: 'string',
+            env: 'MANTA_URL',
+            help: 'Manta URL'
+        },
+        {
+            name: 'userDestination',
+            type: 'string',
+            env: 'USER_DEST',
+            help: 'Manta path to write access logs to relative ' +
+                    'to the user\'s top-level directory ' +
+                    'e.g. /reports/usage/access-logs/report.json'
+        },
+        {
+            name: 'userLink',
+            type: 'string',
+            env: 'USER_LINK',
+            help: 'Manta path to create a link to relative ' +
+                    'to the user\'s top-level directory ' +
+                    'e.g. /reports/usage/access-logs/latest'
+        },
+        {
+            names: ['help', 'h'],
+            type: 'bool',
+            help: 'Print help'
         }
+    ];
 
-        try {
-            record = JSON.parse(line);
-        } catch (e) {
-            malformed++;
-            LOG.error(e, line, 'Error on line ' + lineCount);
-            return;
-        }
-
-        if (!shouldProcess(record)) {
-            return;
-        }
-
-        var login = lookup[record.req.owner];
-
-        if (!login) {
-            LOG.error(record,
-                'No login found for UUID ' + record.req.owner);
-            ERROR = true;
-            return;
-        }
-
-        if (!DELIVER_UNAPPROVED_REPORTS && !login.approved) {
-            LOG.warn(record, record.req.owner +
-                ' not approved for provisioning. Skipping...');
-            return;
-        }
-
-        var output;
-        try {
-            output = sanitize(record);
-        } catch (e) {
-            LOG.error(e, 'Error sanitizing record');
-            ERROR = true;
-            return;
-        }
-
-        writeQueue.push({
-            owner: record.req.owner,
-            record: output
-        });
+    var parser = dashdash.createParser({options: options});
+    var opts;
+    try {
+        opts = parser.parse(process.argv);
+    } catch (e) {
+        console.error('deliver-access: error: %s', e.message);
+        process.exit(1);
     }
 
-    carry.once('end', function onEnd() {
-        var len = MALFORMED_LIMIT.length;
-        var threshold;
+    if (opts.help) {
+        var help = parser.help({includeEnv: true}).trimRight();
+        console.log('usage: node deliver-access.js [OPTIONS]\n' +
+                    'options:\n' +
+                    help);
+        process.exit(0);
+    }
 
-        if (MALFORMED_LIMIT[len - 1] === '%') {
-            var pct = +(MALFORMED_LIMIT.substr(0, len-1));
-            threshold = pct * lineCount;
-        } else {
-            threshold = +MALFORMED_LIMIT;
-        }
+    if (!opts.hasOwnProperty('lookupPath')) {
+        console.error('deliver-access: error: missing lookup file');
+        process.exit(1);
+    }
 
-        if (isNaN(threshold)) {
-            LOG.error('MALFORMED_LIMIT not a number');
-            ERROR = true;
-            return;
-        }
+    var lookup = require(opts.lookupPath);
 
-        if (malformed > threshold) {
-            LOG.fatal('Too many malformed lines');
-            ERROR = true;
-            return;
-        }
-        writeQueue.close();
+    var deliver = new DeliverAccessStream({
+        adminUser: opts.adminUser,
+        backfill: opts.backfill,
+        dryRun: opts.dryRun,
+        deliverUnapproved: opts.deliverUnapproved,
+        includeAdmin: opts.includeAdmin,
+        log: log,
+        lookup: lookup,
+        mantaUrl: opts.mantaUrl,
+        userDestination: opts.userDestination,
+        userLink: opts.userLink
     });
 
-    carry.on('line', onLine);
+    deliver.once('error', function (error) {
+        log.error(error, 'deliver access logs error');
+        process.abort();
+    });
+
+    process.stdin.pipe(new lstream()).pipe(deliver).pipe(process.stdout);
 }
 
 if (require.main === module) {
-    process.on('exit', function onExit() {
-        process.exit(ERROR);
-    });
-
     main();
 }
+
+module.exports = DeliverAccessStream;
