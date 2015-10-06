@@ -28,6 +28,7 @@ var DELIVER_UNAPPROVED_REPORTS =
         process.env['DELIVER_UNAPPROVED_REPORTS'] === 'true';
 var DROP_POSEIDON_REQUESTS = process.env['DROP_POSEIDON_REQUESTS'] === 'true';
 var MALFORMED_LIMIT = process.env['MALFORMED_LIMIT'] || '0';
+var ERROR_RE_BAD_IP = /the address has neither IPv6 nor IPv4 format/;
 
 var LOG = require('bunyan').createLogger({
         name: 'deliver-access.js',
@@ -72,21 +73,32 @@ function sanitize(record) {
         var output = mod_screen.screen(record, whitelist);
         if (output.req && output.req.headers) {
                 var ip = output.req.headers['x-forwarded-for'] || '169.254.0.1';
+                var ip_parsed = null;
+
                 // MANTA-1918 if first ip is empty, use 'unknown'
                 ip = ip.split(',')[0].trim() || 'unknown';
 
                 // MANTA-1886 check for 'unknown'
-                if (ip === 'unknown') {
-                        output['remoteAddress'] = 'unknown';
-                } else {
-                        var ipaddr = mod_ipaddr.parse(ip);
-                        if (ipaddr.kind() === 'ipv4') {
-                                output['remoteAddress'] =
-                                        ipaddr.toIPv4MappedAddress().toString();
-                        } else {
-                                output['remoteAddress'] = ipaddr.toString();
+                if (ip !== 'unknown') {
+                        try {
+                                ip_parsed = mod_ipaddr.parse(ip);
+                        } catch (ex) {
+                                if (!ERROR_RE_BAD_IP.test(ex.message))
+                                        throw (ex);
                         }
                 }
+
+                if (ip_parsed === null) {
+                        output['remoteAddress'] = 'unknown';
+                } else {
+                        if (ip_parsed.kind() === 'ipv4') {
+                                output['remoteAddress'] =
+                                    ip_parsed.toIPv4MappedAddress().toString();
+                        } else {
+                                output['remoteAddress'] = ip_parsed.toString();
+                        }
+                }
+
                 output.req['request-uri'] = output.req['url'];
                 delete output.req.headers['x-forwarded-for'];
                 delete output.req['url'];
