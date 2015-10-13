@@ -69,61 +69,61 @@ function runTest(opts, cb) {
 }
 
 var RECORD = {
-        "owner": "a792e2b4-ccde-4b9f-99ed-8e824643c07e",
-        "jobs": {
-                "c29fb939-c19e-4439-9692-6a0f14bd9728": {
-                        "0": {
-                                "memory": 1024,
-                                "disk": 8,
-                                "seconds": 2,
-                                "ntasks": 2,
-                                "bandwidth": {
-                                        "in": "39356",
-                                        "out": "1260"
+        'owner': 'a792e2b4-ccde-4b9f-99ed-8e824643c07e',
+        'jobs': {
+                'c29fb939-c19e-4439-9692-6a0f14bd9728': {
+                        '0': {
+                                'memory': 1024,
+                                'disk': 8,
+                                'seconds': 2,
+                                'ntasks': 2,
+                                'bandwidth': {
+                                        'in': '39356',
+                                        'out': '1260'
                                 }
                         }
                 },
-                "60812ed5-23aa-41cc-898c-36a5a1b5d223": {
-                        "1": {
-                                "memory": 2048,
-                                "disk": 8,
-                                "seconds": 1,
-                                "ntasks": 1,
-                                "bandwidth": {
-                                        "in": "23004",
-                                        "out": "756"
+                '60812ed5-23aa-41cc-898c-36a5a1b5d223': {
+                        '1': {
+                                'memory': 2048,
+                                'disk': 8,
+                                'seconds': 1,
+                                'ntasks': 1,
+                                'bandwidth': {
+                                        'in': '23004',
+                                        'out': '756'
                                 }
                         },
-                        "2": {
-                                "memory": 1024,
-                                "disk": 8,
-                                "seconds": 2,
-                                "ntasks": 1,
-                                "bandwidth": {
-                                        "in": "553",
-                                        "out": "336"
+                        '2': {
+                                'memory': 1024,
+                                'disk': 8,
+                                'seconds': 2,
+                                'ntasks': 1,
+                                'bandwidth': {
+                                        'in': '553',
+                                        'out': '336'
                                 }
                         }
                 },
-                "9a8c4cec-2e6f-46cf-b290-87b16dd49c7b": {
-                        "0": {
-                                "memory": 1024,
-                                "disk": 8,
-                                "seconds": 2,
-                                "ntasks": 1,
-                                "bandwidth": {
-                                        "in": "3032",
-                                        "out": "420"
+                '9a8c4cec-2e6f-46cf-b290-87b16dd49c7b': {
+                        '0': {
+                                'memory': 1024,
+                                'disk': 8,
+                                'seconds': 2,
+                                'ntasks': 1,
+                                'bandwidth': {
+                                        'in': '3032',
+                                        'out': '420'
                                 }
                         },
-                        "1": {
-                                "memory": 1024,
-                                "disk": 8,
-                                "seconds": 1,
-                                "ntasks": 1,
-                                "bandwidth": {
-                                        "in": "553",
-                                        "out": "420"
+                        '1': {
+                                'memory': 1024,
+                                'disk': 8,
+                                'seconds': 1,
+                                'ntasks': 1,
+                                'bandwidth': {
+                                        'in': '553',
+                                        'out': '420'
                                 }
                         }
                 }
@@ -131,61 +131,61 @@ var RECORD = {
 };
 
 var TWICE = {
-        "owner": "a792e2b4-ccde-4b9f-99ed-8e824643c07e",
-        "jobs": {
-                "c29fb939-c19e-4439-9692-6a0f14bd9728": {
-                        "0": {
-                                "memory": 1024,
-                                "disk": 8,
-                                "seconds": 4,
-                                "ntasks": 4,
-                                "bandwidth": {
-                                        "in": "78712",
-                                        "out": "2520"
+        'owner': 'a792e2b4-ccde-4b9f-99ed-8e824643c07e',
+        'jobs': {
+                'c29fb939-c19e-4439-9692-6a0f14bd9728': {
+                        '0': {
+                                'memory': 1024,
+                                'disk': 8,
+                                'seconds': 4,
+                                'ntasks': 4,
+                                'bandwidth': {
+                                        'in': '78712',
+                                        'out': '2520'
                                 }
                         }
                 },
-                "60812ed5-23aa-41cc-898c-36a5a1b5d223": {
-                        "1": {
-                                "memory": 2048,
-                                "disk": 8,
-                                "seconds": 2,
-                                "ntasks": 2,
-                                "bandwidth": {
-                                        "in": "46008",
-                                        "out": "1512"
+                '60812ed5-23aa-41cc-898c-36a5a1b5d223': {
+                        '1': {
+                                'memory': 2048,
+                                'disk': 8,
+                                'seconds': 2,
+                                'ntasks': 2,
+                                'bandwidth': {
+                                        'in': '46008',
+                                        'out': '1512'
                                 }
                         },
-                        "2": {
-                                "memory": 1024,
-                                "disk": 8,
-                                "seconds": 4,
-                                "ntasks": 2,
-                                "bandwidth": {
-                                        "in": "1106",
-                                        "out": "672"
+                        '2': {
+                                'memory': 1024,
+                                'disk': 8,
+                                'seconds': 4,
+                                'ntasks': 2,
+                                'bandwidth': {
+                                        'in': '1106',
+                                        'out': '672'
                                 }
                         }
                 },
-                "9a8c4cec-2e6f-46cf-b290-87b16dd49c7b": {
-                        "0": {
-                                "memory": 1024,
-                                "disk": 8,
-                                "seconds": 4,
-                                "ntasks": 2,
-                                "bandwidth": {
-                                        "in": "6064",
-                                        "out": "840"
+                '9a8c4cec-2e6f-46cf-b290-87b16dd49c7b': {
+                        '0': {
+                                'memory': 1024,
+                                'disk': 8,
+                                'seconds': 4,
+                                'ntasks': 2,
+                                'bandwidth': {
+                                        'in': '6064',
+                                        'out': '840'
                                 }
                         },
-                        "1": {
-                                "memory": 1024,
-                                "disk": 8,
-                                "seconds": 2,
-                                "ntasks": 2,
-                                "bandwidth": {
-                                        "in": "1106",
-                                        "out": "840"
+                        '1': {
+                                'memory': 1024,
+                                'disk': 8,
+                                'seconds': 2,
+                                'ntasks': 2,
+                                'bandwidth': {
+                                        'in': '1106',
+                                        'out': '840'
                                 }
                         }
                 }

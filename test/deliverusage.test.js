@@ -17,7 +17,7 @@ var mod_bunyan = require('bunyan');
 var helper = require('./helper.js');
 
 var deliverusage =
-    mod_path.resolve(__dirname, '../assets/lib/deliver-usage.js');
+        mod_path.resolve(__dirname, '../assets/lib/deliver-usage.js');
 
 var log = new mod_bunyan({
         'name': 'deliverusage.test.js',
@@ -28,7 +28,7 @@ var after = helper.after;
 var before = helper.before;
 var test = helper.test;
 
-var PORT= 5678;
+var PORT = 5678;
 var SERVER = null;
 var MANTA_URL = 'http://localhost:' + PORT;
 var LOOKUP_FILE = '../../test/test_data/lookup.json';
@@ -98,11 +98,11 @@ var COMPUTE_RECORD = {
                 'in': '217915',
                 'out': '6968'
         }
-}
+};
 
 
 function runTest(opts, cb) {
-
+        opts.opts = opts.opts || [];
         opts.env = opts.env || {};
         opts.env['MANTA_URL'] = MANTA_URL;
         opts.env['MANTA_NO_AUTH'] = 'true';
@@ -134,12 +134,12 @@ function runTest(opts, cb) {
                 error = err;
         });
 
-        spawn.on('close', function (code) {
+        spawn.on('close', function (code, signal) {
                 var result = {
                         stdin: opts.stdin,
                         stdout: stdout,
                         stderr: stderr,
-                        code: code,
+                        code: signal === null ? code : signal,
                         error: error
                 };
                 if (opts.debug) {
@@ -194,7 +194,7 @@ test('numbers to strings', function (t) {
                 // all the numbers are strings
                 NAMESPACES.forEach(function (n) {
                         COUNTERS.forEach(function (c) {
-                                t.ok(typeof(actual[n][c]) === 'string');
+                                t.ok(typeof (actual[n][c]) === 'string');
                         });
                 });
                 t.done();
@@ -214,14 +214,14 @@ test('write to user directories', function (t) {
                         var login = r.url.split('/')[1];
                         var type = r.headers['content-type'];
                         t.equal(r.method, 'PUT');
-                        t.equal(login, 'pborensteinjoyent');
+                        t.equal(login, 'macktest');
                         if (type === 'application/json; type=directory') {
                                 dirs++;
                         } else if (type === 'application/json; type=link') {
                                 links++;
                         } else {
                                 var body = JSON.parse(r.body);
-                                t.ok(typeof(body.owner) === 'undefined');
+                                t.ok(typeof (body.owner) === 'undefined');
                                 body.owner = STORAGE_RECORD.owner;
                                 t.deepEqual(STORAGE_RECORD, body);
                         }

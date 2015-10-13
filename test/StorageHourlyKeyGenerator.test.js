@@ -24,21 +24,21 @@ var before = helper.before;
 var test = helper.test;
 
 function putEmpties(paths, cb) {
-        function putEmpty(p, cb) {
+        function putEmpty(p, subcb) {
                 var self = this;
                 var mstream = new PassThrough();
                 mstream.pause();
                 self.client.mkdirp(path.dirname(p), function (err) {
                         if (err) {
-                                cb(err);
+                                subcb(err);
                                 return;
                         }
                         self.client.put(p, mstream, {size: 0}, function (err2) {
                                 if (err2) {
-                                        cb(err2);
+                                        subcb(err2);
                                         return;
                                 }
-                                cb();
+                                subcb();
                         });
                         mstream.write('');
                         mstream.end();
@@ -59,7 +59,6 @@ function putEmpties(paths, cb) {
 }
 
 before(function (cb) {
-        var client;
         var self = this;
         this.putEmpties = putEmpties.bind(this);
         this.log = helper.createLogger();
@@ -88,13 +87,15 @@ before(function (cb) {
                                         keyId: stdout.replace('\n', ''),
                                         user: user
                                 }),
+                                rejectUnauthorized:
+                                    !process.env['MANTA_TLS_INSECURE'],
                                 url: url,
                                 user: user
                         });
 
-                        self.client.mkdir(self.testdir, function (err) {
-                                if (err) {
-                                        cb(err);
+                        self.client.mkdir(self.testdir, function (err2) {
+                                if (err2) {
+                                        cb(err2);
                                         return;
                                 }
                                 cb();
@@ -139,9 +140,10 @@ test('basic', function (t) {
 
         var expected = keys.slice(0, 4);
 
+        var log = helper.createLogger();
         var gen = keygen.keygen({
                 client: self.client,
-                log: helper.createLogger(),
+                log: log,
                 args: {
                         source: self.testdir,
                         date: '2013-07-05T22:00:00'
@@ -153,6 +155,7 @@ test('basic', function (t) {
         });
 
         gen.on('error', function (e) {
+                log.error(e);
                 errors.push(e);
         });
 

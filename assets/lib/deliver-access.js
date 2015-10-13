@@ -210,7 +210,8 @@ function saveAll(cb) {
 
         var client = mod_manta.createClient({
                 sign: null,
-                url: process.env['MANTA_URL']
+                url: process.env['MANTA_URL'],
+                rejectUnauthorized: !process.env['MANTA_TLS_INSECURE']
         });
 
         var uploadQueue = mod_libmanta.createQueue({
@@ -345,8 +346,10 @@ function main() {
 }
 
 if (require.main === module) {
-        process.on('exit', function onExit() {
-                process.exit(ERROR);
+        process.on('exit', function onExit(code) {
+                if (code === 0) {
+                        process.exit(ERROR);
+                }
         });
 
         main();

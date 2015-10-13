@@ -29,6 +29,7 @@ var LOOKUP_FILE = '../../test/test_data/lookup.json';
 var LOOKUP = require('./test_data/lookup.json');
 
 function runTest(opts, cb) {
+        opts.opts = opts.opts || [];
         opts.env = opts.env || {};
         opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
         var spawn = mod_child_process.spawn(summarizemap, opts.opts, opts);
@@ -73,6 +74,7 @@ function runTest(opts, cb) {
         });
 }
 
+/* BEGIN JSSTYLED */
 var STORAGE = {
         "owner": "83081c10-1b9c-44b3-9c5c-36fc2a5218a0",
         "storage": {
@@ -122,7 +124,7 @@ var REQUEST = {
                         'headerIn': '806',
                         'headerOut': '200'
                 }
-        },
+        }
 };
 
 var COMPUTE = {
@@ -186,6 +188,7 @@ var COMPUTE = {
                 }
         }
 };
+/* END JSSTYLED */
 
 test('summarize storage', function (t) {
         runTest({
@@ -195,7 +198,7 @@ test('summarize storage', function (t) {
                 var actual = JSON.parse(result.stdout);
                 var expected = {
                         owner: STORAGE.owner,
-                        byteHrs: "230326718"
+                        byteHrs: '230326718'
                 };
                 t.deepEqual(actual, expected);
                 t.equal(typeof (actual.byteHrs), 'string');
@@ -213,8 +216,8 @@ test('summarize request', function (t) {
                         owner: REQUEST.owner,
                         requests: REQUEST.requests.type,
                         bandwidth: {
-                                in: "2294",
-                                out: "458"
+                                in: '2294',
+                                out: '458'
                         }
                 };
                 t.deepEqual(actual, expected);
@@ -233,10 +236,10 @@ test('summarize compute', function (t) {
                 var actual = JSON.parse(result.stdout);
                 var expected = {
                         owner: COMPUTE.owner,
-                        computeGBSeconds: "9",
+                        computeGBSeconds: '9',
                         computeBandwidth: {
-                                in: "66498",
-                                out: "3192",
+                                in: '66498',
+                                out: '3192'
                         }
                 };
                 t.deepEqual(actual, expected);
@@ -248,8 +251,8 @@ test('summarize compute', function (t) {
 
 test('compute billing table', function (t) {
         var input = JSON.parse(JSON.stringify(COMPUTE));
-        input.jobs['60812ed5-23aa-41cc-898c-36a5a1b5d223']['1'].disk = "512";
-        input.jobs['60812ed5-23aa-41cc-898c-36a5a1b5d223']['2'].disk= "64";
+        input.jobs['60812ed5-23aa-41cc-898c-36a5a1b5d223']['1'].disk = '512';
+        input.jobs['60812ed5-23aa-41cc-898c-36a5a1b5d223']['2'].disk = '64';
         runTest({
                 stdin: JSON.stringify(input)
         }, function (result) {
@@ -257,10 +260,10 @@ test('compute billing table', function (t) {
                 var actual = JSON.parse(result.stdout);
                 var expected = {
                         owner: COMPUTE.owner,
-                        computeGBSeconds: "25",
+                        computeGBSeconds: '25',
                         computeBandwidth: {
-                                in: "66498",
-                                out: "3192",
+                                in: '66498',
+                                out: '3192'
                         }
                 };
                 t.deepEqual(actual, expected);

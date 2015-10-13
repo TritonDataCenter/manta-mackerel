@@ -26,7 +26,6 @@ var after = helper.after;
 var before = helper.before;
 var test = helper.test;
 before(function (cb) {
-        var client;
         var self = this;
         this.log = helper.createLogger();
         var f = process.env.SSH_KEY || process.env.HOME + '/.ssh/id_rsa';
@@ -55,6 +54,8 @@ before(function (cb) {
                                         user: user
                                 }),
                                 url: url,
+                                rejectUnauthorized:
+                                    !process.env['MANTA_TLS_INSECURE'],
                                 user: user
                         });
                         cb();
@@ -76,13 +77,8 @@ after(function (cb) {
 test('single directory', function (t) {
         var self = this;
         var keys = [];
-        var expected = [];
-        var path = '/poseidon/stor/usage/storage/2013/06/10';
-        function pad(x) {if (x < 10) return ('0' + x); else return (x);};
-        for (var i = 0 ; i < 24; i++) {
-                expected.push(path + '/' + pad(i) + '/h' + pad(i) + '.json');
-        }
-        expected.push(path + '/d10.json');
+        var path = '/poseidon/stor/usage/storage/2015/10/10';
+        var expected = [ path + '/00/h00.json' ];
         var keygen = mod_keygen.keygen({
                 client: self.client,
                 log: helper.createLogger(),
@@ -105,9 +101,8 @@ test('single directory with regex', function (t) {
         var self = this;
         var keys = [];
         var expected = [];
-        var path = '/poseidon/stor/usage/storage/2013/06/10';
-        function pad(x) {if (x < 10) return ('0' + x); else return (x);};
-        for (var i = 0 ; i < 24; i++) {
+        var path = '/poseidon/stor/usage/compute/2015/10/10';
+        for (var i = 0; i < 24; i++) {
                 expected.push(path + '/' + pad(i) + '/h' + pad(i) + '.json');
         }
         var keygen = mod_keygen.keygen({
@@ -134,19 +129,16 @@ test('multiple directories', function (t) {
         var keys = [];
         var expected = [];
         var path = [
-                '/poseidon/stor/usage/storage/2013/06/10',
-                '/poseidon/stor/usage/request/2013/06/10'
+                '/poseidon/stor/usage/compute/2015/10/10',
+                '/poseidon/stor/usage/request/2015/10/10'
         ];
-        function pad(x) {if (x < 10) return ('0' + x); else return (x);};
         var i;
-        for (i = 0 ; i < 24; i++) {
+        for (i = 0; i < 24; i++) {
                 expected.push(path[0] + '/' + pad(i) + '/h' + pad(i) + '.json');
         }
-        for (i = 0 ; i < 24; i++) {
+        for (i = 0; i < 24; i++) {
                 expected.push(path[1] + '/' + pad(i) + '/h' + pad(i) + '.json');
         }
-        expected.push(path[0] + '/d10.json');
-        expected.push(path[1] + '/d10.json');
         var keygen = mod_keygen.keygen({
                 client: self.client,
                 log: helper.createLogger(),
@@ -164,21 +156,19 @@ test('multiple directories', function (t) {
         keygen.start();
 });
 
-
 test('multiple directories with regex', function (t) {
         var self = this;
         var keys = [];
         var expected = [];
         var path = [
-                '/poseidon/stor/usage/storage/2013/06/10',
-                '/poseidon/stor/usage/request/2013/06/10'
+                '/poseidon/stor/usage/compute/2015/10/10',
+                '/poseidon/stor/usage/request/2015/10/10'
         ];
-        function pad(x) {if (x < 10) return ('0' + x); else return (x);};
         var i;
-        for (i = 0 ; i < 24; i++) {
+        for (i = 0; i < 10; i++) {
                 expected.push(path[0] + '/' + pad(i) + '/h' + pad(i) + '.json');
         }
-        for (i = 0 ; i < 24; i++) {
+        for (i = 0; i < 10; i++) {
                 expected.push(path[1] + '/' + pad(i) + '/h' + pad(i) + '.json');
         }
         var keygen = mod_keygen.keygen({
@@ -186,7 +176,7 @@ test('multiple directories with regex', function (t) {
                 log: helper.createLogger(),
                 args: {
                         source: path,
-                        regex: 'h[0-9][0-9].json'
+                        regex: 'h0[0-9].json'
                 }
         });
         keygen.on('key', function (key) {
@@ -204,7 +194,7 @@ test('minSize error', function (t) {
         var errors = [];
         var keys = [];
         var path = [
-                '/poseidon/stor/usage/request/2013/06/10'
+                '/poseidon/stor/usage/request/2015/10/10'
         ];
         var keygen = mod_keygen.keygen({
                 client: self.client,
@@ -228,3 +218,10 @@ test('minSize error', function (t) {
         });
         keygen.start();
 });
+
+function pad(x) {
+        if (x < 10)
+                return ('0' + x);
+        else
+                return (x);
+}

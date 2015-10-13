@@ -17,7 +17,7 @@ var mod_bunyan = require('bunyan');
 var helper = require('./helper.js');
 
 var deliverusage =
-    mod_path.resolve(__dirname, '../assets/lib/deliver-access.js');
+        mod_path.resolve(__dirname, '../assets/lib/deliver-access.js');
 
 var log = new mod_bunyan({
         'name': 'deliveraccess.test.js',
@@ -28,7 +28,7 @@ var after = helper.after;
 var before = helper.before;
 var test = helper.test;
 
-var PORT= 5678;
+var PORT = 5678;
 var SERVER = null;
 var MANTA_URL = 'http://localhost:' + PORT;
 var LOOKUP_FILE = '../../test/test_data/lookup.json';
@@ -54,7 +54,7 @@ var EXPECTED = {
                 'httpVersion': '1.1',
                 'caller': {
                         'login': 'poseidon'
-                },
+                }
         },
         'res': {
                 'statusCode': 204,
@@ -88,10 +88,10 @@ var RECORD = {
                         'transfer-encoding': 'chunked',
                         'x-forwarded-for': '::ffff:10.3.91.236'
                 },
-                "caller": {
-                        "login": "poseidon",
-                        "uuid": "bc50e6fc-e3e0-4cf7-bc3d-eb8229acba56",
-                        "groups": [ "operators" ]
+                'caller': {
+                        'login': 'poseidon',
+                        'uuid': 'bc50e6fc-e3e0-4cf7-bc3d-eb8229acba56',
+                        'groups': [ 'operators' ]
                 },
                 'httpVersion': '1.1',
                 'owner': '83081c10-1b9c-44b3-9c5c-36fc2a5218a0'
@@ -126,6 +126,7 @@ var RECORD = {
 var PATH = '/var/tmp/' + RECORD.req.owner;
 
 function runTest(opts, cb) {
+        opts.opts = opts.opts || [];
         opts.env = opts.env || {};
         opts.env['MANTA_URL'] = MANTA_URL;
         opts.env['MANTA_NO_AUTH'] = 'true';
@@ -133,6 +134,8 @@ function runTest(opts, cb) {
         opts.env['ACCESS_LINK'] = '/reports/access-logs/latest';
         opts.env['ACCESS_DEST'] = '/reports/access-logs/y/m/d/h/hhour.json';
         opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
+        if (process.env['LOG_LEVEL'])
+                opts.env['LOG_LEVEL'] = process.env['LOG_LEVEL'];
 
         var spawn = mod_child_process.spawn(deliverusage, opts.opts, opts);
 
@@ -156,12 +159,12 @@ function runTest(opts, cb) {
                 error = err;
         });
 
-        spawn.on('close', function (code) {
+        spawn.on('close', function (code, signal) {
                 var result = {
                         stdin: opts.stdin,
                         stdout: stdout,
                         stderr: stderr,
-                        code: code,
+                        code: signal === null ? code : -1,
                         error: error
                 };
                 if (opts.debug) {
@@ -189,7 +192,18 @@ before(function (cb) {
                         res.end();
                 });
         }).listen(PORT, function (err) {
-                cb(err);
+                if (err) {
+                        cb(err);
+                        return;
+                }
+
+                mod_fs.unlink(PATH, function (suberr) {
+                        if (suberr && suberr.code === 'ENOENT') {
+                                cb();
+                                return;
+                        }
+                        cb(suberr);
+                });
         });
         SERVER.requests = [];
 });
@@ -353,7 +367,7 @@ test('deliver unapproved reports', function (t) {
 
 test('malformed line', function (t) {
         runTest({
-                stdin: JSON.stringify(RECORD) + '\n{"incomplete":{"record":',
+                stdin: JSON.stringify(RECORD) + '\n{"incomplete":{"record":'
         }, function (result) {
                 t.equal(1, result.code);
                 t.done();
@@ -364,7 +378,7 @@ test('malformed line limit', function (t) {
         runTest({
                 stdin: JSON.stringify(RECORD) + '\n{"incomplete":{"record":',
                 env: {
-                        "MALFORMED_LIMIT": "1",
+                        'MALFORMED_LIMIT': '1',
                         'COUNT_UNAPPROVED_USERS': 'true'
                 }
         }, function (result) {
@@ -375,4 +389,3 @@ test('malformed line limit', function (t) {
                 t.done();
         });
 });
-

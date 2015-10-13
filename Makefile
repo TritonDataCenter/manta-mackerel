@@ -35,7 +35,8 @@ NPM             := npm
 #
 DOC_FILES        = index.md
 BASH_FILES      := $(shell find bin -name '*.sh') $(shell find assets/bin -type f)
-JS_FILES        := $(shell find assets/lib bin lib -name '*.js' -type f)
+JS_FILES        := $(shell find assets/lib bin lib test \
+    -name '*.js' -type f -not -name test.js)
 JSL_CONF_NODE    = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES    = $(JS_FILES)

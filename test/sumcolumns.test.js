@@ -98,7 +98,7 @@ test('basic', function (t) {
 test('large integers', function (t) {
         var record1 = {
                 'key': 'test',
-                'a': '398409348255024958',
+                'a': '398409348255024958'
         };
         var record2 = {
                 'key': 'test',
@@ -122,7 +122,7 @@ test('recursive', function (t) {
                 'a': { '1': 1, '2': 2 },
                 'b': {
                         'c': { '3': 3, '4': 4 },
-                        'd': { '5': 5, '6': 6, '7': 7},
+                        'd': { '5': 5, '6': 6, '7': 7}
                 }
         };
 
@@ -131,7 +131,7 @@ test('recursive', function (t) {
                 'a': { '1': 8, '2': 9 },
                 'b': {
                         'c': { '3': 10, '4': 11 },
-                        'd': { '5': 12, '6': 13, '8': 14},
+                        'd': { '5': 12, '6': 13, '8': 14}
                 }
 
         };
@@ -141,7 +141,7 @@ test('recursive', function (t) {
                 'a': { '1': 9, '2': 11 },
                 'b': {
                         'c': { '3': 13, '4': 15 },
-                        'd': { '5': 17, '6': 19, '7': 7, '8': 14},
+                        'd': { '5': 17, '6': 19, '7': 7, '8': 14}
                 }
         };
 
@@ -183,13 +183,13 @@ test('aggregation key', function (t) {
                 'key': 'test1',
                 'a': 5,
                 'b': 7,
-                'c': 9,
+                'c': 9
         };
         var expected2 = {
                 'key': 'test2',
                 'a': 17,
                 'c': 19,
-                'd': 21,
+                'd': 21
         };
 
         var input = JSON.stringify(record1a) + '\n' +
@@ -217,6 +217,7 @@ test('aggregation key', function (t) {
 });
 
 test('add fields', function (t) {
+        /* BEGIN JSSTYLED */
         var record1 = {
                 "owner": "a792e2b4-ccde-4b9f-99ed-8e824643c07e",
                 "computeGBSeconds": 96,
@@ -266,6 +267,7 @@ test('add fields', function (t) {
                 "computeGBSeconds": 96,
                 "byteHrs": "230286312"
         };
+        /* END JSSTYLED */
 
         var input = JSON.stringify(record1) + '\n' +
                     JSON.stringify(record2) + '\n' +

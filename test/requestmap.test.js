@@ -27,6 +27,7 @@ var test = helper.test;
 var LOOKUP_FILE = '../../test/test_data/lookup.json';
 var LOOKUP = require('./test_data/lookup.json');
 
+/* BEGIN JSSTYLED */
 var RECORD = {
         'name': 'muskie',
         'billable_operation': 'PUT',
@@ -101,10 +102,12 @@ var EXPECTED = {
                         'headerIn': '806',
                         'headerOut': '200'
                 }
-        },
+        }
 };
+/* END JSSTYLED */
 
 function runTest(opts, cb) {
+        opts.opts = opts.opts || [];
         opts.env = opts.env || {};
         opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
         var spawn = mod_child_process.spawn(requestmap, opts.opts, opts);
@@ -253,7 +256,7 @@ test('malformed line limit', function (t) {
         runTest({
                 stdin: JSON.stringify(record) + '\n{"incomplete":{"record":',
                 env: {
-                        "MALFORMED_LIMIT": "1",
+                        'MALFORMED_LIMIT': '1',
                         'COUNT_UNAPPROVED_USERS': 'true'
                 }
         }, function (result) {

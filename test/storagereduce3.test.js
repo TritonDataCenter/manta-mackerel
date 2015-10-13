@@ -26,9 +26,10 @@ var log = new mod_bunyan({
 var test = helper.test;
 
 function runTest(opts, cb) {
+        opts.opts = opts.opts || [];
         var env = {
                 env: {
-                        "NAMESPACES": "stor public jobs reports"
+                        'NAMESPACES': 'stor public jobs reports'
                 }
         };
         var spawn = mod_child_process.spawn(storagereduce3, opts.opts, env);
@@ -74,6 +75,7 @@ function runTest(opts, cb) {
         });
 }
 
+/* BEGIN JSSTYLED */
 var RECORD1 = {
       "owner": 'fred',
       "namespace": 'stor',
@@ -139,6 +141,7 @@ var EXPECTED = {
                 }
         }
 };
+/* END JSSTYLED */
 
 test('basic', function (t) {
         var input = JSON.stringify(RECORD1) + '\n' +
@@ -146,7 +149,7 @@ test('basic', function (t) {
                     JSON.stringify(RECORD3) + '\n' +
                     JSON.stringify(RECORD4);
         runTest({
-                stdin: input,
+                stdin: input
         }, function (result) {
                 t.deepEqual(JSON.parse(result.stdout), EXPECTED);
                 t.done();
@@ -159,7 +162,7 @@ test('missing namespace', function (t) {
                     JSON.stringify(RECORD2) + '\n' +
                     JSON.stringify(RECORD4);
         runTest({
-                stdin: input,
+                stdin: input
         }, function (result) {
                 t.deepEqual(JSON.parse(result.stdout), EXPECTED);
                 t.done();

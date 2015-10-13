@@ -26,10 +26,12 @@ var log = new mod_bunyan({
 var test = helper.test;
 
 function runTest(opts, cb) {
+        opts.opts = opts.opts || [];
+
         var env = {
                 env: {
-                        "NAMESPACES": "stor public jobs reports",
-                        "MIN_SIZE": 4096
+                        'NAMESPACES': 'stor public jobs reports',
+                        'MIN_SIZE': 4096
                 }
         };
 
@@ -185,7 +187,7 @@ test('basic', function (t) {
                     JSON.stringify(RECORD2) + '\n' +
                     JSON.stringify(RECORD4);
         runTest({
-                stdin: input,
+                stdin: input
         }, function (result) {
                 var lines = result.stdout.split('\n');
                 t.equal(lines.length, 5);
@@ -193,14 +195,14 @@ test('basic', function (t) {
                 for (var i = 0; i < lines.length-1; i++) {
                         var actual = JSON.parse(lines[i]);
                         t.equal(actual.owner, 'fred');
-                        t.equal(typeof(actual.bytes), 'string');
+                        t.equal(typeof (actual.bytes), 'string');
                         if (actual.namespace === 'stor') {
                                 t.equal(actual.keys, 3);
                                 t.equal(actual.objects, 3);
                                 t.equal(actual.bytes, 2 * (5000 + 4096 + 4096));
                         } else {
                                 COUNTERS.forEach(function (counter) {
-                                        t.equal(actual[counter], 0)
+                                        t.equal(actual[counter], 0);
                                 });
                         }
                 }
@@ -228,7 +230,7 @@ test('single link', function (t) {
                                 t.equal(actual.bytes, 2 * (5000 + 4096 + 4096));
                         } else {
                                 COUNTERS.forEach(function (counter) {
-                                        t.equal(actual[counter], 0)
+                                        t.equal(actual[counter], 0);
                                 });
                         }
                 }
@@ -258,7 +260,7 @@ test('multiple links', function (t) {
                                 t.equal(actual.bytes, 2 * (5000 + 4096 + 4096));
                         } else {
                                 COUNTERS.forEach(function (counter) {
-                                        t.equal(actual[counter], 0)
+                                        t.equal(actual[counter], 0);
                                 });
                         }
                 }
@@ -331,7 +333,7 @@ test('large integers', function (t) {
                                 t.equal(actual.bytes, '36028797018963968');
                         } else {
                                 COUNTERS.forEach(function (counter) {
-                                        t.equal(actual[counter], 0)
+                                        t.equal(actual[counter], 0);
                                 });
                         }
                 }
@@ -350,7 +352,7 @@ test('multiple owners', function (t) {
                     JSON.stringify(RECORD4);
 
         runTest({
-                stdin: input,
+                stdin: input
         }, function (result) {
                 var lines = result.stdout.split('\n');
                 t.equal(lines.length, 9);

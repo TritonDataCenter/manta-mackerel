@@ -28,6 +28,7 @@ var LOOKUP_FILE = '../../test/test_data/lookup.json';
 var LOOKUP = require('./test_data/lookup.json');
 
 function runTest(opts, cb) {
+        opts.opts = opts.opts || [];
         opts.env = opts.env || {};
         opts.env['LOOKUP_FILE'] = LOOKUP_FILE;
         var spawn = mod_child_process.spawn(storagemap, opts.opts, opts);

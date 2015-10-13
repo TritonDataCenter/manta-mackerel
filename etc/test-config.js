@@ -12,13 +12,14 @@ var c = require('./config.json');
 
 module.exports = c;
 
-c.mahi.host = '10.99.99.44';
-c.workflow.url = 'http://localhost:8080';
-c.manta.url = 'https://us-east.manta.joyent.com';
-c.manta.user = 'fredkuo';
-c.manta.sign.key = '/home/dev/.ssh/id_rsa';
-c.manta.sign.keyId = 'e3:4d:9b:26:bd:ef:a1:db:43:ae:4b:f7:bc:69:a7:24';
-c.mantaBaseDirectory = '/fredkuo/stor/mackerel-test';
+c.mahi.host = 'authcache.emy-10.joyent.us';
+c.workflow.url = 'http://172.25.10.19';
+c.manta.url = process.env['MANTA_URL'];
+c.manta.user = process.env['MANTA_USER'];
+c.manta.sign.key = process.env['HOME'] + '/.ssh/id_rsa';
+c.manta.sign.keyId = process.env['MANTA_KEY_ID'];
+c.mantaBaseDirectory = '/' + process.env['MANTA_USER'] + '/stor/mackerel-test';
+c.manta.rejectUnauthorized = false;
 c.lookupFile = 'test/test_data/lookup.json';
 
 

@@ -27,16 +27,16 @@ var config = process.env.CONFIG ? require(process.env.CONFIG) :
 var lookupFile = mod_path.resolve(__dirname, '..', config.lookupFile);
 
 test('generateLookup', function (t) {
-    generateLookup({
-        host: config.mahi.host,
-        port: config.mahi.port,
-        log: helper.createLogger()
-    }, function (err, result) {
-        t.ifError(err);
-        t.ok(result);
-        var firstKey = Object.keys(result)[0];
-        t.equal(typeof (result[firstKey].login), 'string');
-        t.equal(typeof (result[firstKey].approved), 'boolean');
-        t.end()
-    });
+        generateLookup({
+                host: config.mahi.host,
+                port: config.mahi.port,
+                log: helper.createLogger()
+        }, function (err, result) {
+                t.ifError(err);
+                t.ok(result);
+                var firstKey = Object.keys(result)[0];
+                t.equal(typeof (result[firstKey].login), 'string');
+                t.equal(typeof (result[firstKey].approved), 'boolean');
+                t.end();
+        });
 });

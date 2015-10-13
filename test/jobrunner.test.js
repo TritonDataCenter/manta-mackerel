@@ -29,7 +29,6 @@ var test = helper.test;
 ///--- Tests
 
 before(function (cb) {
-        var client;
         var self = this;
         this.log = helper.createLogger();
         var f = process.env.SSH_KEY || process.env.HOME + '/.ssh/id_rsa';
@@ -58,12 +57,14 @@ before(function (cb) {
                                         user: user
                                 }),
                                 url: url,
+                                rejectUnauthorized:
+                                    !process.env['MANTA_TLS_INSECURE'],
                                 user: user
                         });
 
-                        self.client.mkdir(self.testdir, function (err) {
-                                if (err) {
-                                        cb(err);
+                        self.client.mkdir(self.testdir, function (err2) {
+                                if (err2) {
+                                        cb(err2);
                                         return;
                                 }
                                 cb();
