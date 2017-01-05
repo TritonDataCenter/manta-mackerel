@@ -1,10 +1,30 @@
 #!/bin/bash
-# Copyright (c) 2013, Joyent, Inc. All rights reserved.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright 2017 Joyent, Inc.
+#
 
 set -o pipefail
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 NODE=$dir/../build/node/bin/node
 
-$NODE $dir/../lib/storage-reduce1.js \
+#
+# This phase of the job constructs a large in-memory object aggregating all of
+# the input data.  For very large input sizes, this object can exhaust the
+# default node heap limit.  We increase the "old space" cap to allow for the
+# aggregation of a larger quantity of objects per reducer process.
+#
+# Note that this is something of a stop-gap: a 32-bit node process likely
+# cannot continue to be grown much, if at all, beyond this size.  In the
+# future, the aggregation of input records should be tracked using a mechanism
+# that can easily spill to disk; e.g., by using a SQLite or other disk-based
+# database.
+#
+$NODE --max_old_space_size=1300 $dir/../lib/storage-reduce1.js \
 | msplit -j -n $NUM_REDUCERS -f owner,namespace

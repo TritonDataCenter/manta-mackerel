@@ -78,8 +78,8 @@ test: $(NODEUNIT)
 
 .PHONY: mycheck
 mycheck:
-	json -nf etc/config.json
-	json -nf etc/jobs.json
+	json --validate -f etc/config.json
+	json --validate -f etc/jobs.json
 
 check:: mycheck
 
