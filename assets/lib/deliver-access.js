@@ -6,22 +6,23 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2017, Joyent, Inc.
  */
 
 var lookupPath = process.env['LOOKUP_FILE'] || '../etc/lookup.json';
 var lookup = require(lookupPath); // maps uuid->login
 var mantaFileSave = require('manta-compute-bin').mantaFileSave;
 var mod_ipaddr = require('ipaddr.js');
-var mod_bunyan = require('bunyan');
-var mod_carrier = require('carrier');
 var mod_fs = require('fs');
+var mod_path = require('path');
 var mod_manta = require('manta');
 var mod_screen = require('screener');
 var mod_libmanta = require('libmanta');
+var mod_util = require('util');
+var mod_stream = require('stream');
+var mod_assert = require('assert-plus');
+var mod_lstream = require('lstream');
 
-var files = {}; // keeps track of all the files we create
-var waitingForDrain = {};
 var ERROR = false;
 var tmpdir = '/var/tmp';
 var DELIVER_UNAPPROVED_REPORTS =
@@ -109,44 +110,10 @@ function sanitize(record) {
 }
 
 
-function write(opts, cb) {
-        LOG.debug(opts, 'write start');
-        var owner = opts.owner;
-        var record = opts.record;
-        var path = tmpdir + '/' + owner;
-        var output = JSON.stringify(record) + '\n';
-        var flushed;
+function saveAll(filenameList, cb) {
+        mod_assert.arrayOfString(filenameList, 'filenameList');
+        mod_assert.func(cb, 'cb');
 
-        if (!files[owner]) {
-                process.stdin.pause();
-                files[owner] = mod_fs.createWriteStream(path);
-
-                files[owner].on('drain', function (o) {
-                        delete waitingForDrain[o];
-                        if (Object.keys(waitingForDrain).length === 0) {
-                                process.stdin.resume();
-                        }
-                }.bind(files[owner], owner));
-
-                files[owner].once('open', function (o) {
-                        var initialFlush = this.write(output, cb);
-                        if (!initialFlush) {
-                                waitingForDrain[o] = true;
-                        } else {
-                                process.stdin.resume();
-                        }
-                }.bind(files[owner], owner));
-        } else {
-                flushed = files[owner].write(output, cb);
-                if (!flushed) {
-                        waitingForDrain[owner] = true;
-                        process.stdin.pause();
-                }
-        }
-}
-
-
-function saveAll(cb) {
         function save(owner, callback) {
                 LOG.debug(owner, 'save start');
                 var login = lookup[owner].login;
@@ -229,33 +196,154 @@ function saveAll(cb) {
                 cb();
         });
 
-        LOG.info(Object.keys(files), 'files to upload');
-        Object.keys(files).forEach(function (k) {
+        LOG.info(filenameList, 'files to upload');
+        filenameList.forEach(function (k) {
                 uploadQueue.push(k);
         });
         uploadQueue.close();
 }
 
 
+function DeliverAccessStream(options) {
+        var self = this;
+
+        mod_assert.object(options, 'options');
+        mod_assert.func(options.processFunc, 'options.processFunc');
+        mod_assert.string(options.outputDir, 'options.outputDir');
+
+        mod_stream.Writable.call(this, {
+                objectMode: true,
+                highWaterMark: 0
+        });
+
+        self.das_processFunc = options.processFunc;
+        self.das_outputDir = options.outputDir;
+
+        self.das_lineCount = 0;
+        self.das_malformedCount = 0;
+
+        self.das_files = {};
+        self.das_nfiles = 0;
+
+        self.das_finished = false;
+        self.on('finish', function onFinish() {
+                self.das_finished = true;
+
+                /*
+                 * End the write stream for all of the files we opened.
+                 * Push this to the next tick so that consumer "finish"
+                 * events can run first.
+                 */
+                setImmediate(function endAllFiles() {
+                        for (var fn in self.das_files) {
+                                if (!self.das_files.hasOwnProperty(fn)) {
+                                        continue;
+                                }
+
+                                self.das_files[fn].end();
+                        }
+                });
+        });
+}
+mod_util.inherits(DeliverAccessStream, mod_stream.Writable);
+
+DeliverAccessStream.prototype._commit = function dasCommit(action, done) {
+        var self = this;
+
+        mod_assert.string(action.filename, 'action.filename');
+        mod_assert.object(action.record, 'action.record');
+        mod_assert.func(done, 'done');
+
+        var output = JSON.stringify(action.record) + '\n';
+
+        var file = self.das_files[action.filename];
+        mod_assert.object(file, 'file: ' + action.filename);
+
+        if (!file.write(output)) {
+                /*
+                 * This file is blocked for writes.  To avoid exhausting
+                 * available memory with buffered records, hold processing
+                 * until the file stream has drained.
+                 */
+                file.once('drain', function fileOnDrain() {
+                        done();
+                });
+                return;
+        }
+
+        setImmediate(done);
+};
+
+DeliverAccessStream.prototype._write = function dasWrite(line, _, done) {
+        var self = this;
+
+        mod_assert.string(line, 'line');
+
+        self.das_lineCount++;
+
+        var action;
+        if ((action = self.das_processFunc(line)) === null) {
+                setImmediate(done);
+                return;
+        }
+
+        mod_assert.string(action.filename, 'action.filename');
+        mod_assert.object(action.record, 'action.record');
+
+        /*
+         * Check to see if we've already opened this file.
+         */
+        if (!self.das_files[action.filename]) {
+                /*
+                 * Open the file, holding processing until the open
+                 * completes.
+                 */
+                var path = mod_path.join(self.das_outputDir, action.filename);
+                var fstr = mod_fs.createWriteStream(path);
+
+                fstr.once('open', function fstrOnOpen() {
+                        self._commit(action, done);
+                });
+
+                fstr.once('finish', function fstrFinish() {
+                        mod_assert.strictEqual(self.das_finished, true,
+                                'file "' + action.filename + '" finished ' +
+                                'before input processing was done');
+                        mod_assert.ok(self.das_nfiles > 0, 'nfiles > 0');
+
+                        /*
+                         * Once all files are finished streaming out, we
+                         * emit a final event.
+                         */
+                        if (--self.das_nfiles === 0) {
+                                self.emit('filesDone', Object.keys(
+                                        self.das_files));
+                        }
+                });
+
+                self.das_files[action.filename] = fstr;
+                self.das_nfiles++;
+                return;
+        }
+
+        /*
+         * The file is already open.  Write the record immediately.
+         */
+        self._commit(action, done);
+};
+
+
 function main() {
-        var carry = mod_carrier.carry(process.openStdin());
         var lineCount = 0;
         var malformed = 0;
 
-        var writeQueue = mod_libmanta.createQueue({
-                worker: write,
-                limit: 15
+        var das = new DeliverAccessStream({
+                processFunc: onLine,
+                outputDir: tmpdir
         });
 
-        writeQueue.on('error', function (err) {
-                LOG.error(err, 'write error');
-        });
-
-        writeQueue.once('end', function () {
-                Object.keys(files).forEach(function (owner) {
-                        files[owner].end();
-                });
-                saveAll(function (err) {
+        das.once('filesDone', function (filenameList) {
+                saveAll(filenameList, function (err) {
                         if (err) {
                                 LOG.error(err, 'Error saving access logs');
                                 ERROR = true;
@@ -272,7 +360,7 @@ function main() {
                 // [ Nov 28 21:35:27 Enabled. ]
                 // we need to ignore them
                 if (line[0] != '{') {
-                        return;
+                        return (null);
                 }
 
                 try {
@@ -280,11 +368,11 @@ function main() {
                 } catch (e) {
                         malformed++;
                         LOG.error(e, line, 'Error on line ' + lineCount);
-                        return;
+                        return (null);
                 }
 
                 if (!shouldProcess(record)) {
-                        return;
+                        return (null);
                 }
 
                 var login = lookup[record.req.owner];
@@ -293,13 +381,13 @@ function main() {
                         LOG.error(record,
                                 'No login found for UUID ' + record.req.owner);
                         ERROR = true;
-                        return;
+                        return (null);
                 }
 
                 if (!DELIVER_UNAPPROVED_REPORTS && !login.approved) {
                         LOG.warn(record, record.req.owner +
                                 ' not approved for provisioning. Skipping...');
-                        return;
+                        return (null);
                 }
 
                 var output;
@@ -308,16 +396,16 @@ function main() {
                 } catch (e) {
                         LOG.error(e, 'Error sanitizing record');
                         ERROR = true;
-                        return;
+                        return (null);
                 }
 
-                writeQueue.push({
-                        owner: record.req.owner,
+                return ({
+                        filename: record.req.owner,
                         record: output
                 });
         }
 
-        carry.once('end', function onEnd() {
+        das.once('finish', function onFinish() {
                 var len = MALFORMED_LIMIT.length;
                 var threshold;
 
@@ -339,16 +427,15 @@ function main() {
                         ERROR = true;
                         return;
                 }
-                writeQueue.close();
         });
 
-        carry.on('line', onLine);
+        process.stdin.pipe(new mod_lstream()).pipe(das);
 }
 
 if (require.main === module) {
         process.on('exit', function onExit(code) {
                 if (code === 0) {
-                        process.exit(ERROR);
+                        process.exit(ERROR ? 1 : 0);
                 }
         });
 
