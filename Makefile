@@ -45,6 +45,11 @@ JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 NODE_PREBUILT_VERSION=v0.10.40
 NODE_PREBUILT_TAG=zone
+# We want the sdc-smartos@1.6.3 builds of sdcnode. This should match the
+# origin image used for "mola", in which mackerel is run. See the compatibility
+# matrix here:
+# 	https://github.com/joyent/triton-origin-image/blob/master/README.md#sdcnode-compatibility-with-triton-origin-images
+NODE_PREBUILT_IMAGE=fd2cc906-8938-11e3-beab-4359c665ac99
 
 
 include ./tools/mk/Makefile.defs
