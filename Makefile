@@ -119,7 +119,7 @@ publish: release
 
 .PHONY: assets
 assets: $(NODEUNIT)
-	tar -zcf $(ROOT)/assets/node_modules.tar node_modules build/node/bin/node
+	gtar -zcf $(ROOT)/assets/node_modules.tar node_modules build/node/bin/node
 
 
 include ./tools/mk/Makefile.deps
