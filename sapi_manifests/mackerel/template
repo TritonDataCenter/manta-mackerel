@@ -24,5 +24,10 @@
     },
     "jobsFile": "etc/jobs.json",
     "mantaBaseDirectory": "/poseidon/stor/usage",
-    "lookupFile": "assets/etc/lookup.json"
+    "lookupFile": "assets/etc/lookup.json"{{#DISABLE_ALL_JOBS}},
+    "disableAllJobs": {{DISABLE_ALL_JOBS}}{{/DISABLE_ALL_JOBS}}{{#METER_STORAGE_ENABLED}},
+    "meterStorageEnabled": {{METER_STORAGE_ENABLED}}{{/METER_STORAGE_ENABLED}}{{#METER_COMPUTE_ENABLED}},
+    "meterComputeEnabled": {{METER_COMPUTE_ENABLED}}{{/METER_COMPUTE_ENABLED}}{{#METER_REQUEST_ENABLED}},
+    "meterRequestEnabled": {{METER_REQUEST_ENABLED}}{{/METER_REQUEST_ENABLED}}{{#METER_PREV_DAY_ENABLED}},
+    "meterPrevDayEnabled": {{METER_PREV_DAY_ENABLED}}{{/METER_PREV_DAY_ENABLED}}
 }
