@@ -24,7 +24,7 @@
                 "vasync": "1.3.3"
         },
         "devDependencies": {
-                "nodeunit": "0.7.4",
+                "nodeunit": "0.10.1",
                 "ansidiff": "1.0.0"
         },
         "engines": {

@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2018, Joyent, Inc.
 #
 
 #
@@ -79,7 +79,7 @@ CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 
 .PHONY: test
 test: $(NODEUNIT)
-	(cd test && make test)
+	(cd test && NODE_EXEC=../$(NODE_EXEC) make test)
 
 .PHONY: mycheck
 mycheck:
