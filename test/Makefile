@@ -5,11 +5,12 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2018, Joyent, Inc.
 #
 
+NODE_EXEC ?= node
 NODEUNIT=../node_modules/nodeunit/bin/nodeunit
 
 .PHONY: test
 test:
-	find . -name '*.test.js' | xargs -n 1 $(NODEUNIT)
+	find . -name '*.test.js' | xargs -n 1 $(NODE_EXEC) $(NODEUNIT)
