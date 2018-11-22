@@ -43,7 +43,7 @@ JSSTYLE_FILES    = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 
 
-NODE_PREBUILT_VERSION=v0.10.40
+NODE_PREBUILT_VERSION=v0.10.48
 NODE_PREBUILT_TAG=zone
 # We want the sdc-smartos@1.6.3 builds of sdcnode. This should match the
 # origin image used for "mola", in which mackerel is run. See the compatibility
