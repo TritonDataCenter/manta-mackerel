@@ -5,6 +5,8 @@
         "author": "Joyent (joyent.com)",
         "private": true,
         "main": "./lib/index.js",
+        "// lru-cache": "attempting to pin version while satisfying transitive deps, because lru-cache@4.1.4 includes yallist@3 which breaks node --abort-on-uncaught-exception with node <v4",
+        "// kang": "elevate the libmanta->moray->fast->kang dep, so the top-level lru-cache@4.1.3 can be used by kang's restify dep, without being blocked by libmanta's lru-cache@2 dep",
         "dependencies": {
                 "assert-plus": "0.1.2",
                 "big.js": "2.0.0",
@@ -13,7 +15,9 @@
                 "carrier": "0.1.10",
                 "ipaddr.js": "0.1.1",
                 "jsprim": "0.5.0",
+                "kang": "1.2.0",
                 "libmanta": "git+ssh://git@github.com:joyent/node-libmanta.git#master",
+                "lru-cache": "4.1.3",
                 "marlin": "git+ssh://git@github.com:joyent/manta-marlin.git#master",
                 "manta": "git+ssh://git@github.com:joyent/node-manta.git#master",
                 "manta-compute-bin": "git+ssh://git@github.com:joyent/manta-compute-bin.git#master",
