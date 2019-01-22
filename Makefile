@@ -22,7 +22,7 @@
 # included Makefiles (in eng.git) so that other teams can use them too.
 #
 
-REPO_NAME       := mackerel
+NAME       := mackerel
 
 #
 # Tools
@@ -51,19 +51,20 @@ NODE_PREBUILT_TAG=zone
 # 	https://github.com/joyent/triton-origin-image/blob/master/README.md#sdcnode-compatibility-with-triton-origin-images
 NODE_PREBUILT_IMAGE=fd2cc906-8938-11e3-beab-4359c665ac99
 
+ENGBLD_REQUIRE := $(shell git submodule update --init deps/eng)
+include ./deps/eng/tools/mk/Makefile.defs
+TOP ?= $(error Unable to access eng.git submodule Makefiles.)
 
-include ./tools/mk/Makefile.defs
-include ./tools/mk/Makefile.node_prebuilt.defs
-include ./tools/mk/Makefile.node_deps.defs
-include ./tools/mk/Makefile.smf.defs
+include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
+include ./deps/eng/tools/mk/Makefile.smf.defs
 
 #
 # MG Variables
 #
 
-RELEASE_TARBALL         := $(REPO_NAME)-pkg-$(STAMP).tar.bz2
+RELEASE_TARBALL         := $(NAME)-pkg-$(STAMP).tar.gz
 ROOT                    := $(shell pwd)
-RELSTAGEDIR             := /tmp/$(STAMP)
+RELSTAGEDIR             := /tmp/$(NAME)-$(STAMP)
 
 #
 # Repo-specific targets
@@ -86,14 +87,14 @@ mycheck:
 	json --validate -f etc/config.json
 	json --validate -f etc/jobs.json
 
-check:: mycheck
+check:: mycheck $(NODE_EXEC)
 
 .PHONY: release
 release: all docs $(SMF_MANIFESTS)
 	@echo "Building $(RELEASE_TARBALL)"
-	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)
+	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)
 	@mkdir -p $(RELSTAGEDIR)/root
-	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)/etc
+	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/etc
 	cp -r	$(ROOT)/assets \
 		$(ROOT)/build \
 		$(ROOT)/bin \
@@ -103,8 +104,8 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/scripts \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
-		$(RELSTAGEDIR)/root/opt/smartdc/$(REPO_NAME)/
-	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root)
+		$(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/
+	(cd $(RELSTAGEDIR) && $(TAR) -I pigz -cf $(ROOT)/$(RELEASE_TARBALL) root)
 	@rm -rf $(RELSTAGEDIR)
 
 
@@ -114,16 +115,15 @@ publish: release
 		@echo "error: 'BITS_DIR' must be set for 'publish' target"; \
 		exit 1; \
 	fi
-	mkdir -p $(BITS_DIR)/$(REPO_NAME)
-	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/$(REPO_NAME)/$(RELEASE_TARBALL)
+	mkdir -p $(BITS_DIR)/$(NAME)
+	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL)
 
 .PHONY: assets
 assets: $(NODEUNIT)
 	gtar -zcf $(ROOT)/assets/node_modules.tar node_modules build/node/bin/node
 
 
-include ./tools/mk/Makefile.deps
-include ./tools/mk/Makefile.node_prebuilt.targ
-include ./tools/mk/Makefile.node_deps.targ
-include ./tools/mk/Makefile.smf.targ
-include ./tools/mk/Makefile.targ
+include ./deps/eng/tools/mk/Makefile.deps
+include ./deps/eng/tools/mk/Makefile.node_prebuilt.targ
+include ./deps/eng/tools/mk/Makefile.smf.targ
+include ./deps/eng/tools/mk/Makefile.targ

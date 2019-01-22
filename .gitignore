@@ -1,5 +1,6 @@
 /node_modules
 /tmp
+bits
 build
 docs/*.json
 docs/*.html
@@ -12,3 +13,4 @@ assets/node_modules.tar
 assets/node_modules
 .*.swp
 .*.swo
+mackerel-pkg-*.tar.gz
