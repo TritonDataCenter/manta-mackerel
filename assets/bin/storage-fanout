@@ -6,5 +6,4 @@ set -o pipefail
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 NODE=$dir/../build/node/bin/node
 
-$ZCAT \
-| $NODE $dir/../lib/storage-map.js -u -n $NUM_REDUCERS -s owner,type,objectId
+$ZCAT | $NODE $dir/../lib/storage-fanout.js -u -n $NUM_REDUCERS

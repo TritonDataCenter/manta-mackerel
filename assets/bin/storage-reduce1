@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright 2017 Joyent, Inc.
+# Copyright 2019 Joyent, Inc.
 #
 
 set -o pipefail
@@ -26,5 +26,6 @@ NODE=$dir/../build/node/bin/node
 # that can easily spill to disk; e.g., by using a SQLite or other disk-based
 # database.
 #
-$NODE --max_old_space_size=1300 $dir/../lib/storage-reduce1.js \
+$ZCAT \
+| $NODE --max_old_space_size=1300 $dir/../lib/storage-reduce1.js \
 | msplit -j -n $NUM_REDUCERS -f owner,namespace

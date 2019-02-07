@@ -13,6 +13,20 @@
         "phases": [
           {
             "type": "map",
+            "memory":{{#METERING_STORAGE_FANOUT_MEMORY}}{{METERING_STORAGE_FANOUT_MEMORY}}{{/METERING_STORAGE_FANOUT_MEMORY}}{{^METERING_STORAGE_FANOUT_MEMORY}}2048{{/METERING_STORAGE_FANOUT_MEMORY}},
+            "disk":{{#METERING_STORAGE_FANOUT_DISK}}{{METERING_STORAGE_FANOUT_DISK}}{{/METERING_STORAGE_FANOUT_DISK}}{{^METERING_STORAGE_FANOUT_DISK}}128{{/METERING_STORAGE_FANOUT_DISK}},
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/storage-fanout",
+              "assets/lib/storage-fanout.js",
+              "assets/lib/muploader.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/storage-fanout"
+          },
+          {
+            "type": "reduce",
             "memory":{{#METERING_STORAGE_MAP_MEMORY}}{{METERING_STORAGE_MAP_MEMORY}}{{/METERING_STORAGE_MAP_MEMORY}}{{^METERING_STORAGE_MAP_MEMORY}}2048{{/METERING_STORAGE_MAP_MEMORY}},
             "disk":{{#METERING_STORAGE_MAP_DISK}}{{METERING_STORAGE_MAP_DISK}}{{/METERING_STORAGE_MAP_DISK}}{{^METERING_STORAGE_MAP_DISK}}128{{/METERING_STORAGE_MAP_DISK}},
             "assets": [
@@ -20,10 +34,13 @@
               "assets/bin/storage-map",
               "assets/etc/lookup.json",
               "assets/lib/storage-map.js",
+              "assets/lib/zsplitter.js",
+              "assets/lib/muploader.js",
               "assets/node_modules.tar"
             ],
             "init": "assets/bin/init",
-            "exec": "assets/bin/storage-map"
+            "exec": "assets/bin/storage-map",
+            "count": {{#METERING_STORAGE_MAP_COUNT}}{{METERING_STORAGE_MAP_COUNT}}{{/METERING_STORAGE_MAP_COUNT}}{{^METERING_STORAGE_MAP_COUNT}}25{{/METERING_STORAGE_MAP_COUNT}}
           },
           {
             "type": "reduce",

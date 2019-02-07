@@ -14,16 +14,33 @@
           {
             "type": "map",
             "memory": 2048,
-            "disk": 32,
+            "disk": 128,
+            "assets": [
+              "assets/bin/init",
+              "assets/bin/storage-fanout",
+              "assets/lib/storage-fanout.js",
+              "assets/lib/muploader.js",
+              "assets/node_modules.tar"
+            ],
+            "init": "assets/bin/init",
+            "exec": "assets/bin/storage-fanout"
+          },
+          {
+            "type": "reduce",
+            "memory": 2048,
+            "disk": 128,
             "assets": [
               "assets/bin/init",
               "assets/bin/storage-map",
               "assets/etc/lookup.json",
               "assets/lib/storage-map.js",
+              "assets/lib/zsplitter.js",
+              "assets/lib/muploader.js",
               "assets/node_modules.tar"
             ],
             "init": "assets/bin/init",
-            "exec": "assets/bin/storage-map"
+            "exec": "assets/bin/storage-map",
+            "count": 25
           },
           {
             "type": "reduce",
