@@ -1,0 +1,55 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.3
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:lodash:20180130':
+    - manta > restify-clients > restify-errors > lodash:
+        patched: '2019-05-04T07:26:31.218Z'
+    - manta-marlin > moray > cueball > restify-clients > restify-errors > lodash:
+        patched: '2019-05-04T07:26:31.218Z'
+    - libmanta > moray > fast > kang > restify-clients > lodash:
+        patched: '2019-05-04T07:26:31.218Z'
+    - manta-marlin > moray > fast > kang > restify-clients > lodash:
+        patched: '2019-05-04T07:26:31.218Z'
+    - libmanta > moray > fast > kang > restify-clients > restify-errors > lodash:
+        patched: '2019-05-04T07:26:31.218Z'
+    - manta-marlin > moray > fast > kang > restify-clients > restify-errors > lodash:
+        patched: '2019-05-04T07:26:31.218Z'
+    - manta-compute-bin > manta > restify-clients > restify-errors > lodash:
+        patched: '2019-05-04T07:26:31.218Z'
+  'npm:mime:20170907':
+    - manta > mime:
+        patched: '2019-05-04T07:26:31.218Z'
+    - libmanta > restify > mime:
+        patched: '2019-05-04T07:26:31.218Z'
+    - manta-compute-bin > manta > mime:
+        patched: '2019-05-04T07:26:31.218Z'
+  'npm:moment:20161019':
+    - manta-compute-bin > manta > moment:
+        patched: '2019-05-04T07:26:31.218Z'
+  'npm:moment:20160126':
+    - manta-marlin > node-mahi > node-aperture > moment:
+        patched: '2019-05-04T07:26:31.218Z'
+  'npm:negotiator:20160616':
+    - libmanta > restify > negotiator:
+        patched: '2019-05-04T07:26:31.218Z'
+  'npm:qs:20140806-1':
+    - libmanta > restify > qs:
+        patched: '2019-05-04T07:26:31.218Z'
+  'npm:semver:20150403':
+    - libmanta > restify > semver:
+        patched: '2019-05-04T07:26:31.218Z'
+  'npm:tunnel-agent:20170305':
+    - manta-marlin > moray > fast > kang > restify-clients > tunnel-agent:
+        patched: '2019-05-04T07:26:31.218Z'
+    - manta-compute-bin > manta > restify-clients > tunnel-agent:
+        patched: '2019-05-04T07:26:31.218Z'
+    - libmanta > moray > fast > kang > restify > tunnel-agent:
+        patched: '2019-05-04T07:26:31.218Z'
+    - manta-marlin > moray > fast > kang > restify > tunnel-agent:
+        patched: '2019-05-04T07:26:31.218Z'
+    - libmanta > moray > fast > kang > restify-clients > tunnel-agent:
+        patched: '2019-05-04T07:26:31.218Z'
+    - manta-marlin > node-mahi > restify > tunnel-agent:
+        patched: '2019-05-04T07:26:31.218Z'
