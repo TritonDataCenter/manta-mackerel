@@ -5,7 +5,7 @@
 -->
 
 <!--
-    Copyright (c) 2014, Joyent, Inc.
+    Copyright 2019 Joyent, Inc.
 -->
 
 # manta-mackerel
@@ -15,6 +15,22 @@ guidelines, issues, and general documentation, visit the main
 [Manta](http://github.com/joyent/manta) project page.
 
 Mackerel generates Metering and usage reports for Manta.
+
+
+## Active Branches
+
+There are currently two active branches of this repository, for the two
+active major versions of Manta. See the [mantav2 overview
+document](https://github.com/joyent/manta/blob/master/docs/mantav2.md) for
+details on major Manta versions.
+
+- [`master`](../../tree/master/) - For development of mantav2, the latest
+  version of Manta.
+- [`mantav1`](../../tree/mantav1/) - For development of mantav1, the long
+  term support maintenance version of Manta.
+
+
+## Overview
 
 Metering code is in two main categories - scripts that set up and kick off
 Marlin jobs (job creation), and code that is uploaded as assets and
@@ -143,7 +159,7 @@ a user
 
 
 
-# Testing
+## Testing
 
 Mackerel needs a Manta deployment. Point to a Manta deployment by filling in
 the fields in `etc/test-config.js`, which overrides config entries in the normal
@@ -161,7 +177,7 @@ Run tests using:
 To run a single integration test:
     nodeunit -t storage test/integration.test.js
 
-# Resharding
+## Resharding
 
 See MANTA-1744 and MANTA-1665.
 
@@ -182,4 +198,3 @@ A somewhat related but separate issue is the transformation of dumps from SQL
 to JSON. Currently that transformation is occurring on the postgres boxes
 themselves. However, as the datasets get larger, it would be preferable to use
 marlin to transform the dumps.
-
