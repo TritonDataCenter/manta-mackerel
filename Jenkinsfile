@@ -49,7 +49,7 @@ make print-BRANCH print-STAMP all release publish bits-upload''')
                 branch 'master'
             }
             steps {
-                build(job:'mola', wait: false)
+                build(job:'joyent-org/mola/master', wait: false)
             }
         }
     }
