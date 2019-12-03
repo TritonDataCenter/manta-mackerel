@@ -14,3 +14,4 @@ assets/node_modules
 .*.swp
 .*.swo
 mackerel-pkg-*.tar.gz
+/npm-debug.log
