@@ -46,10 +46,10 @@ make print-BRANCH print-STAMP all release publish bits-upload''')
         stage('mola') {
             // TODO: Consider complex handling of multiple branches
             when {
-                branch 'master'
+                branch 'mantav1'
             }
             steps {
-                build(job:'mola', wait: false)
+                build(job:'joyent-org/manta-mola/mantav1', wait: false)
             }
         }
     }
