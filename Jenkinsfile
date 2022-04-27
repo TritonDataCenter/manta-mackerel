@@ -6,6 +6,7 @@
 
 /*
  * Copyright 2021 Joyent, Inc.
+ * Copyright 2022 MNX Cloud, Inc.
  */
 
 @Library('jenkins-joylib@v1.0.8') _
@@ -49,7 +50,7 @@ make print-BRANCH print-STAMP all release publish bits-upload''')
                 branch 'master'
             }
             steps {
-                build(job:'joyent-org/manta-mola/master', wait: false)
+                build(job:'TritonDataCenter/manta-mola/master', wait: false)
             }
         }
     }
