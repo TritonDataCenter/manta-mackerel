@@ -1,9 +1,0 @@
-#!/bin/bash
-# Copyright (c) 2019, Joyent, Inc. All rights reserved.
-
-set -o pipefail
-
-dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-NODE=$dir/../build/node/bin/node
-
-$ZCAT | $NODE $dir/../lib/storage-fanout.js -u -n $NUM_REDUCERS
