@@ -6,6 +6,7 @@
 
 #
 # Copyright 2019 Joyent, Inc.
+# Copyright 2024 MNX Cloud, Inc.
 #
 
 #
@@ -48,7 +49,7 @@ NODE_PREBUILT_TAG=zone
 # We want the sdc-smartos@1.6.3 builds of sdcnode. This should match the
 # origin image used for "mola", in which mackerel is run. See the compatibility
 # matrix here:
-# 	https://github.com/joyent/triton-origin-image/blob/master/README.md#sdcnode-compatibility-with-triton-origin-images
+# 	https://github.com/TritonDataCenter/triton-origin-image/blob/master/README.md#sdcnode-compatibility-with-triton-origin-images
 NODE_PREBUILT_IMAGE=fd2cc906-8938-11e3-beab-4359c665ac99
 
 ENGBLD_REQUIRE := $(shell git submodule update --init deps/eng)
